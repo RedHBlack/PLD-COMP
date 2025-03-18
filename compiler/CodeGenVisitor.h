@@ -18,6 +18,7 @@ public:
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
         virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
+        virtual antlrcpp::Any visitComp(ifccParser::CompContext *ctx) override;
         // virtual antlrcpp::Any visitOpposite(ifccParser::OppositeContext *ctx) override;
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
 

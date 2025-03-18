@@ -21,11 +21,13 @@ expr:   expr OPM expr   #muldiv
     |   VAR             #var
     |   CONST           #const
     |   '(' expr ')'    #par
+    |   expr OPC expr   #comp
     ;
 
 OPU:    ('++' | '--');
 OPM:    ('*' | '/' | '%') ; 
 OPA:    ('+' | '-') ;
+OPC: ('==' | '!=' | '<' | '>' ) ;
 
 RETURN : 'return' ;
 TYPE : 'int';

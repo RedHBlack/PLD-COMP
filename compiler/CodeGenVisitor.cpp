@@ -223,3 +223,30 @@ antlrcpp::Any CodeGenVisitor::visitPost(ifccParser::PostContext *ctx)
 
     return 0;
 }
+
+antlrcpp::Any CodeGenVisitor::visitComp(ifccParser::CompContext *ctx)
+{
+    visitExpr(ctx->expr(0), true);
+    cout << "      subq $4, %rsp\n";
+    cout << "      pushq %rax\n";
+    visitExpr(ctx->expr(1), true);
+    cout << "      popq %rbx\n";
+    cout << "      addq $4, %rsp\n";
+
+    string op = ctx->OPC()->getText();
+    cout << "      cmpl %eax, %ebx\n";
+    
+    if (op == "==") {
+        cout << "      sete %al\n";
+    } else if (op == "!=") {
+        cout << "      setne %al\n";
+    } else if (op == "<") {
+        cout << "      setl %al\n";
+    } else if (op == ">") {
+        cout << "      setg %al\n";
+    }
+
+    cout << "      movzbl %al, %eax\n";
+
+    return 0;
+}
