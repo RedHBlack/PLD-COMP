@@ -21,13 +21,13 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
     std::cout << "main: \n";
 #endif
 
-    std::cout << "      pushq %rbp\n";
-    std::cout << "      movq %rsp, %rbp\n";
+    std::cout << "   pushq  %rbp\n";
+    std::cout << "   movq   %rsp, %rbp\n";
 
     this->visitChildren(ctx);
 
-    std::cout << "      popq %rbp\n";
-    std::cout << "      ret\n";
+    std::cout << "   popq   %rbp\n";
+    std::cout << "   ret\n";
 
     return 0;
 }
@@ -39,7 +39,7 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
     ifccParser::ConstContext *constCtx = dynamic_cast<ifccParser::ConstContext *>(exprCtx);
     if (constCtx)
     {
-        cout << "      movl $" << stoi(constCtx->CONST()->getText()) << ", %eax\n";
+        cout << "   movl    $" << stoi(constCtx->CONST()->getText()) << ", %eax\n";
         return 0;
     }
 
@@ -47,7 +47,7 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
     if (varCtx)
     {
         string varName = varCtx->VAR()->getText();
-        cout << "      movl -" << symbolsTable[varName] << "(%rbp), %eax\n";
+        cout << "   movl    " << symbolsTable[varName] << "(%rbp), %eax\n";
 
         return 0;
     }
@@ -67,17 +67,17 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
     {
         string assignedVarName = varCtx->VAR()->getText();
 
-        cout << "      movl -" << symbolsTable[assignedVarName] << "(%rbp), %eax\n";
-        cout << "      movl %eax, -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   movl    " << symbolsTable[assignedVarName] << "(%rbp), %eax\n";
+        cout << "   movl    %eax, " << symbolsTable[varName] << "(%rbp)\n";
     }
     else if (dynamic_cast<ifccParser::ConstContext *>(exprCtx))
     {
-        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(exprCtx)->CONST()->getText()) << ", -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   movl    $" << stoi(dynamic_cast<ifccParser::ConstContext *>(exprCtx)->CONST()->getText()) << ", " << symbolsTable[varName] << "(%rbp)\n";
     }
     else
     {
         visit(exprCtx);
-        cout << "      movl	%eax,-" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   movl	%eax, " << symbolsTable[varName] << "(%rbp)\n";
     }
 
     return 0;
@@ -88,13 +88,44 @@ antlrcpp::Any CodeGenVisitor::visitConst(ifccParser::ConstContext *ctx)
     return stoi(ctx->CONST()->getText());
 }
 
+
+antlrcpp::Any CodeGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) 
+{
+    for (int i = 0; i < ctx->VAR().size(); i++)
+    {
+        string var = ctx->VAR()[0]->getText();
+
+        ifccParser::ExprContext* exprCtx = ctx->expr();
+        auto constCtx = dynamic_cast<ifccParser::ConstContext*>(exprCtx);
+        auto varCtx = dynamic_cast<ifccParser::VarContext*>(exprCtx);
+
+        //Case where we initialize with a constant
+        if (constCtx != nullptr) {
+            int valeur = stoi(constCtx->getText());
+            int index = symbolsTable[var];
+            std::cout << "   movl    " << "$" << valeur << ", " << index << "(%rbp)\n";
+        }
+        //Case where we initialize with a variable
+        else if (varCtx != nullptr) {
+            std::string var2 = varCtx->getText();
+            int index = symbolsTable[var];
+            int index2 = symbolsTable[var2];
+            std::cout << "   movl    " << index2 << "(%rbp), %eax\n";
+            std::cout << "   movl    %eax, " << index << "(%rbp)\n";
+        }
+    }
+
+    return 0;
+}
+
+
 antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
 {
     ifccParser::VarContext *varCtx = dynamic_cast<ifccParser::VarContext *>(expr);
     if (varCtx != nullptr)
     {
         string varName = varCtx->VAR()->getText();
-        cout << "      movl -" << symbolsTable[varName] << "(%rbp), " << (isFirst ? "%eax" : "%ebx") << "\n";
+        cout << "   movl    " << symbolsTable[varName] << "(%rbp), " << (isFirst ? "%eax" : "%ebx") << "\n";
         return 0;
     }
 
@@ -102,7 +133,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
     if (constCtx != nullptr)
     {
         int val = stoi(constCtx->CONST()->getText());
-        cout << "      movl $" << val << ", " << (isFirst ? "%eax" : "%ebx") << "\n";
+        cout << "   movl    $" << val << ", " << (isFirst ? "%eax" : "%ebx") << "\n";
         return 0;
     }
 
@@ -110,7 +141,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
 
     if (!isFirst)
     {
-        cout << "      movl %eax, %ebx\n";
+        cout << "   movl    %eax, %ebx\n";
     }
 
     return 0;
@@ -124,25 +155,25 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
     if (isLeftConst)
     {
         visitExpr(ctx->expr(1), false);
-        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
+        cout << "   movl    $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
     else
     {
         visitExpr(ctx->expr(0), true);
-        cout << "      subq $4, %rsp\n";
-        cout << "      movl %eax, (%rsp)\n";
+        cout << "   subq    $4, %rsp\n";
+        cout << "   movl    %eax, (%rsp)\n";
         visitExpr(ctx->expr(1), false);
-        cout << "      movl (%rsp), %eax\n";
-        cout << "      addq $4, %rsp\n";
+        cout << "   movl    (%rsp), %eax\n";
+        cout << "   addq    $4, %rsp\n";
     }
 
     switch (op)
     {
     case '+':
-        cout << "      addl %ebx, %eax\n";
+        cout << "   addl    %ebx, %eax\n";
         break;
     case '-':
-        cout << "      subl %ebx, %eax\n";
+        cout << "   subl    %ebx, %eax\n";
         break;
     }
 
@@ -157,29 +188,29 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
     if (isLeftConst)
     {
         visitExpr(ctx->expr(1), false);
-        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
+        cout << "   movl    $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
     else
     {
         visitExpr(ctx->expr(0), true);
-        cout << "      subq $4, %rsp\n";
-        cout << "      movl %eax, (%rsp)\n";
+        cout << "   subq    $4, %rsp\n";
+        cout << "   movl    %eax, (%rsp)\n";
         visitExpr(ctx->expr(1), false);
-        cout << "      movl (%rsp), %eax\n";
-        cout << "      addq $4, %rsp\n";
+        cout << "   movl    (%rsp), %eax\n";
+        cout << "   addq    $4, %rsp\n";
     }
 
     switch (op)
     {
     case '*':
-        cout << "      imull %ebx, %eax\n";
+        cout << "   imull   %ebx, %eax\n";
         break;
     case '/':
     case '%':
-        cout << "      cdq\n";
-        cout << "      idivl %ebx\n";
+        cout << "   cdq\n";
+        cout << "   idivl   %ebx\n";
         if (op == '%')
-            cout << "      movl %edx, %eax\n";
+            cout << "   movl    %edx, %eax\n";
         break;
     }
 
@@ -194,11 +225,11 @@ antlrcpp::Any CodeGenVisitor::visitPre(ifccParser::PreContext *ctx)
     switch (op)
     {
     case '+':
-        cout << "      addl $1, -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   addl    $1, " << symbolsTable[varName] << "(%rbp)\n";
         break;
 
     case '-':
-        cout << "      subl $1, -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   subl    $1, " << symbolsTable[varName] << "(%rbp)\n";
         break;
     }
 
@@ -213,11 +244,11 @@ antlrcpp::Any CodeGenVisitor::visitPost(ifccParser::PostContext *ctx)
     switch (op)
     {
     case '+':
-        cout << "      addl $1, -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   addl    $1, " << symbolsTable[varName] << "(%rbp)\n";
         break;
 
     case '-':
-        cout << "      subl $1, -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "   subl    $1, " << symbolsTable[varName] << "(%rbp)\n";
         break;
     }
 
