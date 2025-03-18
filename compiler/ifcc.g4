@@ -16,17 +16,19 @@ incrdecr_stmt:  VAR OPU ';' #post
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   '!' expr         #not
+expr:   '!' expr        #not
+    |   '(' expr ')'    #par
     |   expr OPM expr   #muldiv
     |   expr OP=('+' | '-') expr   #addsub
+    |   expr OPB expr   #bitBybit
     |   VAR             #var
     |   CONST           #const
-    |   '(' expr ')'    #par
     |   '-' expr         #neg
     ;
 
 OPU:    ('++' | '--');
 OPM:    ('*' | '/' | '%') ; 
+OPB:    ('|' | '&' | '^') ;
 
 RETURN : 'return' ;
 TYPE : 'int';

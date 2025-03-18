@@ -6,9 +6,11 @@
 
 using namespace std;
 
-CodeGenVisitor::CodeGenVisitor(map<string, int> symbolsTable)
+CodeGenVisitor::CodeGenVisitor(map<string, int> symbolsTable, int maxOffset)
 {
     this->symbolsTable = symbolsTable;
+    this->maxOffset = maxOffset;
+    currentTemporaryOffset = maxOffset + 4;
 }
 
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
@@ -24,7 +26,13 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
     cout << "      pushq %rbp\n";
     cout << "      movq %rsp, %rbp\n";
 
-    this->visitChildren(ctx);
+    for (int i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+        resetCurrentTemporaryOffset();
+    }
+
+    visit(ctx->return_stmt());
 
     cout << "      popq %rbp\n";
     cout << "      ret\n";
@@ -105,6 +113,11 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
     return 0;
 }
 
+void CodeGenVisitor::resetCurrentTemporaryOffset()
+{
+    currentTemporaryOffset = maxOffset + 4;
+}
+
 antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
     char op = ctx->OP->getText()[0];
@@ -115,14 +128,19 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
         visitExpr(ctx->expr(1), false);
         cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
+    else if (dynamic_cast<ifccParser::VarContext *>(ctx->expr(0)))
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << symbolsTable[dynamic_cast<ifccParser::VarContext *>(ctx->expr(0))->VAR()->getText()] << "(%rbp), %eax\n";
+    }
     else
     {
         visitExpr(ctx->expr(0), true);
-        cout << "      subq $4, %rsp\n";
-        cout << "      movl %eax, (%rsp)\n";
+        cout << "      movl %eax,-" << currentTemporaryOffset << "(%rbp)\n";
         visitExpr(ctx->expr(1), false);
-        cout << "      movl (%rsp), %eax\n";
-        cout << "      addq $4, %rsp\n";
+        cout << "      movl -" << currentTemporaryOffset << "(%rbp), %eax\n";
+
+        currentTemporaryOffset += 4;
     }
 
     switch (op)
@@ -147,14 +165,17 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
         visitExpr(ctx->expr(1), false);
         cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
+    else if (dynamic_cast<ifccParser::VarContext *>(ctx->expr(0)))
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << symbolsTable[dynamic_cast<ifccParser::VarContext *>(ctx->expr(0))->VAR()->getText()] << "(%rbp), %eax\n";
+    }
     else
     {
         visitExpr(ctx->expr(0), true);
-        cout << "      subq $4, %rsp\n";
-        cout << "      movl %eax, (%rsp)\n";
+        cout << "      movl %eax,-" << currentTemporaryOffset << "(%rbp)\n";
         visitExpr(ctx->expr(1), false);
-        cout << "      movl (%rsp), %eax\n";
-        cout << "      addq $4, %rsp\n";
+        cout << "      movl -" << currentTemporaryOffset << "(%rbp), %eax\n";
     }
 
     switch (op)
@@ -228,3 +249,56 @@ antlrcpp::Any CodeGenVisitor::visitNeg(ifccParser::NegContext *ctx)
     cout << "      negl %eax\n";
     return 0;
 }
+
+antlrcpp::Any CodeGenVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
+{
+    char op = ctx->OPB()->getText()[0];
+    bool isLeftConst = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0)) != nullptr;
+
+    if (isLeftConst)
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
+    }
+    else if (dynamic_cast<ifccParser::VarContext *>(ctx->expr(0)))
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << symbolsTable[dynamic_cast<ifccParser::VarContext *>(ctx->expr(0))->VAR()->getText()] << "(%rbp), %eax\n";
+    }
+    else
+    {
+        visitExpr(ctx->expr(0), true);
+        cout << "      movl %eax,-" << currentTemporaryOffset << "(%rbp)\n";
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << currentTemporaryOffset << "(%rbp), %eax\n";
+    }
+
+    switch (op)
+    {
+    case '&':
+        cout << "      andl %ebx, %eax\n";
+        break;
+    case '|':
+        cout << "      orl %ebx, %eax\n";
+        break;
+    case '^':
+        cout << "      xorl %ebx, %eax\n";
+        break;
+    }
+
+    return 0;
+}
+
+// std::any CodeGenVisitor::visitOpposite(ifccParser::OppositeContext *ctx)
+// {
+//     ifccParser::ConstContext *constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr());
+//     if (constCtx != nullptr)
+//     {
+//         return -any_cast<int>(visit(ctx->expr()));
+//     }
+
+//     visitExpr(ctx->expr(), true);
+//     cout << "      negl %eax\n";
+
+//     return 0;
+// }

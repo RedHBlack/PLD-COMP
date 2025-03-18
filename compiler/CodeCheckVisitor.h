@@ -11,6 +11,7 @@ public:
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
         map<string, int> getSymbolsTable();
+        int getCurrentOffset();
 
 protected:
         map<string, int> symbolsTable;
