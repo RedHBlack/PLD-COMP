@@ -253,16 +253,19 @@ antlrcpp::Any CodeGenVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
     if (isLeftConst)
     {
         visitExpr(ctx->expr(1), false);
-        cout << "      movl $" << any_cast<int>(visit(ctx->expr(0))) << ", %eax\n";
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
+    }
+    else if (dynamic_cast<ifccParser::VarContext *>(ctx->expr(0)))
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << symbolsTable[dynamic_cast<ifccParser::VarContext *>(ctx->expr(0))->VAR()->getText()] << "(%rbp), %eax\n";
     }
     else
     {
         visitExpr(ctx->expr(0), true);
-        cout << "      subq $4, %rsp\n";
-        cout << "      movl %eax, (%rsp)\n";
+        cout << "      movl %eax,-" << currentTemporaryOffset << "(%rbp)\n";
         visitExpr(ctx->expr(1), false);
-        cout << "      movl (%rsp), %eax\n";
-        cout << "      addq $4, %rsp\n";
+        cout << "      movl -" << currentTemporaryOffset << "(%rbp), %eax\n";
     }
 
     switch (op)
