@@ -19,6 +19,7 @@ return_stmt: RETURN expr ';' ;
 expr:   '(' expr ')'    #par
     |   expr OPM expr   #muldiv
     |   expr OPA expr   #addsub
+    |   expr OPB expr   #bitBybit
     |   VAR             #var
     |   CONST           #const
     ;
@@ -26,6 +27,7 @@ expr:   '(' expr ')'    #par
 OPU:    ('++' | '--');
 OPM:    ('*' | '/' | '%') ; 
 OPA:    ('+' | '-') ;
+OPB:    ('|' | '&' | '^') ;
 
 RETURN : 'return' ;
 TYPE : 'int';
