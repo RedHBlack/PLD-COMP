@@ -107,7 +107,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
 
 antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
-    char op = ctx->OPA()->getText()[0];
+    char op = ctx->OP->getText()[0];
     bool isLeftConst = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0)) != nullptr;
 
     if (isLeftConst)
