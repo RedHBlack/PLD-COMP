@@ -302,7 +302,7 @@ for jobname in jobs:
         continue
     else:
         ## ifcc accepts to compile valid program -> let's link it
-        ldstatus=run_command("gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
+        ldstatus=run_command("arch -x86_64 gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
         if ldstatus:
             print("TEST FAIL (your compiler produces incorrect assembly)")
             all_ok=False

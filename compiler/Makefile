@@ -56,11 +56,11 @@ generated/ifccParser.cpp: ifcc.g4
 # view the parse tree in a graphical window
 
 # Usage: `make gui FILE=path/to/your/file.c`
-FILE ?= ../testfiles/arithmetic/FAILING_5_multiple_operations_and_assignation.c
+FILE ?= ../tests/testfiles/1_return42.c
 
 gui:
 	@mkdir -p generated build
-	java -jar $(ANTLRJAR) -Dlanguage=Java -o generated ifcc.g4
+	java -jar /Users/isalinefoissey/Documents/ECOLE/4IF/S2/GL/PLD-COMPILATEUR/pld-comp/antlr/jar/antlr-4.9.2-complete.jar -Dlanguage=Java -o generated ifcc.g4
 	javac -cp $(ANTLRJAR) -d build generated/*.java
 	java -cp $(ANTLRJAR):build org.antlr.v4.gui.TestRig ifcc axiom -gui $(FILE)
 
