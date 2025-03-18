@@ -57,7 +57,7 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
         return 0;
     }
 
-    visit(exprCtx);
+    visitExpr(exprCtx, true);
     return 0;
 }
 
@@ -78,7 +78,7 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
     }
     else
     {
-        visit(exprCtx);
+        visitExpr(exprCtx, true);
         cout << "      movl %eax, -" << symbolsTable[varName] << "(%rbp)\n";
     }
     return 0;
@@ -111,11 +111,6 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
         cout << "      movl %eax, %ebx\n";
     }
     return 0;
-}
-
-void CodeGenVisitor::resetCurrentTemporaryOffset()
-{
-    currentTemporaryOffset = maxOffset + 4;
 }
 
 antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
@@ -157,7 +152,7 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 
 antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
-    char op = ctx->OPM()->getText()[0];
+    char op = ctx->OP->getText()[0];
     bool isLeftConst = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0)) != nullptr;
 
     if (isLeftConst)
@@ -230,29 +225,28 @@ antlrcpp::Any CodeGenVisitor::visitPost(ifccParser::PostContext *ctx)
     return 0;
 }
 
-// Nouveau visitor pour l'opérateur unaire logique '!'
 antlrcpp::Any CodeGenVisitor::visitNot(ifccParser::NotContext *ctx)
 {
-    // Visiter l'expression après le '!'
-    visit(ctx->expr());
-    // Pour effectuer un NOT logique, on teste %eax et on met le résultat (0 ou 1) dans %eax.
+    visitExpr(ctx->expr(), true);
+
     cout << "      testl %eax, %eax\n";
     cout << "      movl $0, %eax\n";
     cout << "      sete %al\n";
     cout << "      movzbl %al, %eax\n";
+
     return 0;
 }
 
 antlrcpp::Any CodeGenVisitor::visitNeg(ifccParser::NegContext *ctx)
 {
-    visit(ctx->expr());
+    visitExpr(ctx->expr(), true);
     cout << "      negl %eax\n";
     return 0;
 }
 
 antlrcpp::Any CodeGenVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
 {
-    char op = ctx->OPB()->getText()[0];
+    char op = ctx->OP->getText()[0];
     bool isLeftConst = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0)) != nullptr;
 
     if (isLeftConst)
@@ -287,6 +281,11 @@ antlrcpp::Any CodeGenVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
     }
 
     return 0;
+}
+
+void CodeGenVisitor::resetCurrentTemporaryOffset()
+{
+    currentTemporaryOffset = maxOffset + 4;
 }
 
 // std::any CodeGenVisitor::visitOpposite(ifccParser::OppositeContext *ctx)
