@@ -287,17 +287,3 @@ void CodeGenVisitor::resetCurrentTemporaryOffset()
 {
     currentTemporaryOffset = maxOffset + 4;
 }
-
-// std::any CodeGenVisitor::visitOpposite(ifccParser::OppositeContext *ctx)
-// {
-//     ifccParser::ConstContext *constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr());
-//     if (constCtx != nullptr)
-//     {
-//         return -any_cast<int>(visit(ctx->expr()));
-//     }
-
-//     visitExpr(ctx->expr(), true);
-//     cout << "      negl %eax\n";
-
-//     return 0;
-// }
