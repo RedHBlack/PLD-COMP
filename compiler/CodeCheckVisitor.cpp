@@ -1,4 +1,5 @@
 #include "CodeCheckVisitor.h"
+using namespace std;
 
 antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
