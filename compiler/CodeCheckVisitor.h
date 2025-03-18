@@ -3,7 +3,6 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 #include <map>
-
 using namespace std;
 
 class CodeCheckVisitor : public ifccBaseVisitor
