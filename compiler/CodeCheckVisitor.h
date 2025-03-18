@@ -14,6 +14,7 @@ public:
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
         map<string, int> getSymbolsTable() const { return symbolsTable; }
         map<string, bool> getIsUsed() const { return isUsed; }
+        int getCurrentOffset();
 
 protected:
         map<string, int> symbolsTable;

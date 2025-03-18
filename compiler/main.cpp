@@ -52,7 +52,7 @@ int main(int argn, const char **argv)
     CodeCheckVisitor sv;
     sv.visit(tree);
 
-    CodeGenVisitor v(sv.getSymbolsTable());
+    CodeGenVisitor v(sv.getSymbolsTable(), sv.getCurrentOffset());
     v.visit(tree);
 
     return 0;
