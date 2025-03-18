@@ -3,8 +3,6 @@
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
 
 # Local History for Visual Studio Code
 .history/
@@ -19,6 +17,7 @@
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 *.mk
+Makefile
 
 compiler/build/
 compiler/generated/
