@@ -18,6 +18,10 @@ public:
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
         virtual std::any visitPre(ifccParser::PreContext *ctx) override;
         virtual std::any visitPost(ifccParser::PostContext *ctx) override;
+
+        // operateur bit a bit
+        virtual antlrcpp::Any visitBitBybit(ifccParser::BitBybitContext *ctx) override;
+
         // virtual std::any visitOpposite(ifccParser::OppositeContext *ctx) override;
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
 
