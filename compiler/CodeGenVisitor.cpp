@@ -1,4 +1,10 @@
 #include "CodeGenVisitor.h"
+#include <iostream>
+#include <string>
+#include <map>
+#include "antlr4-runtime.h"
+
+using namespace std;
 
 CodeGenVisitor::CodeGenVisitor(map<string, int> symbolsTable)
 {
@@ -33,7 +39,7 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
     ifccParser::ConstContext *constCtx = dynamic_cast<ifccParser::ConstContext *>(exprCtx);
     if (constCtx)
     {
-        cout << "      movl $" << any_cast<int>(visit(exprCtx)) << ", %eax\n";
+        cout << "      movl $" << stoi(constCtx->CONST()->getText()) << ", %eax\n";
         return 0;
     }
 
@@ -66,7 +72,7 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
     }
     else if (dynamic_cast<ifccParser::ConstContext *>(exprCtx))
     {
-        cout << "      movl $" << any_cast<int>(visit(exprCtx)) << ", -" << symbolsTable[varName] << "(%rbp)\n";
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(exprCtx)->CONST()->getText()) << ", -" << symbolsTable[varName] << "(%rbp)\n";
     }
     else
     {
@@ -79,7 +85,7 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
 
 antlrcpp::Any CodeGenVisitor::visitConst(ifccParser::ConstContext *ctx)
 {
-    return (int)stoi(ctx->CONST()->getText());
+    return stoi(ctx->CONST()->getText());
 }
 
 antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
@@ -95,7 +101,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
     ifccParser::ConstContext *constCtx = dynamic_cast<ifccParser::ConstContext *>(expr);
     if (constCtx != nullptr)
     {
-        int val = any_cast<int>(visit(expr));
+        int val = stoi(constCtx->CONST()->getText());
         cout << "      movl $" << val << ", " << (isFirst ? "%eax" : "%ebx") << "\n";
         return 0;
     }
@@ -118,7 +124,7 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
     if (isLeftConst)
     {
         visitExpr(ctx->expr(1), false);
-        cout << "      movl $" << any_cast<int>(visit(ctx->expr(0))) << ", %eax\n";
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
     else
     {
@@ -151,7 +157,7 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
     if (isLeftConst)
     {
         visitExpr(ctx->expr(1), false);
-        cout << "      movl $" << any_cast<int>(visit(ctx->expr(0))) << ", %eax\n";
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
     }
     else
     {
@@ -180,7 +186,7 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
     return 0;
 }
 
-std::any CodeGenVisitor::visitPre(ifccParser::PreContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitPre(ifccParser::PreContext *ctx)
 {
     char op = ctx->OPU()->getText()[0];
     string varName = ctx->VAR()->getText();
@@ -199,7 +205,7 @@ std::any CodeGenVisitor::visitPre(ifccParser::PreContext *ctx)
     return 0;
 }
 
-std::any CodeGenVisitor::visitPost(ifccParser::PostContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitPost(ifccParser::PostContext *ctx)
 {
     char op = ctx->OPU()->getText()[0];
     string varName = ctx->VAR()->getText();
