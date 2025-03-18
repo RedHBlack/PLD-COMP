@@ -40,3 +40,8 @@ map<string, int> CodeCheckVisitor::getSymbolsTable()
 {
     return symbolsTable;
 }
+
+int CodeCheckVisitor::getCurrentOffset()
+{
+    return currentOffset;
+}
