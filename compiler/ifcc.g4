@@ -16,11 +16,11 @@ incrdecr_stmt:  VAR OPU ';' #post
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   expr OPM expr   #muldiv
+expr:   '(' expr ')'    #par
+    |   expr OPM expr   #muldiv
     |   expr OPA expr   #addsub
     |   VAR             #var
     |   CONST           #const
-    |   '(' expr ')'    #par
     ;
 
 OPU:    ('++' | '--');

@@ -9,7 +9,7 @@ using namespace std;
 class CodeGenVisitor : public ifccBaseVisitor
 {
 public:
-        CodeGenVisitor(map<string, int> symbolsTable);
+        CodeGenVisitor(map<string, int> symbolsTable, int currentOffset);
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
@@ -20,7 +20,10 @@ public:
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
         // virtual antlrcpp::Any visitOpposite(ifccParser::OppositeContext *ctx) override;
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
+        void resetCurrentTemporaryOffset();
 
 protected:
         map<string, int> symbolsTable;
+        int currentTemporaryOffset;
+        int maxOffset;
 };
