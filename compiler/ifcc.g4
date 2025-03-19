@@ -24,9 +24,14 @@ expr:   CONST                           #const
     |   expr OP=('*' | '/' | '%') expr  #muldiv
     |   expr OP=('+' | '-') expr        #addsub
     |   expr OP=('|' | '&' | '^') expr  #bitBybit 
+    |   expr OPC expr                   #comp
+
     ;
 
 OPU:    ('++' | '--');
+OPM:    ('*' | '/' | '%') ; 
+OPA:    ('+' | '-') ;
+OPC: ('==' | '!=' | '<' | '>' ) ;
 
 RETURN : 'return' ;
 TYPE : 'int';

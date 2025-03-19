@@ -21,6 +21,7 @@ public:
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
         virtual antlrcpp::Any visitBitBybit(ifccParser::BitBybitContext *ctx) override;
         virtual antlrcpp::Any visitNot(ifccParser::NotContext *ctx) override;
+        virtual antlrcpp::Any visitComp(ifccParser::CompContext *ctx) override;
         virtual antlrcpp::Any visitNeg(ifccParser::NegContext *ctx) override;
         virtual std::any visitPre(ifccParser::PreContext *ctx) override;
         virtual std::any visitPost(ifccParser::PostContext *ctx) override;
