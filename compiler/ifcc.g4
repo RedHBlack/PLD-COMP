@@ -16,12 +16,16 @@ incrdecr_stmt:  VAR OPU ';' #post
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   expr OPM expr   #muldiv
-    |   expr OPA expr   #addsub
-    |   VAR             #var
-    |   CONST           #const
-    |   '(' expr ')'    #par
-    |   expr OPC expr   #comp
+expr:   CONST                           #const
+    |   VAR                             #var
+    |   '!' expr                        #not
+    |   '(' expr ')'                    #par
+    |   '-' expr                        #neg
+    |   expr OP=('*' | '/' | '%') expr  #muldiv
+    |   expr OP=('+' | '-') expr        #addsub
+    |   expr OP=('|' | '&' | '^') expr  #bitBybit 
+    |   expr OPC expr                   #comp
+
     ;
 
 OPU:    ('++' | '--');
@@ -34,7 +38,6 @@ TYPE : 'int';
 
 VAR :   [a-zA-Z][a-zA-Z0-9_]*;
 CONST : '-'? [0-9]+ ;
-
 
 COMMENT : '/*' .*? '*/' -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
