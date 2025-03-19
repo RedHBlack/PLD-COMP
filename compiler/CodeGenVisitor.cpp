@@ -285,15 +285,28 @@ antlrcpp::Any CodeGenVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
 
 antlrcpp::Any CodeGenVisitor::visitComp(ifccParser::CompContext *ctx)
 {
-    visitExpr(ctx->expr(0), true);
-    cout << "      subq $4, %rsp\n";
-    cout << "      pushq %rax\n";
-    visitExpr(ctx->expr(1), true);
-    cout << "      popq %rbx\n";
-    cout << "      addq $4, %rsp\n";
+    bool isLeftConst = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0)) != nullptr;
+
+    if (isLeftConst)
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(ctx->expr(0))->CONST()->getText()) << ", %eax\n";
+    }
+    else if (dynamic_cast<ifccParser::VarContext *>(ctx->expr(0)))
+    {
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << symbolsTable[dynamic_cast<ifccParser::VarContext *>(ctx->expr(0))->VAR()->getText()] << "(%rbp), %eax\n";
+    }
+    else
+    {
+        visitExpr(ctx->expr(0), true);
+        cout << "      movl %eax,-" << currentTemporaryOffset << "(%rbp)\n";
+        visitExpr(ctx->expr(1), false);
+        cout << "      movl -" << currentTemporaryOffset << "(%rbp), %eax\n";
+    }
 
     string op = ctx->OPC()->getText();
-    cout << "      cmpl %eax, %ebx\n";
+    cout << "      cmpl %ebx, %eax\n";
 
     if (op == "==")
     {
@@ -303,13 +316,13 @@ antlrcpp::Any CodeGenVisitor::visitComp(ifccParser::CompContext *ctx)
     {
         cout << "      setne %al\n";
     }
-    else if (op == "<")
-    {
-        cout << "      setl %al\n";
-    }
     else if (op == ">")
     {
         cout << "      setg %al\n";
+    }
+    else if (op == "<")
+    {
+        cout << "      setl %al\n";
     }
 
     cout << "      movzbl %al, %eax\n";
