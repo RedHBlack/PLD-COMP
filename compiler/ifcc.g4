@@ -9,7 +9,7 @@ statement:  decl_stmt
         |   incrdecr_stmt
         ;
 
-decl_stmt: TYPE VAR (',' VAR)* ('=' expr)? ';' ;
+decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
 assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OPU ';' #post
             |   OPU VAR ';' #pre
