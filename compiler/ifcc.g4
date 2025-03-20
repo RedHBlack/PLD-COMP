@@ -9,7 +9,7 @@ statement:  decl_stmt
         |   incrdecr_stmt
         ;
 
-decl_stmt: TYPE VAR (',' VAR)* ';' ;
+decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
 assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OPU ';' #post
             |   OPU VAR ';' #pre
@@ -25,7 +25,6 @@ expr:   CONST                           #const
     |   expr OP=('+' | '-') expr        #addsub
     |   expr OP=('|' | '&' | '^') expr  #bitBybit 
     |   expr OPC expr                   #comp
-
     ;
 
 OPU:    ('++' | '--');
