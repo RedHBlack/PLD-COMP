@@ -17,7 +17,6 @@ public:
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
-        virtual antlrcpp::Any visitConst(ifccParser::ConstContext *ctx) override;
         virtual antlrcpp::Any visitAddsub(ifccParser::AddsubContext *ctx) override;
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
         virtual antlrcpp::Any visitBitBybit(ifccParser::BitBybitContext *ctx) override;
@@ -31,4 +30,8 @@ protected:
         map<string, int> symbolsTable;
         int currentTemporaryOffset;
         int maxOffset;
+
+private:
+        void saveValueInStack(ifccParser::ExprContext *expr, string varName);
+        void loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr);
 };
