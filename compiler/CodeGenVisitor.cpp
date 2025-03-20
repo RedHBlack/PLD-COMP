@@ -366,7 +366,7 @@ antlrcpp::Any CodeGenVisitor::visitComp(ifccParser::CompContext *ctx)
         currentTemporaryOffset -= 4;
     }
 
-    string op = ctx->OPC()->getText();
+    string op = ctx->OP->getText();
     cout << "   cmpl %ebx, %eax\n";
 
     if (op == "==")
