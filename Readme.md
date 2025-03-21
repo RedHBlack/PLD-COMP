@@ -39,19 +39,35 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Les comparaisons : égalité et inégalité qui renvoient l'équivalent d'un booléen (1 si vrai, 0 si faux)
 - Les déclarations de variables
 
-## Exemples pour chaques fonctionnalités
+## Cas où notre grammaire se comporte différent de gcc
 
-### Les opérations arithmétiques
+### Bit
 
-#### Addition
+- Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
 
-Voici la liste des tests qui passent alors qu'ils ne devraient pas :
+Ce code ne compile donc pas :
 
 ```c
-int main()
-{
-    return 1 + ;
+int main() {
+    int a = 5;
+    return ~a;
 }
 ```
 
-#### Soustraction
+- Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
+
+Ces codes ne compilent donc pas :
+
+```c
+int main() {
+    int a = 5;
+    return a << 2;
+}
+```
+
+```c
+int main() {
+    int a = 5;
+    return a >> 2;
+}
+```
