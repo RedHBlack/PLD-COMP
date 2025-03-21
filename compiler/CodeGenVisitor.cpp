@@ -60,57 +60,29 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
 
 antlrcpp::Any CodeGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
-    // On parcourt les enfants de la déclaration
-    // La grammaire est : TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';'
-    // On va donc examiner chaque enfant afin de repérer les variables et vérifier si elles ont un "=" juste après.
-    for (size_t i = 0; i < ctx->children.size(); i++)
-    {
-        // On teste si l'enfant est un token (TerminalNode) et correspond à une variable
-        auto terminal = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
-        if (terminal != nullptr && terminal->getSymbol()->getType() == ifccParser::VAR)
-        {
-            string var = terminal->getText();
-            int index = symbolsTable[var];
+    int exprIndex = 0;
 
-            // Vérifier si le prochain enfant existe et est le token "="
+    for (int i = 0; i < ctx->children.size(); i++)
+    {
+        antlr4::tree::TerminalNode *var = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
+
+        if (var && var->getSymbol()->getType() == ifccParser::VAR)
+        {
             if (i + 1 < ctx->children.size())
             {
-                auto nextChild = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
-                if (nextChild != nullptr && nextChild->getText() == "=")
-                {
-                    // L'initialiseur est associé à cette variable.
-                    // On récupère l'expression correspondante.
-                    // Dans le parse tree, les expressions initialisatrices sont collectées dans ctx->expr()
-                    // dans l'ordre où elles apparaissent.
-                    // On peut utiliser un compteur séparé pour parcourir ces expressions.
-                    static int exprIndex = 0; // attention : si la visite est réutilisée ailleurs, mieux vaut déclarer exprIndex en variable locale à la fonction
-                    if (exprIndex < ctx->expr().size())
-                    {
-                        ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
-                        exprIndex++; // passe à l'initialiseur suivant pour la prochaine variable
+                antlr4::tree::TerminalNode *nextChild = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
 
-                        // Traitement selon que l'initialiseur est une constante ou une variable
-                        if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(exprCtx))
-                        {
-                            int valeur = stoi(constCtx->getText());
-                            std::cout << "   movl    $" << valeur << ", " << index << "(%rbp)\n";
-                        }
-                        else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
-                        {
-                            std::string var2 = varCtx->getText();
-                            int index2 = symbolsTable[var2];
-                            std::cout << "   movl    " << index2 << "(%rbp), %eax\n";
-                            std::cout << "   movl    %eax, " << index << "(%rbp)\n";
-                        }
-                        // Si d'autres types d'expressions doivent être traités, les ajouter ici.
-                    }
+                if (nextChild && nextChild->getText() == "=")
+                {
+                    saveValueInStack(ctx->expr(exprIndex), var->getText());
+                    exprIndex++;
                 }
             }
         }
     }
+
     return 0;
 }
-
 antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
 
