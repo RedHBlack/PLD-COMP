@@ -45,34 +45,13 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 
 #### Addition
 
-Code qui fonctionnent :
+Voici la liste des tests qui passent alors qu'ils ne devraient pas :
 
 ```c
-int main() {
-    return 1 + 2;
+int main()
+{
+    return 1 + ;
 }
 ```
 
-```c
-int main() {
-    int a;
-    int b;
-    a = 1;
-    b = 2;
-    return a + b;
-}
-```
-
-Code qui ne fonctionnent pas :
-
-```c
-int main() {
-    return 1 +;
-}
-```
-
-```c
-int main() {
-    return + 1;
-}
-```
+#### Soustraction
