@@ -52,21 +52,25 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infini lors du lancement du script python. Nous remarquons donc qu'il y a un probleme mais nous n'allons pas le corriger pour le moment.
   Aucun test sur la division par 0 n'est donc effectué dans le repertoire `./testfiles/arithmetic/div`.
 
-#### Soustraction
+### Soustraction
 
-#### Declaration
+### Declaration
 
 - Durant nos tests, nous avons remarqué que la déclaration d'une variable nommée uniquement par un numéro passe avec notre compilateur, mais pas avec GCC.
 
-- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée, pouvant entraîner un comportement imprévisible.
+- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée. C'est pour cette raison que le test ne passe pas en comparant les valeurs de sorties de `a`.
 
-#### Comparaison
+- L'affectation multiple sur la même ligne n'est pas acceptée par notre compilateur.
 
-- Ce test vérifie le comportement de l'incrémentation postfixée (a++) lorsqu'elle est utilisée dans une comparaison. L'opérateur ++ en mode postfixe retourne d'abord la valeur actuelle de a (5), puis l'incrémente après l'évaluation de l'expression. La comparaison 5 == 5 est donc vraie.
+### Affectation de variable
 
-- Ce test évalue l'effet de l'incrémentation préfixée (++a) lorsqu'elle est utilisée dans une comparaison. Contrairement à la version postfixée, l'opérateur préfixé incrémente d'abord a avant de retourner sa nouvelle valeur. Ainsi, a passe à 6, et la comparaison 6 == 6 est vraie.
+- Notre compilateur permet d'initialiser une variable non déclarée.
+- Notre compilateur permet d'utiliser une variable non déclarée en l'affectant à une variable déclarée.
+- Notre compilateur n'accepte pas l'affectation de la variable au return.
 
-- Ce test examine le comportement du compilateur lorsqu'une variable non déclarée (b) est utilisée dans une expression. La comparaison b == 2 ne peut pas être évaluée car b n'a pas été définie auparavant, ce qui devrait entraîner une erreur de compilation.
+### Comparaison
+
+- Notre compilateur accepte la comparaison avec une variable qui n'est ni déclarée ni initialisée.
 
 ### Mod
 
