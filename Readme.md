@@ -55,3 +55,40 @@ int main()
 ```
 
 #### Soustraction
+
+#### Declaration
+
+```c
+int main()
+{
+   int 0;
+   return 0;
+}
+```
+
+#### Comparaison
+
+```c
+int main()
+{
+    int a = 5;
+    return (a++ == 5);
+}
+```
+
+```c
+int main()
+{
+    int a = 5;
+    return (++a == 6);
+}
+```
+
+```c
+int main()
+{
+    int a;
+    a = (b == 2);
+    return a;
+}
+```
