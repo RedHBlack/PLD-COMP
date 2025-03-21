@@ -39,56 +39,35 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Les comparaisons : égalité et inégalité qui renvoient l'équivalent d'un booléen (1 si vrai, 0 si faux)
 - Les déclarations de variables
 
-## Exemples pour chaques fonctionnalités
+## Cas où notre grammaire se comporte différent de gcc
 
-### Les opérations arithmétiques
+### Bit
 
-#### Addition
+- Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
 
-Voici la liste des tests qui passent alors qu'ils ne devraient pas :
+- Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
 
-```c
-int main()
-{
-    return 1 + ;
-}
-```
+### Div
+
+- Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infini lors du lancement du script python. Nous remarquons donc qu'il y a un probleme mais nous n'allons pas le corriger pour le moment.
+  Aucun test sur la division par 0 n'est donc effectué dans le repertoire `./testfiles/arithmetic/div`.
 
 #### Soustraction
 
 #### Declaration
 
-```c
-int main()
-{
-   int 0;
-   return 0;
-}
-```
+- Durant nos tests, nous avons remarqué que la déclaration d'une variable nommée uniquement par un numéro passe avec notre compilateur, mais pas avec GCC.
+
+- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée, pouvant entraîner un comportement imprévisible.
 
 #### Comparaison
 
-```c
-int main()
-{
-    int a = 5;
-    return (a++ == 5);
-}
-```
+- Ce test vérifie le comportement de l'incrémentation postfixée (a++) lorsqu'elle est utilisée dans une comparaison. L'opérateur ++ en mode postfixe retourne d'abord la valeur actuelle de a (5), puis l'incrémente après l'évaluation de l'expression. La comparaison 5 == 5 est donc vraie.
 
-```c
-int main()
-{
-    int a = 5;
-    return (++a == 6);
-}
-```
+- Ce test évalue l'effet de l'incrémentation préfixée (++a) lorsqu'elle est utilisée dans une comparaison. Contrairement à la version postfixée, l'opérateur préfixé incrémente d'abord a avant de retourner sa nouvelle valeur. Ainsi, a passe à 6, et la comparaison 6 == 6 est vraie.
 
-```c
-int main()
-{
-    int a;
-    a = (b == 2);
-    return a;
-}
-```
+- Ce test examine le comportement du compilateur lorsqu'une variable non déclarée (b) est utilisée dans une expression. La comparaison b == 2 ne peut pas être évaluée car b n'a pas été définie auparavant, ce qui devrait entraîner une erreur de compilation.
+
+### Mod
+
+- De même que pour la division, le modulo par 0 boucle à l'infini. Nous n'avons donc pas effectué de test sur le modulo par 0 dans le repertoire `./testfiles/arithmetic/mod`.
