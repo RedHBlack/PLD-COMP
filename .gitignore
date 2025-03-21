@@ -3,6 +3,7 @@
 
 ### VisualStudioCode ###
 .vscode/*
+.vscode
 
 # Local History for Visual Studio Code
 .history/
@@ -26,5 +27,5 @@ ifcc-test-output/
 ifcc
 
 ifcc-test.py
-
 .DS_Store
+ifcc-wrapper.sh

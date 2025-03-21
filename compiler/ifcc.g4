@@ -9,21 +9,22 @@ statement:  decl_stmt
         |   incrdecr_stmt
         ;
 
-decl_stmt: TYPE VAR (',' VAR)* ';' ;
+decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
 assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OPU ';' #post
             |   OPU VAR ';' #pre
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   CONST                           #const
-    |   VAR                             #var
-    |   '!' expr                        #not
-    |   '(' expr ')'                    #par
-    |   '-' expr                        #neg
-    |   expr OP=('*' | '/' | '%') expr  #muldiv
-    |   expr OP=('+' | '-') expr        #addsub
-    |   expr OP=('|' | '&' | '^') expr  #bitBybit 
+expr:   CONST                                   #const
+    |   VAR                                     #var
+    |   '!' expr                                #not
+    |   '(' expr ')'                            #par
+    |   '-' expr                                #neg
+    |   expr OP=('*' | '/' | '%') expr          #muldiv
+    |   expr OP=('+' | '-') expr                #addsub
+    |   expr OP=('|' | '&' | '^') expr          #bitBybit 
+    |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
     ;
 
 OPU:    ('++' | '--');
