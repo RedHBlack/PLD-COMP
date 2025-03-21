@@ -277,8 +277,7 @@ void CodeGenVisitor::saveValueInStack(ifccParser::ExprContext *ctx, string varNa
 
     if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx))
     {
-        const int value = stoi(constCtx->getText());
-        cout << "   movl $" << value << ", " << offsetVarInStack << "(%rbp)\n";
+        cout << "   movl $" << constCtx->CONST()->getText() << ", " << offsetVarInStack << "(%rbp)\n";
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx))
     {
@@ -299,12 +298,12 @@ void CodeGenVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser
     if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(leftExpr))
     {
         visitExpr(rightExpr, false);
-        cout << "   movl $" << stoi(dynamic_cast<ifccParser::ConstContext *>(leftExpr)->CONST()->getText()) << ", %eax\n";
+        cout << "   movl $" << constCtx->CONST()->getText() << ", %eax\n";
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(leftExpr))
     {
         visitExpr(rightExpr, false);
-        cout << "   movl " << this->symbolsTable[dynamic_cast<ifccParser::VarContext *>(leftExpr)->VAR()->getText()] << "(%rbp), %eax\n";
+        cout << "   movl " << this->symbolsTable[varCtx->VAR()->getText()] << "(%rbp), %eax\n";
     }
     else
     {
