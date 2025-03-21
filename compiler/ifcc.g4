@@ -24,7 +24,7 @@ expr:   CONST                                   #const
     |   expr OP=('*' | '/' | '%') expr          #muldiv
     |   expr OP=('+' | '-') expr                #addsub
     |   expr OP=('|' | '&' | '^') expr          #bitBybit 
-    |   expr OP=('==' | '!=' | '<' | '>' ) expr #comp
+    |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
     ;
 
 OPU:    ('++' | '--');

@@ -265,6 +265,14 @@ antlrcpp::Any CodeGenVisitor::visitComp(ifccParser::CompContext *ctx)
     {
         cout << "   setl %al\n";
     }
+    else if (op == ">=")
+    {
+        cout << "   setge %al\n";
+    }
+    else if (op == "<=")
+    {
+        cout << "   setle %al\n";
+    }
 
     cout << "   movzbl %al, %eax\n";
 
