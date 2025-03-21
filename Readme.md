@@ -52,6 +52,24 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infini lors du lancement du script python. Nous remarquons donc qu'il y a un probleme mais nous n'allons pas le corriger pour le moment.
   Aucun test sur la division par 0 n'est donc effectué dans le repertoire `./testfiles/arithmetic/div`.
 
+Noys avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+
 ### Mod
 
 - De même que pour la division, le modulo par 0 boucle à l'infini. Nous n'avons donc pas effectué de test sur le modulo par 0 dans le repertoire `./testfiles/arithmetic/mod`.
+
+Nous avons placé le test du modulo par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+
+### Multiple operations
+
+- Le test n°6 nommée `6_multiple_operations.c` est un test qui effectue plusieurs opérations arithmétiques complexes. Ce test est censé fonctionné mais ne fonctionne pas. En effet il renvoie un exit status différent de celui de gcc mais nous ne comprenons pas vraiment pourquoi. Nous avons effectué des tests pas à pas et nous avons donc remarqué que l'erreur était générée lors de l'ajout des parenthèses ce qui implique un problème dans la gestion des priorités des opérations arithmétiques.
+
+### Not
+
+- A posteriori, ce test
+
+```c
+return !(!(1 == 0) || (1 > 0));
+```
+
+devrait fonctionner. Cependant actuellement nous n'avons pas encore implémenté les ou exclusif `||` et et exclusif `&&`. Nous avons donc décidé de ne pas implémenter ce test pour le moment mais sommes conscient qu'il serait utile de les implémenter dans un second temps.
