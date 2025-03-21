@@ -45,29 +45,13 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 
 - Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
 
-Ce code ne compile donc pas :
-
-```c
-int main() {
-    int a = 5;
-    return ~a;
-}
-```
-
 - Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
 
-Ces codes ne compilent donc pas :
+### Div
 
-```c
-int main() {
-    int a = 5;
-    return a << 2;
-}
-```
+- Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infini lors du lancement du script python. Nous remarquons donc qu'il y a un probleme mais nous n'allons pas le corriger pour le moment.
+  Aucun test sur la division par 0 n'est donc effectué dans le repertoire `./testfiles/arithmetic/div`.
 
-```c
-int main() {
-    int a = 5;
-    return a >> 2;
-}
-```
+### Mod
+
+- De même que pour la division, le modulo par 0 boucle à l'infini. Nous n'avons donc pas effectué de test sur le modulo par 0 dans le repertoire `./testfiles/arithmetic/mod`.
