@@ -48,7 +48,43 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
                 }
                 isUsed[varRight] = true;
             }
+            // Sinon, on visite l'expression pour marquer les variables utilisées
+            else 
+            {
+                visitExpr(exprCtx);
+            }
             exprIndex++;
+        }
+    }
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *ctx)
+{
+    if (auto constCtx = dynamic_cast<ifccParser::ConstContext*>(ctx))
+    {
+        return 0;
+    }
+    else if (auto varCtx = dynamic_cast<ifccParser::VarContext*>(ctx))
+    {
+        string varRight = varCtx->getText();
+        if (symbolsTable.find(varRight) == symbolsTable.end())
+        {
+            cout << "#WARNING : The variable " << varRight << " is not declared." << std::endl;
+        }
+        isUsed[varRight] = true;
+    }
+    else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext*>(ctx))
+    {
+        if (auto varCtx = dynamic_cast<ifccParser::VarContext*>(assignCtx->VAR()))
+        {
+            string varRight = varCtx->getText();
+            visit(assignCtx->expr());
+            if (symbolsTable.find(varRight) == symbolsTable.end())
+            {
+                cout << "#WARNING : The variable " << varRight << " is not declared." << std::endl;
+            }
+            isUsed[varRight] = true;
         }
     }
     return 0;

@@ -12,6 +12,7 @@ public:
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
+        virtual antlrcpp::Any visitExpr(ifccParser::ExprContext *ctx);
         map<string, int> getSymbolsTable() const { return symbolsTable; }
         map<string, bool> getIsUsed() const { return isUsed; }
         int getCurrentOffset() const { return currentOffset; }
