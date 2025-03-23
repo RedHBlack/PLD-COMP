@@ -5,7 +5,7 @@
  * @brief Constructor for the IRInstrMove instruction.
  */
 IRInstrMove::IRInstrMove(BasicBlock *bb_, string src, string dest)
-    : IRInstrBinaryOp(bb_, src, dest)
+    : BaseIRInstr(bb_), src(src), dest(dest)
 {
 }
 

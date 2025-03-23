@@ -13,7 +13,7 @@ using namespace std;
  *
  * This class handles data transfers between registers and the stack but does not manage constants.
  */
-class IRInstrMove : public IRInstrBinaryOp
+class IRInstrMove : public BaseIRInstr
 {
 public:
     /**
@@ -31,4 +31,6 @@ public:
     virtual void gen_asm(ostream &o) override;
 
 private:
+    string src;
+    string dest;
 };

@@ -2,32 +2,62 @@
 
 void IRInstrComp::gen_asm(ostream &o)
 {
-    o << "   cmpl " << src << ", " << dest << "\n";
+    o << "   cmpl " << firstOp << ", " << secondOp << "\n";
 
     if (op == "==")
     {
-        o << "   sete %al\n";
+        handleCompEq(o);
     }
     else if (op == "!=")
     {
-        o << "   setne %al\n";
+        handleCompNotEq(o);
     }
     else if (op == ">")
     {
-        o << "   setg %al\n";
-    }
-    else if (op == "<")
-    {
-        o << "   setl %al\n";
+        handleGreater(o);
     }
     else if (op == ">=")
     {
-        o << "   setge %al\n";
+        handleGreaterOrEqual(o);
+    }
+    else if (op == "<")
+    {
+        handleLower(o);
     }
     else if (op == "<=")
     {
-        o << "   setle %al\n";
+        handleLowerOrEqual(o);
     }
 
-    o << "   movzbl %al," << dest << "\n";
+    o << "   movzbl %al," << secondOp << "\n";
+}
+
+void IRInstrComp::handleCompEq(ostream &o)
+{
+    o << "   sete %al\n";
+}
+
+void IRInstrComp::handleCompNotEq(ostream &o)
+{
+    o << "   setne %al\n";
+}
+
+void IRInstrComp::handleGreater(ostream &o)
+{
+    o << "   setg %al\n";
+}
+
+void IRInstrComp::handleGreaterOrEqual(ostream &o)
+{
+    o << "   setge %al\n";
+}
+
+void IRInstrComp::handleLower(ostream &o)
+{
+    o << "   setl %al\n";
+}
+
+void IRInstrComp::handleLowerOrEqual(ostream &o)
+{
+    o << "   setle %al\n";
 }
