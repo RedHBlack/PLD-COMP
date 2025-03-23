@@ -1,17 +1,8 @@
 #include "IR/Instr/IRInstrLoadConst.h"
 #include "IR/Instr/IRInstrMove.h"
-#include "IR/Instr/IRInstrAdd.h"
-#include "IR/Instr/IRInstrSub.h"
-#include "IR/Instr/IRInstrMult.h"
-#include "IR/Instr/IRInstrDiv.h"
-#include "IR/Instr/IRInstrMod.h"
-#include "IR/Instr/IRInstrMove.h"
-#include "IR/Instr/IRInstrNot.h"
-#include "IR/Instr/IRInstrNeg.h"
+#include "IR/Instr/IRInstrArithmeticOp.h"
+#include "IR/Instr/IRInstrUnaryOp.h"
 #include "IR/Instr/IRInstrComp.h"
-#include "IR/Instr/IRInstrAnd.h"
-#include "IR/Instr/IRInstrOr.h"
-#include "IR/Instr/IRInstrXor.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -125,127 +116,23 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
 
 antlrcpp::Any IRVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
-    const char op = ctx->OP->getText()[0];
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
 
-    loadRegisters(ctx->expr(0), ctx->expr(1));
-
-    if (op == '+')
-    {
-        currentBB->add_IRInstr(new IRInstrAdd(currentBB, "%ebx", "%eax"));
-    }
-    else if (op == '-')
-    {
-        currentBB->add_IRInstr(new IRInstrSub(currentBB, "%ebx", "%eax"));
-    }
+    handleArithmeticOp(ctx->expr(0), ctx->expr(1), ctx->OP->getText());
 
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    const char op = ctx->OP->getText()[0];
 
-    loadRegisters(ctx->expr(0), ctx->expr(1));
-
-    switch (op)
-    {
-    case '*':
-        currentBB->add_IRInstr(new IRInstrMult(currentBB, "%ebx", "%eax"));
-        break;
-    case '/':
-        currentBB->add_IRInstr(new IRInstrDiv(currentBB, "%ebx", "%eax"));
-        break;
-    case '%':
-        currentBB->add_IRInstr(new IRInstrMod(currentBB, "%ebx", "%eax"));
-        break;
-    }
+    handleArithmeticOp(ctx->expr(0), ctx->expr(1), ctx->OP->getText());
 
     return 0;
 }
 
-antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+antlrcpp::Any IRVisitor::visitBitwise(ifccParser::BitwiseContext *ctx)
 {
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-
-    const char op = ctx->OPU()->getText()[0];
-    const int offsetVar = this->currentCFG->get_var_index(ctx->VAR()->getText());
-
-    switch (op)
-    {
-    case '+':
-        currentBB->add_IRInstr(new IRInstrAdd(currentBB, "%ebx", "%eax"));
-        break;
-    case '-':
-        currentBB->add_IRInstr(new IRInstrSub(currentBB, "%ebx", "%eax"));
-        break;
-    }
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
-{
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-
-    const char op = ctx->OPU()->getText()[0];
-    const int offsetVar = this->currentCFG->get_var_index(ctx->VAR()->getText());
-
-    switch (op)
-    {
-    case '+':
-        currentBB->add_IRInstr(new IRInstrAdd(currentBB, "%ebx", "%eax"));
-        break;
-    case '-':
-        currentBB->add_IRInstr(new IRInstrSub(currentBB, "%ebx", "%eax"));
-        break;
-    }
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitNot(ifccParser::NotContext *ctx)
-{
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    visitExpr(ctx->expr(), true);
-
-    currentBB->add_IRInstr(new IRInstrNot(currentBB, "%eax"));
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitNeg(ifccParser::NegContext *ctx)
-{
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    visitExpr(ctx->expr(), true);
-
-    currentBB->add_IRInstr(new IRInstrNeg(currentBB, "%eax"));
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitBitBybit(ifccParser::BitBybitContext *ctx)
-{
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    const char op = ctx->OP->getText()[0];
-
-    loadRegisters(ctx->expr(0), ctx->expr(1));
-
-    switch (op)
-    {
-    case '&':
-        currentBB->add_IRInstr(new IRInstrAnd(currentBB, "%ebx", "%eax"));
-
-        break;
-    case '|':
-        currentBB->add_IRInstr(new IRInstrOr(currentBB, "%ebx", "%eax"));
-
-        break;
-    case '^':
-        currentBB->add_IRInstr(new IRInstrXor(currentBB, "%ebx", "%eax"));
-        break;
-    }
+    handleArithmeticOp(ctx->expr(0), ctx->expr(1), ctx->OP->getText());
 
     return 0;
 }
@@ -258,6 +145,43 @@ antlrcpp::Any IRVisitor::visitComp(ifccParser::CompContext *ctx)
     loadRegisters(ctx->expr(0), ctx->expr(1));
 
     currentBB->add_IRInstr(new IRInstrComp(currentBB, "%ebx", "%eax", op));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitUnary(ifccParser::UnaryContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText();
+
+    visitExpr(ctx->expr(), true);
+
+    currentBB->add_IRInstr(new IRInstrUnaryOp(currentBB, "%eax", op));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText();
+    const int offsetVar = this->currentCFG->get_var_index(ctx->VAR()->getText());
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", ctx->VAR()->getText(), op[0] + ""));
+
+    return 0;
+}
+
+// INVALID
+antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    const string op = ctx->OP->getText();
+
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
 
     return 0;
 }
@@ -314,6 +238,15 @@ void IRVisitor::gen_asm(ostream &o)
 void IRVisitor::setCurrentCFG(CFG *currentCFG)
 {
     this->currentCFG = currentCFG;
+}
+
+void IRVisitor::handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(leftExpr, rightExpr);
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", op));
 }
 
 CFG *IRVisitor::getCurrentCFG()
