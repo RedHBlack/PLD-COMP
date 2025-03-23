@@ -49,6 +49,11 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     {
         currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), "%eax"));
     }
+    else if (ctx->assign_stmt())
+    {
+        visit(ctx->assign_stmt());
+        currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->assign_stmt()->VAR()->getText(), "%eax"));
+    }
     else
     {
         visitExpr(exprCtx, true);

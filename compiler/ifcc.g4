@@ -14,17 +14,17 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
-return_stmt: RETURN expr ';' ;
+return_stmt: RETURN (expr ';'| assign_stmt) ;
 
-expr:   CONST                                   #const
-    |   VAR                                     #var
-    |   '(' expr ')'                            #par
-    |   VAR OP=('++' | '--')                    #post
-    |   OP=('++' | '--') VAR                    #pre
-    |   OP=('!' | '-' | '~') expr               #unary
-    |   expr OP=('*' | '/' | '%') expr          #muldiv
-    |   expr OP=('+' | '-') expr                #addsub
-    |   expr OP=('|' | '&' | '^') expr          #bitwise
+expr:   CONST                                               #const
+    |   VAR                                                 #var
+    |   '(' expr ')'                                        #par
+    |   VAR OP=('++' | '--')                                #post
+    |   OP=('++' | '--') VAR                                #pre
+    |   OP=('!' | '-' | '~') expr                           #unary
+    |   expr OP=('*' | '/' | '%') expr                      #muldiv
+    |   expr OP=('+' | '-') expr                            #addsub
+    |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
     ;
 

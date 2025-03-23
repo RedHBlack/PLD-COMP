@@ -2,7 +2,15 @@
 
 antlrcpp::Any CodeCheckVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    visitExpr(ctx->expr());
+    if (ctx->assign_stmt())
+    {
+        visit(ctx->assign_stmt());
+    }
+    else
+    {
+        visitExpr(ctx->expr());
+    }
+
     return 0;
 }
 
