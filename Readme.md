@@ -41,6 +41,7 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Les comparaisons : égalité et inégalité qui renvoient l'équivalent d'un booléen (1 si vrai, 0 si faux)
 - Les déclarations de variables
 
+
 ## Cas où notre grammaire se comporte différent de gcc
 
 ### Bit
@@ -48,6 +49,8 @@ Actuellement nous avons implémenté les fonctionnalités suivantes :
 - Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
 
 - Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
+
+-Notre grammaire ne fait pas de return 0 par défaut.
 
 ### Div
 
@@ -82,7 +85,7 @@ devrait fonctionner. Cependant actuellement nous n'avons pas encore implémenté
 
 - Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée. C'est pour cette raison que le test ne passe pas en comparant les valeurs de sorties de `a`.
 
-- L'affectation multiple sur la même ligne n'est pas acceptée par notre compilateur.
+- L'affectation multiple sur la même ligne est acceptée par notre compilateur.
 
 ### Operation postfix & prefix
 
@@ -111,6 +114,7 @@ A posteriori, nous souhaitons que ce type de tests fonctionne et nous allons don
 - Notre compilateur permet d'initialiser une variable non déclarée.
 - Notre compilateur permet d'utiliser une variable non déclarée en l'affectant à une variable déclarée.
 - Notre compilateur n'accepte pas l'affectation de la variable au return.
+-Notre compilateur permet une affectation en cascade sur la même ligne.
 
 ### Comparaison
 
