@@ -18,6 +18,9 @@ class IRInstrMove : public BaseIRInstr
 public:
     /**
      * @brief Constructor for the IRInstrMove instruction.
+     *
+     * Initializes the instruction with the basic block, source, and destination variables.
+     *
      * @param bb_ Pointer to the basic block containing this instruction.
      * @param src The name of the source variable (register or memory location).
      * @param dest The name of the destination variable (register or memory location).
@@ -26,11 +29,18 @@ public:
 
     /**
      * @brief Generates the assembly code corresponding to the move instruction.
-     * @param o Output stream where the assembly code is written.
+     *
+     * This method generates the appropriate assembly code for moving a value from the source variable to
+     * the destination variable.
+     *
+     * @param o Output stream where the assembly code will be written.
      */
     virtual void gen_asm(ostream &o) override;
 
 private:
+    // The source variable (register or memory location).
     string src;
+
+    // The destination variable (register or memory location).
     string dest;
 };

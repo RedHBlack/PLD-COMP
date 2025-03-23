@@ -9,32 +9,210 @@
 
 using namespace std;
 
+/**
+ * @brief A visitor class for generating Intermediate Representation (IR) during parsing.
+ *
+ * This class extends the `ifccBaseVisitor` and is responsible for traversing the parsed code to
+ * generate the Intermediate Representation (IR), such as the Control Flow Graph (CFG), for
+ * the code being compiled.
+ */
 class IRVisitor : public ifccBaseVisitor
 {
 public:
+        /**
+         * @brief Constructs an IRVisitor.
+         *
+         * Initializes the IRVisitor with a symbols table and base stack offset.
+         *
+         * @param symbolsTable A map containing variable names and their associated stack offsets.
+         * @param baseStackOffset The base offset for the stack.
+         */
         IRVisitor(map<string, int> symbolsTable, int baseStackOffset);
+
+        /**
+         * @brief Visits the program and starts the IR generation process.
+         *
+         * This method starts the process of visiting the program node, generating the IR for the entire program.
+         *
+         * @param ctx The context of the program.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+
+        /**
+         * @brief Visits a return statement and generates the IR.
+         *
+         * This method processes return statements and generates the corresponding IR for the return operation.
+         *
+         * @param ctx The context of the return statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits an assignment statement and generates the IR.
+         *
+         * This method processes assignment statements and generates the corresponding IR for the variable assignment.
+         *
+         * @param ctx The context of the assignment statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a declaration statement and generates the IR.
+         *
+         * This method processes declaration statements and generates the corresponding IR for the variable declaration.
+         *
+         * @param ctx The context of the declaration statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits an expression and generates the IR.
+         *
+         * This method processes expressions and generates the corresponding IR for the expression.
+         *
+         * @param expr The expression context to generate IR for.
+         * @param isFirst A flag indicating whether this is the first expression in a sequence.
+         * @return A result of the visit, typically unused.
+         */
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
+
+        /**
+         * @brief Visits an addition or subtraction expression and generates the IR.
+         *
+         * This method processes addition and subtraction operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the addition or subtraction expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitAddsub(ifccParser::AddsubContext *ctx) override;
+
+        /**
+         * @brief Visits a multiplication or division expression and generates the IR.
+         *
+         * This method processes multiplication and division operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the multiplication or division expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
+
+        /**
+         * @brief Visits a bitwise operation expression and generates the IR.
+         *
+         * This method processes bitwise operations like AND, OR, XOR, etc., and generates the corresponding IR.
+         *
+         * @param ctx The context of the bitwise operation expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitBitwise(ifccParser::BitwiseContext *ctx) override;
+
+        /**
+         * @brief Visits a comparison expression and generates the IR.
+         *
+         * This method processes comparison operations (e.g., equality, greater-than) and generates the corresponding IR.
+         *
+         * @param ctx The context of the comparison expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitComp(ifccParser::CompContext *ctx) override;
+
+        /**
+         * @brief Visits a unary expression and generates the IR.
+         *
+         * This method processes unary operations (e.g., negation or logical NOT) and generates the corresponding IR.
+         *
+         * @param ctx The context of the unary expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
+
+        /**
+         * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.
+         *
+         * This method processes pre-unary operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the pre-unary expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
+
+        /**
+         * @brief Visits a post-unary operation (e.g., postfix increment/decrement) and generates the IR.
+         *
+         * This method processes post-unary operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the post-unary expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
+
+        /**
+         * @brief Generates the assembly code for the IR.
+         *
+         * This method generates assembly code from the Intermediate Representation (IR) for output.
+         *
+         * @param o The output stream where the assembly code will be written.
+         */
         void gen_asm(ostream &o);
+
+        /**
+         * @brief Sets the current control flow graph (CFG).
+         *
+         * This method sets the current CFG that is being used for the IR generation.
+         *
+         * @param currentCFG A pointer to the current CFG.
+         */
         void setCurrentCFG(CFG *currentCFG);
+
+        /**
+         * @brief Retrieves the current control flow graph (CFG).
+         *
+         * This method retrieves the current CFG that is being used for the IR generation.
+         *
+         * @return A pointer to the current CFG.
+         */
         CFG *getCurrentCFG();
 
 protected:
+        /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
+
+        /// The current control flow graph (CFG) being used.
         CFG *currentCFG;
 
 private:
+        /**
+         * @brief Assigns a value to a variable.
+         *
+         * This method assigns a value to the given variable name by generating the corresponding IR.
+         *
+         * @param expr The expression that provides the value to assign.
+         * @param varName The name of the variable to assign the value to.
+         */
         void assignValueToVar(ifccParser::ExprContext *expr, string varName);
+
+        /**
+         * @brief Loads registers with values from expressions.
+         *
+         * This method loads values from expressions into registers for further processing.
+         *
+         * @param leftExpr The left expression in the assignment or operation.
+         * @param rightExpr The right expression in the assignment or operation.
+         */
         void loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr);
+
+        /**
+         * @brief Handles arithmetic operations (addition, subtraction, etc.).
+         *
+         * This method handles the generation of IR for arithmetic operations (e.g., addition, subtraction).
+         *
+         * @param leftExpr The left operand of the arithmetic operation.
+         * @param rightExpr The right operand of the arithmetic operation.
+         * @param op The operation to perform (e.g., "+" or "-").
+         */
         void handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op);
 };

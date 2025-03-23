@@ -14,6 +14,10 @@ class IRInstrLoadConst : public BaseIRInstr
 public:
     /**
      * @brief Constructor for the IRInstrLoadConst instruction.
+     *
+     * Initializes the instruction with the basic block, the constant value to load, and the destination
+     * register or memory variable where the value should be stored.
+     *
      * @param bb_ Pointer to the basic block containing this instruction.
      * @param value The constant value to load.
      * @param dest The name of the target register or memory variable.
@@ -22,11 +26,17 @@ public:
 
     /**
      * @brief Generates assembly code to load a constant.
-     * @param o Output stream where the assembly code is written.
+     *
+     * Generates assembly code for loading a constant value into a register or memory.
+     *
+     * @param o Output stream where the assembly code will be written.
      */
     virtual void gen_asm(ostream &o) override;
 
 private:
-    int value;   /**< The constant value to load. */
-    string dest; /**< Name of the destination variable. */
+    // The constant value to load
+    int value;
+
+    // Name of the destination register or memory variable.
+    string dest;
 };
