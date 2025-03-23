@@ -65,13 +65,26 @@ void CFG::gen_cfg_graphviz(ostream &o)
 
     for (BasicBlock *bb : bbs)
     {
+
         stringstream label;
+
         label << "{ " + bb->getLabel() + " | ";
 
         for (BaseIRInstr *instr : bb->getInstr())
         {
-            instr->gen_asm(label);
-            label << " \\l ";
+            stringstream temp;
+            instr->gen_asm(temp);
+
+            string instrStr = temp.str();
+
+            int pos = 0;
+            while ((pos = instrStr.find('\n', pos)) != string::npos)
+            {
+                instrStr.replace(pos, 1, " \\l");
+                pos += 4;
+            }
+
+            label << instrStr;
         }
         label << "}";
 
