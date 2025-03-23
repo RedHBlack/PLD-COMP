@@ -16,15 +16,16 @@ incrdecr_stmt:  VAR OPU ';' #post
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   CONST                                   #const
-    |   VAR                                     #var
-    |   '!' expr                                #not
+expr:   '!' expr                                #not
     |   '(' expr ')'                            #par
     |   '-' expr                                #neg
     |   expr OP=('*' | '/' | '%') expr          #muldiv
     |   expr OP=('+' | '-') expr                #addsub
     |   expr OP=('|' | '&' | '^') expr          #bitBybit 
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
+    |   VAR '=' expr                            #assign
+    |   CONST                                   #const
+    |   VAR                                     #var
     ;
 
 OPU:    ('++' | '--');

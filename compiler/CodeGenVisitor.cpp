@@ -1,5 +1,6 @@
 #include "CodeGenVisitor.h"
 #include <iostream>
+#include <typeinfo>
 
 using namespace std;
 
@@ -61,28 +62,26 @@ antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *c
 antlrcpp::Any CodeGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     int exprIndex = 0;
-
-    for (int i = 0; i < ctx->children.size(); i++)
-    {
-        antlr4::tree::TerminalNode *var = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
-
-        if (var && var->getSymbol()->getType() == ifccParser::VAR)
-        {
-            if (i + 1 < ctx->children.size())
-            {
-                antlr4::tree::TerminalNode *nextChild = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
-
-                if (nextChild && nextChild->getText() == "=")
-                {
-                    saveValueInStack(ctx->expr(exprIndex), var->getText());
+    // Parcourir tous les enfants du nœud de déclaration
+    for (size_t i = 0; i < ctx->children.size(); i++) {
+        // On cherche un token de type VAR
+        auto varNode = dynamic_cast<antlr4::tree::TerminalNode*>(ctx->children[i]);
+        if (varNode && varNode->getSymbol()->getType() == ifccParser::VAR) {
+            string varName = varNode->getText();
+            // Vérifier si le token suivant est "="
+            if (i + 1 < ctx->children.size()) {
+                auto nextNode = dynamic_cast<antlr4::tree::TerminalNode*>(ctx->children[i + 1]);
+                if (nextNode && nextNode->getText() == "=") {
+                    // La variable a bien un initialiseur, on utilise ctx->expr(exprIndex)
+                    saveValueInStack(ctx->expr(exprIndex), varName);
                     exprIndex++;
                 }
             }
         }
     }
-
     return 0;
 }
+
 antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
 
@@ -90,6 +89,25 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
 
     return 0;
 }
+
+
+antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx) {
+    // Vérifier si l'expression droite est elle-même une assignation
+    if (auto innerAssign = dynamic_cast<ifccParser::AssignContext*>(ctx->expr())) {
+        // On gère l'assignation la plus à droite en premier
+        visitAssign(innerAssign);
+    } else {
+        // Sinon, on évalue l'expression (par exemple, une constante)
+        visitExpr(ctx->expr(),true);
+    }
+    // Maintenant, on effectue l'affectation pour la variable de gauche
+    string varName = ctx->VAR()->getText();
+    int offset = this->symbolsTable[varName];
+    cout << "   movl %eax, " << offset << "(%rbp)\n";
+    return 0;
+}
+
+
 
 antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
 {
@@ -102,6 +120,14 @@ antlrcpp::Any CodeGenVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFi
     {
         const int offsetVar = this->symbolsTable[varCtx->VAR()->getText()];
         cout << "   movl " << offsetVar << "(%rbp), " << (isFirst ? "%eax" : "%ebx") << "\n";
+    }
+    //Si on a une expression qui est une assignation
+    else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr)) {
+        if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(assignCtx->VAR())) {
+            const int offsetVar = this->symbolsTable[varCtx->VAR()->getText()];
+            visitExpr(assignCtx->expr(), false);
+            cout << "   movl %eax, " << offsetVar << "(%rbp)\n";
+        }
     }
     else
     {
@@ -283,26 +309,26 @@ void CodeGenVisitor::saveValueInStack(ifccParser::ExprContext *ctx, string varNa
 {
     const int offsetVarInStack = this->symbolsTable[varName];
 
-    if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx))
-    {
+    if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx)) {
         cout << "   movl $" << constCtx->CONST()->getText() << ", " << offsetVarInStack << "(%rbp)\n";
     }
-    else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx))
-    {
+    else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx)) {
         const int varIndex = this->symbolsTable[varCtx->getText()];
         cout << "   movl " << varIndex << "(%rbp), %eax\n";
         cout << "   movl %eax, " << offsetVarInStack << "(%rbp)\n";
     }
-    else
-    {
-        visitExpr(ctx, true);
+    else {
+        // Appel de visit(ctx) pour déclencher la bonne méthode (ex: visitAssign)
+        visit(ctx);
+        
+        // Puis on sauvegarde le résultat (la valeur finale se trouvant dans %eax)
         cout << "   movl %eax, " << offsetVarInStack << "(%rbp)\n";
     }
 }
 
+
 void CodeGenVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr)
 {
-
     if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(leftExpr))
     {
         visitExpr(rightExpr, false);
