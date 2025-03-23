@@ -13,7 +13,6 @@ class IRVisitor : public ifccBaseVisitor
 {
 public:
         IRVisitor(map<string, int> symbolsTable, int baseStackOffset);
-        void resetCurrentTemporaryOffset();
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
@@ -28,9 +27,12 @@ public:
         virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
         void gen_asm(ostream &o);
+        void setCurrentCFG(CFG *currentCFG);
+        CFG *getCurrentCFG();
 
 protected:
         map<string, CFG *> cfgs;
+        CFG *currentCFG;
 
 private:
         void assignValueToVar(ifccParser::ExprContext *expr, string varName);
