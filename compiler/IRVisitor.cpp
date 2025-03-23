@@ -3,6 +3,7 @@
 #include "IR/Instr/IRInstrArithmeticOp.h"
 #include "IR/Instr/IRInstrUnaryOp.h"
 #include "IR/Instr/IRInstrComp.h"
+#include "IR/Instr/IRInstrClean.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -32,6 +33,13 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
     }
 
     visit(ctx->return_stmt());
+
+    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
+    output->add_IRInstr(new IRInstrClean(output));
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+
+    this->currentCFG->add_bb(output);
 
     return 0;
 }
@@ -257,4 +265,9 @@ void IRVisitor::handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser
 CFG *IRVisitor::getCurrentCFG()
 {
     return this->currentCFG;
+}
+
+map<string, CFG *> IRVisitor::getCFGS()
+{
+    return cfgs;
 }

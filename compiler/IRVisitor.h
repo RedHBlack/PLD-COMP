@@ -177,6 +177,17 @@ public:
          */
         CFG *getCurrentCFG();
 
+        /**
+         * @brief Retrieves the map of Control Flow Graphs (CFGs).
+         *
+         * This function returns a map where the keys are string labels (e.g., function names or block labels) and the values are pointers to the corresponding `CFG` objects. These `CFG` objects represent the control flow graphs of different sections of the parsed program.
+         *
+         * The returned map can be used for further analysis, visualization (e.g., by generating Graphviz `.dot` files), or manipulation of the program's control flow.
+         *
+         * @return A `std::map` where the key is a string label representing the section of the program (such as a function name) and the value is a pointer to the corresponding `CFG` object.
+         */
+        map<string, CFG *> getCFGS();
+
 protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;

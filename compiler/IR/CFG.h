@@ -7,6 +7,8 @@
 
 using namespace std;
 
+class BasicBlock;
+
 /**
  * @brief Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR).
  *
@@ -110,6 +112,28 @@ public:
      * This method resets the index for the next free symbol to its initial state.
      */
     void resetNextFreeSymbolIndex();
+
+    /**
+     * @brief Generates the Graphviz representation of the control flow graph (CFG).
+     *
+     * This function generates a Graphviz-compatible `.dot` file that visualizes the control flow of the program. The `.dot` file describes the nodes (representing basic blocks or instructions) and edges (representing the flow of control between the blocks) of the control flow graph.
+     *
+     * The generated Graphviz representation is written to the provided output stream.
+     *
+     * @param o The output stream to which the Graphviz `.dot` representation of the CFG is written. This is typically a file stream (e.g., `ofstream`) that writes to a `.dot` file.
+     */
+    void gen_cfg_graphviz(ostream &o);
+
+    /**
+     * @brief Retrieves the label associated with the control flow graph (CFG).
+     *
+     * This function returns a string label that represents the name or identifier associated with the current control flow graph. The label can be used to identify different parts of the program, such as functions or basic blocks.
+     *
+     * The label is typically used for naming the nodes and edges in the Graphviz `.dot` representation or for other program analysis purposes.
+     *
+     * @return A string representing the label of the control flow graph. This could be a function name, block identifier, or any other relevant label.
+     */
+    string getLabel();
 
 protected:
     /// A map of symbol names to their respective indices.
