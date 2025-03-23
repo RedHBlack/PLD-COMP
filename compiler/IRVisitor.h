@@ -59,6 +59,8 @@ public:
          */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
 
+        virtual antlrcpp::Any visitAssign(ifccParser::AssignContext *ctx) override;
+
         /**
          * @brief Visits a declaration statement and generates the IR.
          *

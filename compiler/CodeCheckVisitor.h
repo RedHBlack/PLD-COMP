@@ -16,16 +16,7 @@ using namespace std;
 class CodeCheckVisitor : public ifccBaseVisitor
 {
 public:
-        /**
-         * @brief Visits a return statement in the parsed code.
-         *
-         * This method is used to process the return statement and check for any
-         * correctness issues, such as undefined variables.
-         *
-         * @param ctx The context for the return statement.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
+        antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
         /**
          * @brief Visits an assignment statement in the parsed code.

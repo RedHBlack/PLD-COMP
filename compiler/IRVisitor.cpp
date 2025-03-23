@@ -57,14 +57,9 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     {
         currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), "%eax"));
     }
-    else if (ctx->assign_stmt())
-    {
-        visit(ctx->assign_stmt());
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->assign_stmt()->VAR()->getText(), "%eax"));
-    }
     else
     {
-        visitExpr(exprCtx, true);
+        visit(exprCtx);
     }
 
     return 0;
@@ -73,32 +68,52 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     int exprIndex = 0;
-
+    // Parcourir tous les enfants du nœud de déclaration
     for (size_t i = 0; i < ctx->children.size(); i++)
     {
-        antlr4::tree::TerminalNode *var = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
-
-        if (var && var->getSymbol()->getType() == ifccParser::VAR)
+        // On cherche un token de type VAR
+        auto varNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
+        if (varNode && varNode->getSymbol()->getType() == ifccParser::VAR)
         {
+            string varName = varNode->getText();
+            // Vérifier si le token suivant est "="
             if (i + 1 < ctx->children.size())
             {
-                antlr4::tree::TerminalNode *nextChild = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
-
-                if (nextChild && nextChild->getText() == "=")
+                auto nextNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
+                if (nextNode && nextNode->getText() == "=")
                 {
-                    assignValueToVar(ctx->expr(exprIndex), var->getText());
+                    // La variable a bien un initialiseur, on utilise ctx->expr(exprIndex)
+                    assignValueToVar(ctx->expr(exprIndex), varName);
                     exprIndex++;
                 }
             }
         }
     }
-
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
     assignValueToVar(ctx->expr(), ctx->VAR()->getText());
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitAssign(ifccParser::AssignContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    if (auto innerAssign = dynamic_cast<ifccParser::AssignContext *>(ctx->expr()))
+    {
+        visitAssign(innerAssign);
+    }
+    else
+    {
+        visitExpr(ctx->expr(), true);
+    }
+
+    string varName = ctx->VAR()->getText();
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", varName));
+
     return 0;
 }
 
@@ -113,6 +128,14 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
     {
         currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), (isFirst ? "%eax" : "%ebx")));
+    }
+    else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
+    {
+        if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(assignCtx->VAR()))
+        {
+            visitExpr(assignCtx->expr(), false);
+            currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", assignCtx->VAR()->getText()));
+        }
     }
     else
     {
@@ -213,7 +236,7 @@ void IRVisitor::assignValueToVar(ifccParser::ExprContext *ctx, string varName)
     }
     else
     {
-        visitExpr(ctx, true);
+        visit(ctx);
         currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", varName));
     }
 }

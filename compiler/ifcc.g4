@@ -14,7 +14,7 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
-return_stmt: RETURN (expr ';'| assign_stmt) ;
+return_stmt: RETURN expr ';' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var
@@ -26,6 +26,7 @@ expr:   CONST                                               #const
     |   expr OP=('+' | '-') expr                            #addsub
     |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
+    |   VAR '=' expr                                        #assign
     ;
 
 OPU:    ('++' | '--');

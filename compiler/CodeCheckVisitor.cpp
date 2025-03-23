@@ -1,17 +1,20 @@
 #include "CodeCheckVisitor.h"
 
-antlrcpp::Any CodeCheckVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
+antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-    if (ctx->assign_stmt())
+    // Visite d'abord les enfants pour remplir isUsed
+    antlrcpp::Any result = visitChildren(ctx);
+
+    // We check if all the variables are used
+    for (auto it = isUsed.begin(); it != isUsed.end(); it++)
     {
-        visit(ctx->assign_stmt());
-    }
-    else
-    {
-        visitExpr(ctx->expr());
+        if (!it->second)
+        {
+            cout << "# WARNING: " << it->first << " : declared but not used" << endl;
+        }
     }
 
-    return 0;
+    return result;
 }
 
 antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
@@ -50,6 +53,11 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
                 isUsed[varRight] = true;
                 hasAValue[varLeft] = true;
             }
+            // Sinon, on visite l'expression pour marquer les variables utilisées
+            else
+            {
+                visitExpr(exprCtx);
+            }
             exprIndex++;
         }
     }
@@ -79,6 +87,7 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
         {
             cout << "#WARNING : The variable " << varRight << " is not initialized." << endl;
         }
+        isUsed[varRight] = true;
         hasAValue[varLeft] = true;
     }
     else
@@ -104,10 +113,7 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
         {
             cout << "#WARNING : The variable " << varName << " is not initialized." << endl;
         }
-        else
-        {
-            isUsed[varName] = true;
-        }
+        isUsed[varName] = true;
     }
     else
     {
