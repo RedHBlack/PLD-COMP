@@ -59,6 +59,16 @@ public:
          */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits an assignment expression in the parse tree.
+         *
+         * This method processes an assignment (`=`) in the input C code. It retrieves
+         * the variable being assigned, evaluates the right-hand side expression, and
+         * generates the necessary Intermediate Representation (IR) instructions.
+         *
+         * @param ctx The context of the assignment node in the parse tree.
+         * @return The result of processing the assignment, wrapped in `antlrcpp::Any`.
+         */
         virtual antlrcpp::Any visitAssign(ifccParser::AssignContext *ctx) override;
 
         /**

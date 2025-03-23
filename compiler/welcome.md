@@ -37,4 +37,4 @@ To compile and run the compiler:
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the BJAQPIG License.
