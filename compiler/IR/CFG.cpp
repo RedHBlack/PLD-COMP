@@ -1,50 +1,74 @@
 #include "CFG.h"
 
-CFG::CFG(tree::ParseTree *ast)
+CFG::CFG(string label, map<string, int> SymbolIndex, int initialNextFreeSymbolIndex) : label(label), SymbolIndex(SymbolIndex), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)
 {
 }
 
 void CFG::add_bb(BasicBlock *bb)
 {
+    bbs.push_back(bb);
+    this->setCurrentBasicBlock(bb);
 }
 
 void CFG::gen_asm(ostream &o)
 {
-}
+    gen_asm_prologue(o);
 
-string CFG::IR_reg_to_asm(string reg)
-{
-    return string();
+    for (int i = 0; i < bbs.size(); i++)
+    {
+        bbs[i]->gen_asm(o);
+    }
+
+    gen_asm_epilogue(o);
 }
 
 void CFG::gen_asm_prologue(ostream &o)
 {
+#ifdef __APPLE__
+    o << ".globl _" << this->label "\n";
+    o << " _" << this->label << ":\n";
+#else
+    o << ".globl " << this->label << "\n";
+    o << this->label << ":\n";
+#endif
+
+    o << "   pushq %rbp\n";
+    o << "   movq %rsp, %rbp\n";
 }
 
 void CFG::gen_asm_epilogue(ostream &o)
 {
+
+    o << "   popq %rbp\n";
+    o << "   ret\n";
 }
 
-void CFG::add_to_symbol_table(string name, Type t)
+string CFG::create_new_tempvar()
 {
-}
+    const string newTmpVar = "tmp" + to_string(-nextFreeSymbolIndex);
 
-string CFG::create_new_tempvar(Type t)
-{
-    return string();
+    this->SymbolIndex[newTmpVar] = nextFreeSymbolIndex;
+    this->nextFreeSymbolIndex -= 4;
+
+    return newTmpVar;
 }
 
 int CFG::get_var_index(string name)
 {
-    return 0;
+    return this->SymbolIndex[name];
 }
 
-Type CFG::get_var_type(string name)
+BasicBlock *CFG::getCurrentBasicBlock()
 {
-    return Type();
+    return this->current_bb;
 }
 
-string CFG::new_BB_name()
+void CFG::setCurrentBasicBlock(BasicBlock *bb)
 {
-    return string();
+    this->current_bb = bb;
+}
+
+void CFG::resetNextFreeSymbolIndex()
+{
+    nextFreeSymbolIndex = initialTempPos;
 }
