@@ -6,12 +6,13 @@ class IRInstrBinaryOp : public BaseIRInstr
 {
 
 public:
-    IRInstrBinaryOp(BasicBlock *bb_, string src, string dest)
-        : BaseIRInstr(bb_), src(src), dest(dest) {}
+    IRInstrBinaryOp(BasicBlock *bb_, string firstOp, string secondOp, string op)
+        : BaseIRInstr(bb_), firstOp(firstOp), secondOp(secondOp), op(op) {}
 
     virtual void gen_asm(ostream &o) = 0;
 
 protected:
-    string src;
-    string dest;
+    string firstOp;
+    string secondOp;
+    string op;
 };
