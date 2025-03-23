@@ -8,7 +8,7 @@
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
 
-#include "CodeGenVisitor.h"
+#include "IRVisitor.h"
 #include "CodeCheckVisitor.h"
 
 using namespace antlr4;
@@ -52,8 +52,10 @@ int main(int argn, const char **argv)
     CodeCheckVisitor sv;
     sv.visit(tree);
 
-    CodeGenVisitor v(sv.getSymbolsTable(), sv.getCurrentOffset());
+    IRVisitor v(sv.getSymbolsTable(), sv.getCurrentOffset());
     v.visit(tree);
+
+    v.gen_asm(cout);
 
     return 0;
 }
