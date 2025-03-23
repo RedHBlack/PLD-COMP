@@ -1,111 +1,92 @@
 #pragma once
 
-#include "BaseIRInstr.h"
 #include "IRInstrBinaryOp.h"
+#include <ostream>
 
 /**
- * @brief Represents an arithmetic operation instruction in the intermediate representation.
+ * @brief Represents a comparison operation instruction in the intermediate representation.
  *
- * This class handles the generation of intermediate representation instructions for arithmetic operations,
- * such as addition, subtraction, multiplication, division, modulo, and bitwise operations. It extends the
- * `IRInstrBinaryOp` class and provides specialized methods for handling these operations.
+ * This class handles the generation of intermediate representation instructions for comparison operations,
+ * such as equality, inequality, greater than, greater than or equal to, less than, and less than or equal to.
  */
-class IRInstrArithmeticOp : public IRInstrBinaryOp
+class IRInstrComp : public IRInstrBinaryOp
 {
 public:
     /**
-     * @brief Constructs an arithmetic operation instruction.
+     * @brief Constructs a comparison operation instruction.
      *
-     * Initializes the instruction with a basic block, two operands, and the arithmetic operation.
+     * Initializes the instruction with a basic block, two operands, and the comparison operation.
      *
      * @param bb_ The basic block to which the instruction belongs.
-     * @param firstOp The first operand of the arithmetic operation.
-     * @param secondOp The second operand of the arithmetic operation.
-     * @param op The arithmetic operation (e.g., '+', '-', '*', '/', '%').
+     * @param firstOp The first operand of the comparison operation.
+     * @param secondOp The second operand of the comparison operation.
+     * @param op The comparison operation (e.g., '==', '!=', '>', '<', '>=', '<=').
      */
-    IRInstrArithmeticOp(BasicBlock *bb_, string firstOp, string secondOp, string op)
+    IRInstrComp(BasicBlock *bb_, string firstOp, string secondOp, string op)
         : IRInstrBinaryOp(bb_, firstOp, secondOp, op) {}
 
     /**
-     * @brief Generates the assembly code for this arithmetic operation instruction.
+     * @brief Generates the assembly code for this comparison operation instruction.
      *
-     * This method generates the appropriate assembly code based on the specific arithmetic operation
-     * (e.g., addition, subtraction, multiplication, division, modulo, or bitwise operations).
+     * This method generates the appropriate assembly code based on the specific comparison operation
+     * (e.g., equality, inequality, greater than, greater than or equal to, less than, or less than or equal to).
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    virtual void gen_asm(ostream &o);
+    virtual void gen_asm(ostream &o) override;
 
 private:
     /**
-     * @brief Handles the addition operation.
+     * @brief Handles the equality comparison operation (`==`).
      *
-     * This method generates assembly code for the addition operation (`+`).
+     * This method generates assembly code for the equality comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleAddition(ostream &o);
+    void handleCompEq(ostream &o);
 
     /**
-     * @brief Handles the subtraction operation.
+     * @brief Handles the inequality comparison operation (`!=`).
      *
-     * This method generates assembly code for the subtraction operation (`-`).
+     * This method generates assembly code for the inequality comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleSubstraction(ostream &o);
+    void handleCompNotEq(ostream &o);
 
     /**
-     * @brief Handles the multiplication operation.
+     * @brief Handles the greater-than comparison operation (`>`).
      *
-     * This method generates assembly code for the multiplication operation (`*`).
+     * This method generates assembly code for the greater-than comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleMult(ostream &o);
+    void handleGreater(ostream &o);
 
     /**
-     * @brief Handles the division operation.
+     * @brief Handles the greater-than or equal-to comparison operation (`>=`).
      *
-     * This method generates assembly code for the division operation (`/`).
+     * This method generates assembly code for the greater-than or equal-to comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleDiv(ostream &o);
+    void handleGreaterOrEqual(ostream &o);
 
     /**
-     * @brief Handles the modulo operation.
+     * @brief Handles the less-than comparison operation (`<`).
      *
-     * This method generates assembly code for the modulo operation (`%`).
+     * This method generates assembly code for the less-than comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleModulo(ostream &o);
+    void handleLower(ostream &o);
 
     /**
-     * @brief Handles the bitwise AND operation.
+     * @brief Handles the less-than or equal-to comparison operation (`<=`).
      *
-     * This method generates assembly code for the bitwise AND operation (`&`).
-     *
-     * @param o The output stream where the generated assembly code will be written.
-     */
-    void handleBitwiseAnd(ostream &o);
-
-    /**
-     * @brief Handles the bitwise OR operation.
-     *
-     * This method generates assembly code for the bitwise OR operation (`|`).
+     * This method generates assembly code for the less-than or equal-to comparison operation.
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void handleBitwiseOr(ostream &o);
-
-    /**
-     * @brief Handles the bitwise XOR operation.
-     *
-     * This method generates assembly code for the bitwise XOR operation (`^`).
-     *
-     * @param o The output stream where the generated assembly code will be written.
-     */
-    void handleBitwiseXor(ostream &o);
+    void handleLowerOrEqual(ostream &o);
 };

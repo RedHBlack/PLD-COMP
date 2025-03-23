@@ -43,7 +43,7 @@ public:
      */
     virtual void gen_asm(ostream &o) = 0;
 
-private:
+protected:
     /// The basic block that this instruction belongs to.
     BasicBlock *bb;
 };
