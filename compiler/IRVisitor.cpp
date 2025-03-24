@@ -13,9 +13,9 @@
 
 using namespace std;
 
-IRVisitor::IRVisitor(map<string, int> symbolsTable, int baseStackOffset)
+IRVisitor::IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset)
 {
-    this->cfgs["main"] = new CFG("main", symbolsTable, baseStackOffset - 4);
+    this->cfgs["main"] = new CFG("main", symbolsTable, symbolsType, baseStackOffset - 4);
     this->currentCFG = this->cfgs["main"];
 }
 
@@ -257,7 +257,7 @@ void IRVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
     }
     else
     {
-        const string newTmpVar = this->currentCFG->create_new_tempvar();
+        const string newTmpVar = this->currentCFG->create_new_tempvar(Type::INT);
 
         visitExpr(leftExpr, true);
         currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", newTmpVar));

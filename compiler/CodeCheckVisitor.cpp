@@ -31,6 +31,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
 
         this->currentOffset -= 4;
         symbolsTable[varLeft] = currentOffset;
+
+        symbolsType[varLeft] = stringToType(ctx->TYPE()->getText());
+
         isUsed[varLeft] = false;
 
         // Seulement si l'expression existe pour cette variable
