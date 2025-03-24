@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "../Type.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ public:
      * @param SymbolIndex A map that maps symbol names to their respective indices.
      * @param initialNextFreeSymbolIndex The initial value for the next free symbol index.
      */
-    CFG(string label, map<string, int> SymbolIndex, int initialNextFreeSymbolIndex);
+    CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex);
 
     /**
      * @brief Adds a basic block to the control flow graph.
@@ -76,7 +77,7 @@ public:
      *
      * @return The name of the new temporary variable.
      */
-    string create_new_tempvar();
+    string create_new_tempvar(Type t);
 
     /**
      * @brief Retrieves the index of a variable by its name.
@@ -87,6 +88,8 @@ public:
      * @return The index of the variable, or -1 if the variable does not exist.
      */
     int get_var_index(string name);
+
+    Type get_var_type(string name);
 
     /**
      * @brief Retrieves the current basic block in the control flow graph.
@@ -138,6 +141,8 @@ public:
 protected:
     /// A map of symbol names to their respective indices.
     map<string, int> SymbolIndex;
+
+    map<string, Type> SymbolType;
 
     /// The next available symbol index.
     int nextFreeSymbolIndex;
