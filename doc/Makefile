@@ -2,7 +2,7 @@
 
 default: all
 
-all: doc
+all: doc pdf
 
 doc:
 	@if [ ! -f Doxyfile ]; then \
@@ -13,6 +13,7 @@ doc:
 	@echo "Generating documentation with Doxygen..."
 	doxygen
 
+pdf:
 	@echo "Generating PDF Manual..."
 	cd latex && make pdf && cd ..
 	mv latex/refman.pdf ./ifcc_doc.pdf
