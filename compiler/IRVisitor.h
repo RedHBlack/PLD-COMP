@@ -27,7 +27,7 @@ public:
          * @param symbolsTable A map containing variable names and their associated stack offsets.
          * @param baseStackOffset The base offset for the stack.
          */
-        IRVisitor(map<string, int> symbolsTable, int baseStackOffset);
+        IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset);
 
         /**
          * @brief Visits the program and starts the IR generation process.

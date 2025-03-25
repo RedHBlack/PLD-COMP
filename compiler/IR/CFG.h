@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "../Type.h"
 
 using namespace std;
 
@@ -27,9 +28,10 @@ public:
      *
      * @param label The label for the CFG.
      * @param SymbolIndex A map that maps symbol names to their respective indices.
+     * @param SymbolType A map that maps symbol names to their respective types.
      * @param initialNextFreeSymbolIndex The initial value for the next free symbol index.
      */
-    CFG(string label, map<string, int> SymbolIndex, int initialNextFreeSymbolIndex);
+    CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex);
 
     /**
      * @brief Adds a basic block to the control flow graph.
@@ -50,33 +52,14 @@ public:
     void gen_asm(ostream &o);
 
     /**
-     * @brief Generates the assembly prologue for the control flow graph.
+     * @brief Creates a new temporary variable with a unique name.
      *
-     * This method generates the initial assembly code that sets up the environment for the program
-     * to start execution.
+     * This method generates a temporary variable of the specified type and returns its unique name.
      *
-     * @param o The output stream where the prologue will be written.
+     * @param t The type of the new temporary variable.
+     * @return The name of the newly created temporary variable.
      */
-    void gen_asm_prologue(ostream &o);
-
-    /**
-     * @brief Generates the assembly epilogue for the control flow graph.
-     *
-     * This method generates the final assembly code that cleans up the environment after the program
-     * has executed.
-     *
-     * @param o The output stream where the epilogue will be written.
-     */
-    void gen_asm_epilogue(ostream &o);
-
-    /**
-     * @brief Creates a new temporary variable in the control flow graph.
-     *
-     * This method creates a new temporary variable with a unique name and returns the name of the variable.
-     *
-     * @return The name of the new temporary variable.
-     */
-    string create_new_tempvar();
+    string create_new_tempvar(Type t);
 
     /**
      * @brief Retrieves the index of a variable by its name.
@@ -87,6 +70,16 @@ public:
      * @return The index of the variable, or -1 if the variable does not exist.
      */
     int get_var_index(string name);
+
+    /**
+     * @brief Retrieves the type of a variable based on its name.
+     *
+     * This method looks up the variable's type from the symbols table using the provided variable name.
+     *
+     * @param name The name of the variable whose type is to be retrieved.
+     * @return The type of the specified variable.
+     */
+    Type get_var_type(string name);
 
     /**
      * @brief Retrieves the current basic block in the control flow graph.
@@ -138,6 +131,9 @@ public:
 protected:
     /// A map of symbol names to their respective indices.
     map<string, int> SymbolIndex;
+
+    /// The symbols table containing variable names and their types.
+    map<string, Type> SymbolType;
 
     /// The next available symbol index.
     int nextFreeSymbolIndex;

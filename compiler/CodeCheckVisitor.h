@@ -2,6 +2,7 @@
 
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
+#include "Type.h"
 #include <map>
 
 using namespace std;
@@ -132,10 +133,14 @@ public:
          *
          * @return The symbols table as a map of variable names and their associated offsets.
          */
-        map<string, int> getSymbolsTable() const
-        {
-                return symbolsTable;
-        }
+        map<string, int> getSymbolsTable() const { return symbolsTable; }
+
+        /**
+         * @brief Retrieves the symbol names and their corresponding types.
+         *
+         * @return A map of symbol names to their types.
+         */
+        map<string, Type> getSymbolsType() const { return symbolsType; }
 
         /**
          * @brief Retrieves the map indicating whether variables are used in the code.
@@ -154,6 +159,9 @@ public:
 protected:
         /// The symbols table containing variable names and their offsets.
         map<string, int> symbolsTable;
+
+        /// The symbols table containing variable names and their types.
+        map<string, Type> symbolsType;
 
         /// A map indicating if a variable has been used in the code.
         map<string, bool> isUsed;
