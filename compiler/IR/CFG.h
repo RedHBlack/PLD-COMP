@@ -52,26 +52,6 @@ public:
     void gen_asm(ostream &o);
 
     /**
-     * @brief Generates the assembly prologue for the control flow graph.
-     *
-     * This method generates the initial assembly code that sets up the environment for the program
-     * to start execution.
-     *
-     * @param o The output stream where the prologue will be written.
-     */
-    void gen_asm_prologue(ostream &o);
-
-    /**
-     * @brief Generates the assembly epilogue for the control flow graph.
-     *
-     * This method generates the final assembly code that cleans up the environment after the program
-     * has executed.
-     *
-     * @param o The output stream where the epilogue will be written.
-     */
-    void gen_asm_epilogue(ostream &o);
-
-    /**
      * @brief Creates a new temporary variable with a unique name.
      *
      * This method generates a temporary variable of the specified type and returns its unique name.
