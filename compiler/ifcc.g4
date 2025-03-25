@@ -11,21 +11,22 @@ statement:  decl_stmt
 
 decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
 assign_stmt: VAR '=' expr ';' ;
-incrdecr_stmt:  VAR OPU ';' #post
-            |   OPU VAR ';' #pre
+incrdecr_stmt:  VAR OP=('++' | '--') ';'
+            |   OP=('++' | '--') VAR ';'
             ;
 return_stmt: RETURN expr ';' ;
 
-expr:   '!' expr                                #not
-    |   '(' expr ')'                            #par
-    |   '-' expr                                #neg
-    |   expr OP=('*' | '/' | '%') expr          #muldiv
-    |   expr OP=('+' | '-') expr                #addsub
-    |   expr OP=('|' | '&' | '^') expr          #bitBybit 
+expr:   CONST                                               #const
+    |   VAR                                                 #var
+    |   '(' expr ')'                                        #par
+    |   VAR OP=('++' | '--')                                #post
+    |   OP=('++' | '--') VAR                                #pre
+    |   OP=('!' | '-' | '~') expr                           #unary
+    |   expr OP=('*' | '/' | '%') expr                      #muldiv
+    |   expr OP=('+' | '-') expr                            #addsub
+    |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
-    |   VAR '=' expr                            #assign
-    |   CONST                                   #const
-    |   VAR                                     #var
+    |   VAR '=' expr                                        #assign
     ;
 
 OPU:    ('++' | '--');
