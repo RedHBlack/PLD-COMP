@@ -3,7 +3,7 @@ name: Build and Deploy Doxygen Documentation
 on:
   push:
     branches:
-      - main # Remplacez `main` par votre branche principale si nécessaire
+      - main # Replace with your main branch if necessary
 
 jobs:
   doxygen:
@@ -24,9 +24,17 @@ jobs:
           cd doc
           make doc
 
+      # Check if the documentation has changed
+      - name: Check if documentation changed
+        run: |
+          git diff --exit-code doc || echo "Documentation has changed, proceeding with deployment."
+
+      # Deploy documentation to GitHub Pages if changes are detected
       - name: Deploy documentation to GitHub Pages
+        if: ${{ !steps.check.outputs.changed == 'true' }}
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: doc/html
           token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
