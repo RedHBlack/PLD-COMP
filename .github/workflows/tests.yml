@@ -33,13 +33,12 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc python3-pip
-          pip install requests
 
       - name: Run tests
         id: run_tests
         run: |
           chmod +x ifcc-test_PR.py
-          cd compiler && make && cd ..
+          cd compiler && make -f test_PR.mk && cd ..
           python3 ifcc-test_PR.py testfiles/ || echo "Tests failed" > test_failure.log
 
       - name: Annotate PR on failure
