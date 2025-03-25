@@ -1,15 +1,28 @@
-name: Build Tests
+name: Exemple Installation ANTLR
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, ready_for_review, reopened]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout the code
+      - name: Vérifier le code
         uses: actions/checkout@v2
+
+      - name: Télécharger et installer ANTLR
+        run: |
+          mkdir ~/antlr4-install
+          cd ~/antlr4-install
+          wget https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          wget https://www.antlr.org/download/antlr4-cpp-runtime-4.13.2-source.zip
+          unzip antlr4-cpp-runtime-4.13.2-source.zip
+          mkdir build
+          cd build
+          cmake ..
+          make -j8
+          sudo make install
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -20,7 +33,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc python3-pip
-          pip install requests  # If needed for other purposes
+          pip install requests
 
       - name: Run tests
         id: run_tests
