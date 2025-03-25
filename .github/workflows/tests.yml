@@ -1,0 +1,60 @@
+name: Build Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  build-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Download and install ANTLR
+        run: |
+          mkdir ~/antlr4-install
+          cd ~/antlr4-install
+          wget https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          wget https://www.antlr.org/download/antlr4-cpp-runtime-4.13.2-source.zip
+          unzip antlr4-cpp-runtime-4.13.2-source.zip
+          mkdir build
+          cd build
+          cmake ..
+          make -j8
+          sudo make install
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc python3-pip
+
+      - name: Run tests
+        id: run_tests
+        run: |
+          chmod +x ifcc-test_PR.py
+          cd compiler && make -f test_PR.mk || true
+          cd ..
+          python3 ifcc-test_PR.py testfiles/ || echo "Tests failed" > test_failure.log
+
+      - name: Annotate PR on failure
+        if: failure()
+        run: |
+          echo "::error::Building tests failed! Check the logs for details."
+
+      - name: Comment on PR if tests fail
+        if: failure()
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            🚨 **Some tests have failed!**
+            Please check the logs for details.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

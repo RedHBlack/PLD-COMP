@@ -31,3 +31,4 @@ ifcc-test.py
 ifcc-wrapper.sh
 
 doc/html
+!*PR*
