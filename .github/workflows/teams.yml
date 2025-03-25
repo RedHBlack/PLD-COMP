@@ -1,0 +1,6 @@
+- name: Send message to ms teams channel
+  uses: echapmanFromBunnings/msteams-connector-webhook@2.0.3
+  with:
+    title: "New Pull Request Update"
+    webhook: "https://prod-79.westeurope.logic.azure.com:443/workflows/f00289a528cf4ad893473faf1c518cd3/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=jgRupjsQNKq95TAc--8RMOIsIJXe9YT-s61MsMbRvK8"
+    message: "A pull request requires a review/approval"
