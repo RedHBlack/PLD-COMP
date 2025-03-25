@@ -20,7 +20,7 @@ jobs:
       - name: Generate Doxygen documentation
         run: |
           cd doc
-          make
+          make doc
 
       - name: Deploy documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
