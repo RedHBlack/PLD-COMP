@@ -8,6 +8,8 @@ on:
 jobs:
   doxygen:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,5 +28,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: docs/html
+          folder: doc/html
           token: ${{ secrets.GITHUB_TOKEN }}
