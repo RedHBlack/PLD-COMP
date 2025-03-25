@@ -1,0 +1,50 @@
+name: Exemple Installation ANTLR
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier le code
+        uses: actions/checkout@v2
+
+      - name: Télécharger et installer ANTLR
+        run: |
+          mkdir ~/antlr4-install
+          cd ~/antlr4-install
+          wget https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          wget https://www.antlr.org/download/antlr4-cpp-runtime-4.13.2-source.zip
+          unzip antlr4-cpp-runtime-4.13.2-source.zip
+          mkdir build
+          cd build
+          cmake ..
+          make -j8
+          sudo make install
+
+      - name: Vérifier ANTLR installé
+        run: |
+          antlr4 -version
+          echo "Vérification de la version d'ANTLR installée"
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc python3-pip
+
+      - name: Run tests
+        run: |
+          chmod +x ifcc-test_PR.py
+          ./ifcc-test.py testfile/*.c
+
+      - name: Send failure notification to Teams
+        if: ${{ failure() }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"text": "Les tests ont échoué sur la PR !"}' https://outlook.office.com/webhook/...
