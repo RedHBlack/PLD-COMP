@@ -1,4 +1,4 @@
-name: Exemple Installation ANTLR
+name: Build Tests
 
 on:
   pull_request:
@@ -8,10 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Vérifier le code
+      - name: Check out the code
         uses: actions/checkout@v2
 
-      - name: Télécharger et installer ANTLR
+      - name: Download and install ANTLR
         run: |
           mkdir ~/antlr4-install
           cd ~/antlr4-install
