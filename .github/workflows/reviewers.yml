@@ -1,11 +1,11 @@
-name: "Auto Assign"
+name: "Assign reviewers"
 
 on:
   pull_request:
     types: [opened, ready_for_review]
 
 jobs:
-  add-reviews:
+  add-reviewers:
     runs-on: ubuntu-latest
 
     permissions:
