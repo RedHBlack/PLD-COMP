@@ -18,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: amolmt/microsoft-teams-pull-request-notifications@v1
+      - uses: aliencube/microsoft-teams-actions@v0.8.0
         with:
-          teams_webhook_url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          webhook_uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          title: <Message Title>
+          summary: <Message Summary>
+          text: <Message Text>
+          theme_color: <Message Theme Color>
+          sections: '[{ "activityTitle": "hello world" }, { ... }]'
+          actions: '[{ "@type": "OpenUri", "name": "lorem ipsum", "targets": [{ "os": "default", "uri": "https://localhost" }] }, { ... }]'
