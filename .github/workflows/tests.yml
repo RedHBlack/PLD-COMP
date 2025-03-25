@@ -24,11 +24,6 @@ jobs:
           make -j8
           sudo make install
 
-      - name: Vérifier ANTLR installé
-        run: |
-          antlr4 -version
-          echo "Vérification de la version d'ANTLR installée"
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:

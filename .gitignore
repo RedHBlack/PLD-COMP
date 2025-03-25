@@ -29,3 +29,5 @@ ifcc
 ifcc-test.py
 .DS_Store
 ifcc-wrapper.sh
+
+!*PR*
