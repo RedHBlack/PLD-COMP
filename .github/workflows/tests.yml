@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
 
+permissions:
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,7 +41,7 @@ jobs:
         id: run_tests
         run: |
           chmod +x ifcc-test_PR.py
-          cd compiler && make -f test_PR.mk
+          cd compiler && make -f test_PR.mk || true
           cd ..
           python3 ifcc-test_PR.py testfiles/ || echo "Tests failed" > test_failure.log
 
