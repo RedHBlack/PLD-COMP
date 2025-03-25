@@ -28,6 +28,7 @@ public:
      *
      * @param label The label for the CFG.
      * @param SymbolIndex A map that maps symbol names to their respective indices.
+     * @param SymbolType A map that maps symbol names to their respective types.
      * @param initialNextFreeSymbolIndex The initial value for the next free symbol index.
      */
     CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex);
@@ -71,11 +72,12 @@ public:
     void gen_asm_epilogue(ostream &o);
 
     /**
-     * @brief Creates a new temporary variable in the control flow graph.
+     * @brief Creates a new temporary variable with a unique name.
      *
-     * This method creates a new temporary variable with a unique name and returns the name of the variable.
+     * This method generates a temporary variable of the specified type and returns its unique name.
      *
-     * @return The name of the new temporary variable.
+     * @param t The type of the new temporary variable.
+     * @return The name of the newly created temporary variable.
      */
     string create_new_tempvar(Type t);
 
@@ -89,6 +91,14 @@ public:
      */
     int get_var_index(string name);
 
+    /**
+     * @brief Retrieves the type of a variable based on its name.
+     *
+     * This method looks up the variable's type from the symbols table using the provided variable name.
+     *
+     * @param name The name of the variable whose type is to be retrieved.
+     * @return The type of the specified variable.
+     */
     Type get_var_type(string name);
 
     /**
@@ -142,6 +152,7 @@ protected:
     /// A map of symbol names to their respective indices.
     map<string, int> SymbolIndex;
 
+    /// The symbols table containing variable names and their types.
     map<string, Type> SymbolType;
 
     /// The next available symbol index.
