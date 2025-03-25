@@ -1,0 +1,30 @@
+name: Build and Deploy Doxygen Documentation
+
+on:
+  push:
+    branches:
+      - main # Remplacez `main` par votre branche principale si nécessaire
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Generate Doxygen documentation
+        run: |
+          cd doc
+          doxygen
+
+      - name: Deploy documentation to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: docs/html
+          token: ${{ secrets.GITHUB_TOKEN }}
