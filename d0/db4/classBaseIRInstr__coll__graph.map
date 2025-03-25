@@ -1,0 +1,9 @@
+<map id="BaseIRInstr" name="BaseIRInstr">
+<area shape="rect" id="Node000001" title="Represents a base class for intermediate representation instructions." alt="" coords="5,97,101,123"/>
+<area shape="rect" id="Node000002" href="$d8/d27/classBasicBlock.html" title="Represents a basic block in the control flow graph (CFG)." alt="" coords="59,7,152,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="72,43,57,60,52,79,54,97,48,97,47,78,52,57,68,39"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="167,10,175,14,179,20,170,29,153,31,152,26,168,24,173,20,172,18,165,15"/>
+<area shape="rect" id="Node000003" href="$d7/dd4/classCFG.html" title="Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR)." alt="" coords="155,97,205,123"/>
+<area shape="poly" id="edge4_Node000003_Node000002" title=" " alt="" coords="100,46,100,60,104,72,114,83,127,92,156,102,154,107,125,97,110,87,99,75,94,61,95,46"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="182,83,182,71,178,60,164,45,146,35,149,31,167,41,182,57,187,70,188,83"/>
+</map>

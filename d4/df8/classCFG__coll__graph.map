@@ -1,0 +1,7 @@
+<map id="CFG" name="CFG">
+<area shape="rect" id="Node000001" title="Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR)." alt="" coords="27,5,77,31"/>
+<area shape="rect" id="Node000002" href="$d8/d27/classBasicBlock.html" title="Represents a basic block in the control flow graph (CFG)." alt="" coords="5,95,99,121"/>
+<area shape="poly" id="edge3_Node000002_Node000001" title=" " alt="" coords="31,43,24,55,24,69,41,93,37,96,19,70,19,54,26,40"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="49,81,49,31,55,31,55,81"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="113,98,122,102,125,108,117,117,99,119,99,114,115,112,120,108,118,106,111,103"/>
+</map>

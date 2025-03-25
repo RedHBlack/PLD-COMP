@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,31,124,56"/>
+<area shape="rect" id="Node000001" href="$da/d0d/classCodeCheckVisitor.html" title="A visitor class for checking code correctness." alt="" coords="172,5,309,31"/>
+<area shape="poly" id="edge9_Node000000_Node000001" title=" " alt="" coords="137,30,171,25,172,31,138,36"/>
+<area shape="rect" id="Node000002" href="$d3/d68/classIRVisitor.html" title="A visitor class for generating Intermediate Representation (IR) during parsing." alt="" coords="202,55,279,80"/>
+<area shape="poly" id="edge10_Node000000_Node000002" title=" " alt="" coords="138,51,202,59,201,65,137,56"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="IRVisitor" name="IRVisitor">
+<area shape="rect" id="Node000001" title="A visitor class for generating Intermediate Representation (IR) during parsing." alt="" coords="47,95,125,121"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,124,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,43,86,94,81,96,68,45"/>
+<area shape="rect" id="Node000003" href="$d7/dd4/classCFG.html" title="Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR)." alt="" coords="192,5,241,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,32,154,42,129,57,109,77,95,97,90,94,105,73,126,53,151,37,178,27"/>
+<area shape="rect" id="Node000004" href="$d8/d27/classBasicBlock.html" title="Represents a basic block in the control flow graph (CFG)." alt="" coords="198,95,291,121"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="213,44,215,69,223,82,233,93,229,97,218,85,210,70,208,44"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="244,82,241,56,226,33,231,30,246,54,250,81"/>
+<area shape="poly" id="edge4_Node000004_Node000004" title=" " alt="" coords="306,98,314,102,318,108,310,117,292,119,291,114,307,112,313,108,311,106,304,103"/>
+</map>

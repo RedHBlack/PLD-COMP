@@ -1,0 +1,11 @@
+<map id="IRInstrMove" name="IRInstrMove">
+<area shape="rect" id="Node000001" title="Represents an IR instruction for moving a value between registers and memory." alt="" coords="5,172,105,197"/>
+<area shape="rect" id="Node000002" href="$d8/d9c/classBaseIRInstr.html" title="Represents a base class for intermediate representation instructions." alt="" coords="7,97,103,123"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="58,137,58,172,53,172,53,137"/>
+<area shape="rect" id="Node000003" href="$d8/d27/classBasicBlock.html" title="Represents a basic block in the control flow graph (CFG)." alt="" coords="61,7,154,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="74,43,59,60,54,79,56,97,50,97,49,78,54,57,70,39"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="169,10,177,14,181,20,172,29,155,31,154,26,170,24,175,20,174,18,167,15"/>
+<area shape="rect" id="Node000004" href="$d7/dd4/classCFG.html" title="Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR)." alt="" coords="157,97,207,123"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="102,46,102,60,106,72,116,83,129,92,158,102,156,107,127,97,112,87,101,75,96,61,97,46"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="184,83,184,71,180,60,166,45,148,35,151,31,169,41,184,57,189,70,190,83"/>
+</map>

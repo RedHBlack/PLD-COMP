@@ -1,0 +1,19 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d8/d9c/classBaseIRInstr.html" title="Represents a base class for intermediate representation instructions." alt="" coords="5,153,101,179"/>
+<area shape="rect" id="Node000001" href="$d2/de7/classIRInstrBinaryOp.html" title="Represents a binary operation instruction in the intermediate representation." alt="" coords="153,29,277,55"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="70,140,104,101,148,64,170,52,172,57,151,68,107,105,74,144"/>
+<area shape="rect" id="Node000004" href="$d5/ddc/classIRInstrClean.html" title="Represents a clean&#45;up instruction in the intermediate representation." alt="" coords="165,79,266,104"/>
+<area shape="poly" id="edge4_Node000000_Node000004" title=" " alt="" coords="87,144,148,113,176,102,178,107,150,118,90,149"/>
+<area shape="rect" id="Node000005" href="$d2/dca/classIRInstrLoadConst.html" title="Represents an IR instruction for loading a constant into memory or a register." alt="" coords="149,128,281,153"/>
+<area shape="poly" id="edge5_Node000000_Node000005" title=" " alt="" coords="114,154,149,148,150,154,115,159"/>
+<area shape="rect" id="Node000006" href="$da/dca/classIRInstrMove.html" title="Represents an IR instruction for moving a value between registers and memory." alt="" coords="165,177,265,203"/>
+<area shape="poly" id="edge6_Node000000_Node000006" title=" " alt="" coords="116,172,166,180,165,185,115,178"/>
+<area shape="rect" id="Node000007" href="$d0/d02/classIRInstrSet.html" title="Represents an instruction that sets a value in the intermediate representation." alt="" coords="173,227,258,252"/>
+<area shape="poly" id="edge7_Node000000_Node000007" title=" " alt="" coords="91,183,150,212,181,224,178,229,148,216,89,187"/>
+<area shape="rect" id="Node000008" href="$da/d35/classIRInstrUnaryOp.html" title="Represents a unary operation instruction in the intermediate representation." alt="" coords="155,276,276,301"/>
+<area shape="poly" id="edge8_Node000000_Node000008" title=" " alt="" coords="75,188,108,225,151,261,175,274,172,278,148,266,104,229,71,192"/>
+<area shape="rect" id="Node000002" href="$dc/dbf/classIRInstrArithmeticOp.html" title="Represents an arithmetic operation instruction in the intermediate representation." alt="" coords="329,5,480,31"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="291,30,329,25,329,30,291,35"/>
+<area shape="rect" id="Node000003" href="$d7/d85/classIRInstrComp.html" title="Represents a comparison operation instruction in the intermediate representation." alt="" coords="353,55,456,80"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="292,49,354,58,353,63,291,55"/>
+</map>

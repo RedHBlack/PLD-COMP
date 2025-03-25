@@ -1,0 +1,11 @@
+<map id="IRInstrUnaryOp" name="IRInstrUnaryOp">
+<area shape="rect" id="Node000001" title="Represents a unary operation instruction in the intermediate representation." alt="" coords="5,172,127,197"/>
+<area shape="rect" id="Node000002" href="$d8/d9c/classBaseIRInstr.html" title="Represents a base class for intermediate representation instructions." alt="" coords="18,97,114,123"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,137,69,172,63,172,63,137"/>
+<area shape="rect" id="Node000003" href="$d8/d27/classBasicBlock.html" title="Represents a basic block in the control flow graph (CFG)." alt="" coords="71,7,165,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="85,43,70,60,65,79,66,97,61,97,60,78,65,57,81,39"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="179,10,188,14,191,20,183,29,165,31,165,26,181,24,186,20,184,18,177,15"/>
+<area shape="rect" id="Node000004" href="$d7/dd4/classCFG.html" title="Represents a Control Flow Graph (CFG) in an Intermediate Representation (IR)." alt="" coords="168,97,217,123"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="113,46,112,60,116,72,127,83,140,92,169,102,167,107,137,97,123,87,112,75,107,61,107,46"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="195,83,194,71,190,60,177,45,159,35,161,31,180,41,195,57,200,70,200,83"/>
+</map>
