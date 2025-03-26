@@ -70,8 +70,8 @@ private:
      */
     bool containsSymbol(string name);
 
-    /// The symbols table containing variable names and their offsets.
-    map<string, int> symbolsTable;
+    /// The symbols index containing variable names and their offsets.
+    map<string, int> symbolsIndex;
 
     /// The symbols table containing variable names and their types.
     map<string, Type> symbolsType;

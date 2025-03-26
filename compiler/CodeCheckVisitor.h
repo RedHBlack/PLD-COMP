@@ -3,6 +3,7 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 #include "Type.h"
+#include "SymbolsTable.h"
 #include <map>
 
 using namespace std;
@@ -128,33 +129,7 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
-        /**
-         * @brief Retrieves the symbols table, which holds variable names and their associated offsets.
-         *
-         * @return The symbols table as a map of variable names and their associated offsets.
-         */
-        map<string, int> getSymbolsTable() const { return symbolsTable; }
-
-        /**
-         * @brief Retrieves the symbol names and their corresponding types.
-         *
-         * @return A map of symbol names to their types.
-         */
-        map<string, Type> getSymbolsType() const { return symbolsType; }
-
-        /**
-         * @brief Retrieves the map indicating whether variables are used in the code.
-         *
-         * @return The map of variables and their usage status.
-         */
-        map<string, bool> getIsUsed() const { return isUsed; }
-
-        /**
-         * @brief Retrieves the current offset used in the variable symbol table.
-         *
-         * @return The current offset value.
-         */
-        int getCurrentOffset() const { return currentOffset; }
+        SymbolTable
 
         /**
          * @brief Visits a block of code in the parsed code.
@@ -164,18 +139,5 @@ public:
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
 protected:
-        /// The symbols table containing variable names and their offsets.
-        map<string, int> symbolsTable;
-
-        /// The symbols table containing variable names and their types.
-        map<string, Type> symbolsType;
-
-        /// A map indicating if a variable has been used in the code.
-        map<string, bool> isUsed;
-
-        /// A map to track whether a variable has been assigned a value.
-        map<string, bool> hasAValue;
-
-        /// The current offset value used for the symbols table.
-        int currentOffset = 0;
+        SymbolsTable *symbolsTable;
 };
