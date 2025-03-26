@@ -7,11 +7,6 @@ Nous avons décidé d'organiser notre projet comme suit :
 Dans le repertoire `./compiler` à la racine du projet se trouve le code source de notre application.
 Vous y trouverez les fichiers suivants :
 
-- `main.cpp` : le fichier principal de notre application
-- `CodeGenerator.h/.cpp` : les fichiers contenant la classe CodeGenerator qui permet de générer le code assembleur de toutes les règles de notre grammaire.
-- `CodeCheckVisitor.h/.cpp` : les fichiers contenant la classe CodeCheckVisitor qui permet de vérifier la validité des règles de notre grammaire.
-  C'est dans ce code que les erreurs de notre grammaire sont détectées, certaines erreurs moins critiques
-  sont gérées comme des warnings.
 - `Makefile` : le fichier permettant de compiler notre application
 - `config.mk` : le fichier permettant l'éxecution de ANTLR4
 - `ifcc.g4` : le fichier de grammaire ANTLR4
@@ -30,23 +25,43 @@ Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qu
 
 ## Stratégie de test
 
-Les noms de nos tests sont normés de la manière suivante : `<n°test>_<nom du test>.c`.
-Si ce test est voué à échouer, il est nommé de la manière suivante : `<n°test>_<nom du test>_FAILTEST.c`.
+### Conventions de nommage
 
-Notre système de test fonctionne selon cette logique :
+Nos tests suivent une convention de nommage claire :
 
-- Un test standard (sans suffixe \_FAILTEST) doit compiler et s'exécuter correctement
-- Un test marqué \_FAILTEST est conçu pour provoquer une erreur intentionnellement
-  - Si ce test échoue (comme prévu), il est considéré comme "réussi" car il reproduit le comportement attendu
-  - Si ce test réussit contrairement à nos attentes, il est marqué comme échoué car notre compilateur accepte un code qui devrait être rejeté
+- Tests standards : `<n°test>_<nom du test>.c`
+- Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
+- Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
 
-Cette approche nous permet de tester à la fois les fonctionnalités correctes et la détection d'erreurs de notre compilateur, assurant ainsi qu'il rejette les codes non valides tout en acceptant les codes conformes.
+### Logique d'évaluation
+
+Notre système de test s'appuie sur la logique suivante :
+
+- **Tests standards** : Doivent compiler et s'exécuter correctement
+- **Tests FAILTEST** : Conçus pour échouer intentionnellement
+  - Un échec de ces tests est considéré comme un succès (comportement attendu)
+  - Un succès inattendu est considéré comme un échec (car notre compilateur accepte du code non valide)
+
+### Prévention des régressions
+
+Pour garantir la stabilité du code :
+
+- Tous les tests doivent passer avant toute fusion dans la branche principale
+- L'exécution complète de la suite de tests est requise pour chaque nouvelle fonctionnalité
+
+### Tests de fonctionnalités futures
+
+Les tests pour des fonctionnalités non encore implémentées sont :
+
+- Clairement identifiés par le suffixe `_NOT_IMPLEMENTED`
+- Inclus dans les statistiques de test final
+- Conservés pour documenter les fonctionnalités à développer
 
 # Description des fonctionnalitées
 
 ## 1. Opérations arithmétiques
 
-### 1.1 Addition
+### 1.1 Addition et soustraction
 
 #### Fonctionnalités implémentées
 
@@ -56,6 +71,7 @@ Cette approche nous permet de tester à la fois les fonctionnalités correctes e
 - Additions complexes avec plusieurs opérandes (a + b + c + d)
 - Utilisation de parenthèses pour spécifier l'ordre des opérations ((a + b) + c)
 - Gestion des expressions d'addition composées (((1 + 1) + (1 + 1)))
+- Même chose pour la soustraction
 
 #### Fonctionnalités non implémentées
 
@@ -160,59 +176,143 @@ Notre compilateur diffère de GCC sur les points suivants :
 
 - Support de la multiplication avec des types float et double
 
-### Multiple operations
+### 1.6 Opérations multiples
 
-- Le test n°6 nommée `6_multiple_operations.c` est un test qui effectue plusieurs opérations arithmétiques complexes. Ce test est censé fonctionné mais ne fonctionne pas. En effet il renvoie un exit status différent de celui de gcc mais nous ne comprenons pas vraiment pourquoi. Nous avons effectué des tests pas à pas et nous avons donc remarqué que l'erreur était générée lors de l'ajout des parenthèses ce qui implique un problème dans la gestion des priorités des opérations arithmétiques.
+#### Fonctionnalités implémentées
 
-### Not
+- Combinaison de différentes opérations arithmétiques (`a + b * c`)
+- Utilisation de parenthèses pour modifier la priorité des opérations (`(a + b) * c`)
+- Chaînages d'opérations de même type (`a + b + c + d`)
+- Expressions complexes avec variables et constantes (`a * 2 + b - 3`)
+- Combinaison d'opérations avec assignations (`a = b + c * d`)
+- Gestion basique des priorités d'opérateurs (multiplication/division avant addition/soustraction)
+- Support des opérations imbriquées dans des parenthèses (`a * (b + c)`)
 
-- A posteriori, ce test
+#### Comportement différent de GCC
 
-```c
-return !(!(1 == 0) || (1 > 0));
-```
+Notre compilateur diffère de GCC sur les points suivants :
 
-devrait fonctionner. Cependant actuellement nous n'avons pas encore implémenté les ou exclusif `||` et et exclusif `&&`. Nous avons donc décidé de ne pas implémenter ce test pour le moment mais sommes conscients qu'il serait utile de les implémenter dans un second temps.
+- Notre compilateur ne génère pas d'optimisations sur les expressions constantes (contrairement à GCC qui effectue des calculs à la compilation)
 
-### Declaration
+#### À implémenter pour une version future
 
-- Durant nos tests, nous avons remarqué que la déclaration d'une variable nommée uniquement par un numéro passe avec notre compilateur, mais pas avec GCC.
+- Support des opérateurs logiques (`&&` et `||`)
+- Optimisation des expressions constantes à la compilation
+- Support des opérandes de types différents dans une même expression (une fois les types float/double implémentés)
 
-- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée. C'est pour cette raison que le test ne passe pas en comparant les valeurs de sorties de `a`.
+### 1.7 Opérateur unaire d'opposé (-)
 
-- L'affectation multiple sur la même ligne n'est pas acceptée par notre compilateur.
+#### Fonctionnalités implémentées
 
-### Operation postfix & prefix
+- Application de l'opérateur opposé à une constante `(-3)`
+- Application de l'opérateur opposé à une variable `(-a)`
+- Application de l'opérateur opposé à une expression constante `(-(1 + 2))`
+- Application de l'opérateur opposé à une expression avec variables `(-(a + b))`
+- Application de l'opérateur opposé à zéro `(-0)`
+- Chaînage d'opérateurs opposés comme `-(-a)` et `-(-(-a))` qui fonctionnent correctement
 
-- Pour l'instant notre grammaire ne considere pas `a++`, `++a`, `a--` et `--a` comme des expressions et donc
+#### Comportement différent de GCC
 
-```c
-int a = 5;
-int b = 2;
-return a++ == ++b;
-```
+- Notre compilateur se comporte de façon similaire à GCC pour l'opérateur d'opposé. Nous respectons la priorité standard des opérateurs et le traitement des expressions unaires.
+- Le double tiret `(--)` est interprété comme une tentative d'opérateur de décrémentation, qui n'est pas encore implémenté, et non comme un double opposé
 
-ne fonctionne pas.
-Nous ne pouvons donc pas avoir de comparaison sur l'incrémentation postfixée et préfixée.
-A posteriori, nous souhaitons que ce type de tests fonctionne et nous allons donc les implémenter dans un second temps.
+#### À implémenter pour une version future
 
-#### Comparaison
+- Optimisations pour les cas particuliers (comme la double négation)
+- Meilleure intégration avec les types float/double quand ils seront supportés
 
-- Ce test vérifie le comportement de l'incrémentation postfixée (a++) lorsqu'elle est utilisée dans une comparaison. L'opérateur ++ en mode postfixe retourne d'abord la valeur actuelle de a (5), puis l'incrémente après l'évaluation de l'expression. La comparaison 5 == 5 est donc vraie.
+### 1.8 Opérations d'incrémentation et de décrémentation
 
-- Ce test évalue l'effet de l'incrémentation préfixée (++a) lorsqu'elle est utilisée dans une comparaison. Contrairement à la version postfixée, l'opérateur préfixé incrémente d'abord a avant de retourner sa nouvelle valeur. Ainsi, a passe à 6, et la comparaison 6 == 6 est vraie.
+#### Fonctionnalités non implémentées
 
-- Ce test examine le comportement du compilateur lorsqu'une variable non déclarée (b) est utilisée dans une expression. La comparaison b == 2 ne peut pas être évaluée car b n'a pas été définie auparavant, ce qui devrait entraîner une erreur de compilation.
+Notre compilateur ne prend actuellement pas en charge les opérations d'incrémentation et de décrémentation:
 
-### Affectation de variable
+- Opérateur d'incrémentation postfixé (`a++`)
+- Opérateur de décrémentation postfixé (`a--`)
+- Opérateur d'incrémentation préfixé (`++a`)
+- Opérateur de décrémentation préfixé (`--a`)
 
-- Notre compilateur permet d'initialiser une variable non déclarée.
-- Notre compilateur permet d'utiliser une variable non déclarée en l'affectant à une variable déclarée.
-- Notre compilateur n'accepte pas l'affectation de la variable au return.
+#### Différences avec GCC
 
-### Comparaison
+L'implémentation actuelle ne traite pas ces opérateurs comme GCC:
 
-- Notre compilateur accepte la comparaison avec une variable qui n'est ni déclarée ni initialisée.
+#### À implémenter pour une version future
+
+- Support complet des opérateurs d'incrémentation et décrémentation (préfixés et postfixés)
+- Gestion correcte de la sémantique (valeur retournée avant ou après modification)
+- Support de ces opérateurs dans des expressions complexes
+- Vérification que l'opérande est bien une l-value modifiable
+- Gestion des cas d'erreurs comme `++(a++)` (l'opérande n'est pas une l-value)
+
+### 2. Affectation de variables
+
+#### Fonctionnalités implémentées
+
+- Affectation simple d'une constante à une variable (`a = 2`)
+- Affectation d'une variable à une autre variable (`a = b`)
+- Affectation d'expressions complexes à une variable (`a = b * c + 5`)
+- Réaffectation d'une valeur à une variable déjà initialisée (`a = 5; a = 10`)
+
+#### À implémenter pour une version future
+
+- Support pour les opérateurs d'affectation composée (`+=`, `-=`, `*=`, `/=`, etc.)
+- Vérification correcte des l-values du côté gauche des affectations
+- Vérification de compatibilité des types dans les affectations
+
+### 3. Déclaration de variables
+
+#### Fonctionnalités implémentées
+
+- Déclaration simple de variables (`int a;`)
+- Déclarations multiples sur une même ligne (`int a, b, c;`)
+- Initialisation lors de la déclaration (`int a = 5;`)
+- Initialisation avec des expressions complexes (`int a = 2+9;`)
+- Mélange de variables initialisées et non initialisées sur une même ligne (`int a=1, b, c=1;`)
+- Déclaration de variables avec noms valides incluant lettres, chiffres (sauf au début) et underscores
+
+#### Fonctionnalités problématiques
+
+- Notre compilateur accepte la déclaration d'une variable nommée uniquement par un numéro (`int 0;`)
+- Le compilateur n'empêche pas la redéclaration d'une variable déjà déclarée dans le même bloc
+- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais retournera une valeur indéterminée
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Notre compilateur n'empêche pas la redéclaration de variables dans le même bloc
+- Nous acceptons des noms de variables que GCC pourrait rejeter
+
+#### À implémenter pour une version future
+
+### 4. Opérateurs de comparaison
+
+#### Fonctionnalités implémentées
+
+- Opérateur d'égalité (`==`) entre variables et constantes
+- Opérateur d'inégalité (`!=`) entre variables et constantes
+- Opérateurs de relation (`>`, `<`, `>=`, `<=`) pour comparer des valeurs
+- Comparaisons combinées avec des opérations arithmétiques (`a + b > c`)
+- Opérateur de négation (`!`) appliqué aux comparaisons
+- Utilisation d'opérateurs bit à bit avec des comparaisons (`a & b == c`)
+
+#### Fonctionnalités problématiques
+
+- Notre compilateur accepte les comparaisons avec des variables non déclarées
+- Les comparaisons incomplètes (`10 >`) ne sont pas correctement détectées comme erreurs
+- Confusion possible entre l'opérateur d'affectation (`=`) et l'opérateur d'égalité (`==`)
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Notre compilateur n'émet pas d'avertissement pour l'utilisation de `=` au lieu de `==` dans les expressions conditionnelles
+- La vérification des comparaisons incomplètes est moins stricte que GCC
+
+#### À implémenter pour une version future
+
+- Support des opérateurs logiques (`&&` et `||`) pour combiner des comparaisons
+- Avertissements pour les confusions courantes (`=` vs `==`)
 
 ## Organisation du travail
 
