@@ -203,3 +203,16 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
     }
     return 0;
 }
+
+antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    // Si on trouve un return
+    if (ctx->return_stmt() != nullptr)
+    {
+        // Si il y a un return avec une expression => on visite l'expression
+        if (ctx->return_stmt()->expr() != nullptr)
+        {
+            visitExpr(ctx->return_stmt()->expr());
+        }
+    }
+}

@@ -156,6 +156,13 @@ public:
          */
         int getCurrentOffset() const { return currentOffset; }
 
+        /**
+         * @brief Visits a block of code in the parsed code.
+         *
+         * @param ctx The context for the block of code.
+         */
+        virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
+
 protected:
         /// The symbols table containing variable names and their offsets.
         map<string, int> symbolsTable;
