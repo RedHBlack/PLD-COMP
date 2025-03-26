@@ -4,7 +4,8 @@ axiom : prog EOF ;
 
 prog : 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
 
-statement:  decl_stmt
+statement:  if_stmt
+        |   decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
         ;
@@ -14,6 +15,11 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
+if_stmt: if_block (else_if_block)* (else_block)? ;
+if_block: 'if' '(' expr ')' '{' (statement)* return_stmt '}' ;
+else_if_block: 'else if' '(' expr ')' '{' (statement)* return_stmt '}' ;
+else_block: 'else' '{' (statement)* return_stmt '}' ;
+
 return_stmt: RETURN expr ';' ;
 
 expr:   CONST                                               #const

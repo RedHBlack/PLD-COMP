@@ -203,3 +203,20 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
     }
     return 0;
 }
+
+antlrcpp::Any CodeCheckVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    visitExpr(ctx->if_block()->expr());
+
+    for (size_t i = 0; i < ctx->else_if_block().size(); i++)
+    {
+        visitExpr(ctx->else_if_block(i)->expr());
+    }
+
+    if (ctx->else_block())
+    {
+        visit(ctx->else_block());
+    }
+    
+    return 0;
+}

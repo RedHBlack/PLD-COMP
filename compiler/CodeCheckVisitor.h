@@ -128,6 +128,8 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+
         /**
          * @brief Retrieves the symbols table, which holds variable names and their associated offsets.
          *

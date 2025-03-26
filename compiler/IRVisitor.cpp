@@ -4,6 +4,7 @@
 #include "IR/Instr/IRInstrUnaryOp.h"
 #include "IR/Instr/IRInstrComp.h"
 #include "IR/Instr/IRInstrClean.h"
+#include "IR/Instr/IRInstrIf.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -218,6 +219,96 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
 
     currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    // Visit the main if block
+    visit(ctx->if_block());
+
+    // Visit all else-if blocks
+    for (size_t i = 0; i < ctx->else_if_block().size(); i++)
+    {
+        visit(ctx->else_if_block(i));
+    }
+
+    // Visit the else block if it exists
+    if (ctx->else_block())
+    {
+        visit(ctx->else_block());
+    }
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
+{
+    BasicBlock *ifBB = new BasicBlock(this->currentCFG, "if");
+    BasicBlock *afterIfBB = new BasicBlock(this->currentCFG, "after_if");
+
+    visitExpr(ctx->expr(), true);
+
+    ifBB->add_IRInstr(new IRInstrIf(ifBB, "%eax", "0", "==" , afterIfBB->getLabel()));
+
+    this->currentCFG->add_bb(ifBB);
+    this->currentCFG->setCurrentBasicBlock(ifBB);
+
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(afterIfBB);
+    this->currentCFG->add_bb(afterIfBB);
+    this->currentCFG->setCurrentBasicBlock(afterIfBB);
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitElse_if_block(ifccParser::Else_if_blockContext *ctx)
+{
+    BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if");
+    BasicBlock *afterElseIfBB = new BasicBlock(this->currentCFG, "after_else_if");
+
+    visitExpr(ctx->expr(), true);
+
+    elseIfBB->add_IRInstr(new IRInstrIf(elseIfBB, "%eax", "0", "==", afterElseIfBB->getLabel()));
+
+    this->currentCFG->add_bb(elseIfBB);
+    this->currentCFG->setCurrentBasicBlock(elseIfBB);
+
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(afterElseIfBB);
+    this->currentCFG->add_bb(afterElseIfBB);
+    this->currentCFG->setCurrentBasicBlock(afterElseIfBB);
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
+{
+    BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else");
+    BasicBlock *afterElseBB = new BasicBlock(this->currentCFG, "after_else");
+
+    this->currentCFG->add_bb(elseBB);
+    this->currentCFG->setCurrentBasicBlock(elseBB);
+
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(afterElseBB);
+    this->currentCFG->add_bb(afterElseBB);
+    this->currentCFG->setCurrentBasicBlock(afterElseBB);
 
     return 0;
 }
