@@ -1,76 +1,77 @@
 #include "SymbolsTable.h"
 #include <iostream>
+
 using namespace std;
 
-void SymbolTable::addSymbol(string name, Type type)
+void SymbolsTable::addSymbol(string name, Type type)
 {
     this->symbolsIndex[name] = this->currentOffset;
-    this->symbolstype[name] = type;
-    this->currentOffset -= 4; // Déplacer l’offset mémoire
+    this->symbolsType[name] = type;
+    this->symbolsUsage[name] = false;
+
+    this->currentOffset -= 4;
 }
 
-int SymbolTable::getSymbolIndex(string name)
+bool SymbolsTable::containsSymbol(string name)
+{
+    return this->symbolsIndex.find(name) != this->symbolsIndex.end();
+}
+
+void SymbolsTable::addChild(SymbolsTable *child)
+{
+    child->parent = this;
+    this->children.push_back(child);
+}
+
+int SymbolsTable::getSymbolIndex(string name)
 {
     if (this->containsSymbol(name))
     {
         return this->symbolsIndex[name];
     }
-    else
+
+    if (this->parent)
     {
-        // remonter dans le parent
-        if (this->parent != nullptr)
-        {
-            return this->parent->getSymbolIndex(name);
-        }
-        else
-        {
-            // Cas du main qui n'a pas de parent
-            cerr << "Error: Variable '" << name << "' not declared.\n";
-            exit(1);
-        }
+        return this->parent->getSymbolIndex(name);
     }
+
+    return 0;
 }
 
-bool SymbolTable::symbolIsUsed(string name)
+bool SymbolsTable::symbolIsUsed(string name)
 {
     if (this->containsSymbol(name))
     {
-        return this->isUsed[name];
+        return this->symbolsUsage[name];
     }
-    else
+    if (this->parent)
     {
-        if (this->parent != nullptr)
-        {
-            return this->parent->symbolIsUsed(name);
-        }
-        else
-        {
-            cerr << "#WARNING : Variable '" << name << " not used.\n";
-        }
+        return this->parent->symbolIsUsed(name);
     }
+    return false;
 }
 
-bool SymbolTable::symbolHasAValue(string name)
+bool SymbolsTable::symbolHasAValue(string name)
 {
     if (this->containsSymbol(name))
     {
-        return this->hasAValue[name];
+        return this->symbolsHasAValue[name];
     }
-    else
+
+    if (this->parent)
     {
-        // remonter dans le parent
-        if (this->parent != nullptr)
-        {
-            return this->parent->symbolHasAValue(name);
-        }
-        else
-        {
-            cerr << "#WARNING : Variable '" << name << " not initialized.\n";
-        }
+        return this->parent->symbolHasAValue(name);
     }
+
+    return false;
 }
 
-bool SymbolTable::containsSymbol(string name)
+void SymbolsTable::setSymbolUsage(string name, bool isUsed)
 {
-    return this->symbolsIndex.find(name) != this->symbolsIndex.end();
+    this->symbolsUsage[name] = isUsed;
+}
+
+void SymbolsTable::setSymbolDefinitionStatus(string name, bool hasValue)
+{
+    this->symbolsHasAValue[name] = hasValue;
 }

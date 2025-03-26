@@ -18,7 +18,21 @@ using namespace std;
 class CodeCheckVisitor : public ifccBaseVisitor
 {
 public:
-        antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+        /**
+         * @brief Constructs a new instance of the CodeCheckVisitor.
+         */
+        CodeCheckVisitor();
+
+        /**
+         * @brief Visits the program context in the parsed code.
+         *
+         * This method performs a global check of the program, ensuring all variables
+         * are declared and used properly.
+         *
+         * @param ctx The context for the program.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
         /**
          * @brief Visits an assignment statement in the parsed code.
@@ -51,7 +65,7 @@ public:
          * @param expr The expression context to check.
          * @return A result of the visit, typically unused.
          */
-        antlrcpp::Any visitExpr(ifccParser::ExprContext *expr);
+        virtual antlrcpp::Any visitExpr(ifccParser::ExprContext *expr);
 
         /**
          * @brief Visits an addition or subtraction expression.
@@ -129,15 +143,48 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
-        SymbolTable
-
         /**
          * @brief Visits a block of code in the parsed code.
          *
+         * This method ensures correct variable scoping and handles nested blocks properly.
+         *
          * @param ctx The context for the block of code.
+         * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
-protected:
-        SymbolsTable *symbolsTable;
+        /**
+         * @brief Performs a depth-first search traversal for block visiting.
+         *
+         * This method ensures that all symbol tables are correctly handled within nested blocks.
+         *
+         * @param ctx The context for the block.
+         * @param symbolTable The current symbol table.
+         */
+        void dfsVisitBlock(ifccParser::BlockContext *ctx, SymbolsTable *symbolTable);
+
+        /**
+         * @brief Gets the current symbols table.
+         *
+         * @return The current symbols table.
+         */
+        SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
+
+        /**
+         * @brief Gets the root symbols table.
+         *
+         * @return The root symbols table.
+         */
+        SymbolsTable *getRootSymbolsTable() { return root; }
+
+        int getCurrentOffset() { return currentOffset; }
+
+private:
+        /// The root symbol table for the program.
+        SymbolsTable *root;
+
+        /// The current active symbol table.
+        SymbolsTable *currentSymbolsTable;
+
+        int currentOffset = 0;
 };
