@@ -3,6 +3,7 @@
 #include "IR/Instr/IRInstrArithmeticOp.h"
 #include "IR/Instr/IRInstrUnaryOp.h"
 #include "IR/Instr/IRInstrComp.h"
+#include "IR/Instr/IRInstrLogical.h"
 #include "IR/Instr/IRInstrClean.h"
 #include "IRVisitor.h"
 #include <iostream>
@@ -264,6 +265,18 @@ void IRVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
         visitExpr(rightExpr, false);
         currentBB->add_IRInstr(new IRInstrMove(currentBB, newTmpVar, "%eax"));
     }
+}
+
+antlrcpp::Any IRVisitor::visitLogical(ifccParser::LogicalContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", op));
+
+    return 0;
 }
 
 void IRVisitor::gen_asm(ostream &o)

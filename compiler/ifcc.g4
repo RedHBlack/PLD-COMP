@@ -26,6 +26,7 @@ expr:   CONST                                               #const
     |   expr OP=('+' | '-') expr                            #addsub
     |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
+    |   expr OP=('&&' | '||') expr                          # logical
     |   VAR '=' expr                                        #assign
     ;
 
