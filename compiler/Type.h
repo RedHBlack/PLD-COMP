@@ -7,10 +7,11 @@
  */
 enum class Type
 {
-    VOID,  ///< Represents the void type.
-    INT,   ///< Represents the int type.
-    CHAR,  ///< Represents the char type.
-    DOUBLE ///< Represents the double type.
+    UNDEFINED, ///< Represents an undefined type.
+    VOID,      ///< Represents the void type.
+    INT,       ///< Represents the int type.
+    CHAR,      ///< Represents the char type.
+    DOUBLE     ///< Represents the double type.
 };
 
 /**
@@ -29,4 +30,6 @@ inline Type stringToType(const std::string &str)
         return Type::CHAR;
     if (str == "double")
         return Type::DOUBLE;
+
+    return Type::UNDEFINED;
 }

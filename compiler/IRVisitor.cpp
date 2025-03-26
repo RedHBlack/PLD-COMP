@@ -13,10 +13,11 @@
 
 using namespace std;
 
-IRVisitor::IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset)
+IRVisitor::IRVisitor(SymbolsTable *symbolsTable, int baseStackOffset)
 {
-    this->cfgs["main"] = new CFG("main", symbolsTable, symbolsType, baseStackOffset - 4);
+    this->cfgs["main"] = new CFG("main", symbolsTable, baseStackOffset - 4);
     this->currentCFG = this->cfgs["main"];
+    this->currentSymbolsTable = symbolsTable;
 }
 
 antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
@@ -40,6 +41,33 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
     this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
 
     this->currentCFG->add_bb(output);
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    for (int i = 0; i < ctx->statement().size(); i++)
+    {
+        if (auto blockCtx = dynamic_cast<ifccParser::BlockContext *>(ctx->statement(i)))
+        {
+            vector<SymbolsTable *> children = currentSymbolsTable->getChildren();
+
+            for (int j = 0; j < children.size(); j++)
+            {
+                this->currentSymbolsTable = children[j];
+                visitChildren(blockCtx);
+            }
+
+            this->currentSymbolsTable = currentSymbolsTable->getParent();
+        }
+        else
+        {
+            visit(ctx->statement(i));
+        }
+    }
+
+    visit(ctx->return_stmt());
 
     return 0;
 }

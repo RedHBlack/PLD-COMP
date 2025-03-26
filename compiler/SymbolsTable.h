@@ -45,6 +45,8 @@ public:
      */
     int getSymbolIndex(string name);
 
+    Type getSymbolType(string name);
+
     /**
      * @brief Returns true if the symbol is used.
      *

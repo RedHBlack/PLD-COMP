@@ -38,6 +38,21 @@ int SymbolsTable::getSymbolIndex(string name)
     return 0;
 }
 
+Type SymbolsTable::getSymbolType(string name)
+{
+    if (this->containsSymbol(name))
+    {
+        return this->symbolsType[name];
+    }
+
+    if (this->parent)
+    {
+        return this->parent->getSymbolType(name);
+    }
+
+    return Type::UNDEFINED;
+}
+
 bool SymbolsTable::symbolIsUsed(string name)
 {
     if (this->containsSymbol(name))

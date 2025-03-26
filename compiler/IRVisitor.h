@@ -2,6 +2,7 @@
 
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
+#include "SymbolsTable.h"
 #include "IR/CFG.h"
 #include <map>
 #include <string>
@@ -27,7 +28,7 @@ public:
          * @param symbolsTable A map containing variable names and their associated stack offsets.
          * @param baseStackOffset The base offset for the stack.
          */
-        IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset);
+        IRVisitor(SymbolsTable *symbolsTable, int baseStackOffset);
 
         /**
          * @brief Visits the program and starts the IR generation process.
@@ -38,6 +39,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+
+        virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
          * @brief Visits a return statement and generates the IR.
@@ -200,12 +203,16 @@ public:
          */
         map<string, CFG *> getCFGS();
 
+        SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
+
 protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
 
         /// The current control flow graph (CFG) being used.
         CFG *currentCFG;
+
+        SymbolsTable *currentSymbolsTable;
 
 private:
         /**
