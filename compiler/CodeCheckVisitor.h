@@ -154,16 +154,6 @@ public:
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
-         * @brief Performs a depth-first search traversal for block visiting.
-         *
-         * This method ensures that all symbol tables are correctly handled within nested blocks.
-         *
-         * @param ctx The context for the block.
-         * @param symbolTable The current symbol table.
-         */
-        void dfsVisitBlock(ifccParser::BlockContext *ctx, SymbolsTable *symbolTable);
-
-        /**
          * @brief Gets the current symbols table.
          *
          * @return The current symbols table.

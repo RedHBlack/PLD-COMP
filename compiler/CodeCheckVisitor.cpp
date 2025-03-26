@@ -216,7 +216,7 @@ antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
     currentSymbolsTable->addChild(newTable);
     currentSymbolsTable = newTable;
 
-    visit(ctx);
+    visitChildren(ctx);
 
     currentSymbolsTable = currentSymbolsTable->getParent();
 
