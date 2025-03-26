@@ -141,6 +141,25 @@ Notre compilateur diffère de GCC sur les points suivants :
 
 - Support du modulo avec des types float et double (une fois ces types supportés)
 
+### 1.5 Multiplication entière
+
+#### Fonctionnalités implémentées
+
+- Multiplication simple entre deux constantes (`2 * 3`)
+- Multiplication entre deux variables (`a * b`)
+- Multiplication entre variables et constantes (`a * 2`, `5 * b`)
+- Multiplications complexes avec plusieurs opérandes (`a * b * c`)
+- Multiplication avec nombres négatifs (`a * -1`)
+- Gestion correcte de la priorité des opérations (`a + b * c`)
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+#### À implémenter pour une version future
+
+- Support de la multiplication avec des types float et double
+
 ### Multiple operations
 
 - Le test n°6 nommée `6_multiple_operations.c` est un test qui effectue plusieurs opérations arithmétiques complexes. Ce test est censé fonctionné mais ne fonctionne pas. En effet il renvoie un exit status différent de celui de gcc mais nous ne comprenons pas vraiment pourquoi. Nous avons effectué des tests pas à pas et nous avons donc remarqué que l'erreur était générée lors de l'ajout des parenthèses ce qui implique un problème dans la gestion des priorités des opérations arithmétiques.
