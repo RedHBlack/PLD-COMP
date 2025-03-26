@@ -209,6 +209,8 @@ protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
 
+        map<SymbolsTable *, int> childIndices;
+
         /// The current control flow graph (CFG) being used.
         CFG *currentCFG;
 

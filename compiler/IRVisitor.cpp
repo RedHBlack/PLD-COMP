@@ -47,27 +47,29 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
-    for (int i = 0; i < ctx->statement().size(); i++)
+    if (childIndices.find(currentSymbolsTable) == childIndices.end())
     {
-        if (auto blockCtx = dynamic_cast<ifccParser::BlockContext *>(ctx->statement(i)))
-        {
-            vector<SymbolsTable *> children = currentSymbolsTable->getChildren();
-
-            for (int j = 0; j < children.size(); j++)
-            {
-                this->currentSymbolsTable = children[j];
-                visitChildren(blockCtx);
-            }
-
-            this->currentSymbolsTable = currentSymbolsTable->getParent();
-        }
-        else
-        {
-            visit(ctx->statement(i));
-        }
+        childIndices[currentSymbolsTable] = 0;
     }
 
-    visit(ctx->return_stmt());
+    int &childIndex = childIndices[currentSymbolsTable];
+
+    SymbolsTable *childTable = currentSymbolsTable->getChildren()[childIndex];
+    childIndex++;
+
+    currentSymbolsTable = childTable;
+
+    for (int i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+
+    if (ctx->return_stmt())
+    {
+        visit(ctx->return_stmt());
+    }
+
+    currentSymbolsTable = currentSymbolsTable->getParent();
 
     return 0;
 }
