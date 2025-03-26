@@ -25,42 +25,121 @@ Nous avons, pour l'instant, organisé nos tests en quatres sous répertoires :
 - `comparaison` : les tests concernant les comparaisons
 - `declaration` : les tests concernant les déclarations de variables
 
-Les noms de nos tests sont normés de la manière suivante : `<n°test>_<nom du test>.c`.
-Si ce test est voué à échouer, il est nommé de la manière suivante : `<n°test>_<nom du test>_FAILTEST.c`.
-Nous avons donc un large panel de tests afin de vérifier que les fonctionnalités de notre compilateur sont bien implémentées et réussissent quand elles doivent réussir et échouent quand elles doivent échouer.
-
 Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
 `python3 ifcc-test.py ./testfiles` pour exécuter tous les tests ou `python3 ifcc-test.py ./testfiles/<repertoire>` pour exécuter les tests d'un répertoire en particulier.
 
-## Les fonctionnalités implémentées
+## Stratégie de test
 
-Actuellement nous avons implémenté les fonctionnalités suivantes :
+Les noms de nos tests sont normés de la manière suivante : `<n°test>_<nom du test>.c`.
+Si ce test est voué à échouer, il est nommé de la manière suivante : `<n°test>_<nom du test>_FAILTEST.c`.
 
-- Les opérations arithmétiques : addition, soustraction, multiplication, division, modulo, bit à bit, opérations unaires opposé (avec le signe -) et négation (avec le signe !), postfixe et préfixe.
-- Les affectations
-- Les comparaisons : égalité et inégalité qui renvoient l'équivalent d'un booléen (1 si vrai, 0 si faux)
-- Les déclarations de variables
+Notre système de test fonctionne selon cette logique :
 
-## Cas où notre grammaire se comporte différent de gcc
+- Un test standard (sans suffixe \_FAILTEST) doit compiler et s'exécuter correctement
+- Un test marqué \_FAILTEST est conçu pour provoquer une erreur intentionnellement
+  - Si ce test échoue (comme prévu), il est considéré comme "réussi" car il reproduit le comportement attendu
+  - Si ce test réussit contrairement à nos attentes, il est marqué comme échoué car notre compilateur accepte un code qui devrait être rejeté
 
-### Bit
+Cette approche nous permet de tester à la fois les fonctionnalités correctes et la détection d'erreurs de notre compilateur, assurant ainsi qu'il rejette les codes non valides tout en acceptant les codes conformes.
 
-- Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
+# Description des fonctionnalitées
 
-- Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
+## 1. Opérations arithmétiques
 
-### Div
+### 1.1 Addition
 
-- Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infinie lors du lancement du script python. Nous remarquons donc qu'il y a un problème mais nous n'allons pas le corriger pour le moment.
-  Aucun test sur la division par 0 n'est donc effectué dans le répertoire `./testfiles/arithmetic/div`.
+#### Fonctionnalités implémentées
 
-Noys avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+- Addition simple entre deux constantes (1 + 2)
+- Addition entre deux variables (a + b)
+- Addition entre variables et constantes (a + 1)
+- Additions complexes avec plusieurs opérandes (a + b + c + d)
+- Utilisation de parenthèses pour spécifier l'ordre des opérations ((a + b) + c)
+- Gestion des expressions d'addition composées (((1 + 1) + (1 + 1)))
 
-### Mod
+#### Fonctionnalités non implémentées
 
-- De même que pour la division, le modulo par 0 boucle à l'infini. Nous n'avons donc pas effectué de test sur le modulo par 0 dans le repertoire `./testfiles/arithmetic/mod`.
+- Opérateur unaire plus (+a) n'est pas supporté comme expression valide
 
-Nous avons placé le test du modulo par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+### 1.2 Opérations bit à bit
+
+#### Fonctionnalités implémentées
+
+- Opérateur AND bit à bit (`&`) : Effectue un ET logique bit à bit entre deux opérandes
+- Opérateur OR bit à bit (`|`) : Effectue un OU logique bit à bit entre deux opérandes
+- Opérateur XOR bit à bit (`^`) : Effectue un OU exclusif bit à bit entre deux opérandes
+
+#### Fonctionnalités non implémentées
+
+- Opérateur NOT bit à bit (`~`) : Inverse tous les bits de l'opérande
+- Opérateurs de décalage de bits (`<<` et `>>`) : Déplacent les bits vers la gauche ou la droite
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- L'opérateur NOT bit à bit (`~`) n'est pas supporté
+- Les opérateurs de décalage de bits (`<<` et `>>`) ne sont pas supportés
+- Les opérations bit à bit peuvent être utilisées de manière similaire aux opérations arithmétiques standard, mais avec des limitations concernant la précédence et la combinaison avec d'autres opérateurs
+
+### À implémenter pour une version future
+
+- Support de l'opérateur NOT bit à bit (`~`)
+- Support des opérateurs de décalage de bits (`<<` et `>>`)
+- Amélioration de la gestion de la précédence des opérateurs bit à bit dans les expressions complexes
+
+### 1.3 Division Entière
+
+#### Fonctionnalités implémentées
+
+- Division simple entre deux constantes (`2 / 3`)
+- Division entre deux variables (`a / b`)
+- Division entre variables et constantes (`a / 2`, `10 / b`)
+- Division avec valeurs négatives (`a / -1`)
+- Division de zéro par une constante (`0 / 2`)
+
+#### Fonctionnalités problématiques
+
+- Division par zéro - provoque une boucle infinie dans le script de test
+- Nous avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- La division par zéro n'est pas correctement gérée et peut causer un blocage du programme
+- Nous ne générons pas d'avertissement pour les divisions qui pourraient causer un problème à l'exécution
+
+#### À implémenter pour une version future
+
+- Division float
+- Division double
+
+### 1.4 Opérateur Modulo
+
+#### Fonctionnalités implémentées
+
+- Modulo simple entre deux constantes (`2 % 3`)
+- Modulo entre variables et constantes (`a % 2`, `2 % b`)
+- Modulo entre deux variables (`a % b`)
+- Modulo avec valeurs négatives (`a % -1`)
+- Modulo avec zéro comme dividende (`0 % a`)
+
+#### Fonctionnalités problématiques
+
+- Modulo par zéro - provoque une boucle infinie dans le script de test, similaire à la division par zéro
+- Nous avons placé le test du modulo par zéro dans le dossier `./tesfiles_draft` car il ne fonctionne pas correctement
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Le modulo par zéro n'est pas correctement géré et peut causer un blocage du programme
+- Nous ne générons pas d'avertissement pour les opérations modulo qui pourraient causer un problème à l'exécution
+
+#### À implémenter pour une version future
+
+- Support du modulo avec des types float et double (une fois ces types supportés)
 
 ### Multiple operations
 
