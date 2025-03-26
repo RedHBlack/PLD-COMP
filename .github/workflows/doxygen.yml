@@ -1,0 +1,40 @@
+name: Build and Deploy Doxygen Documentation
+
+on:
+  push:
+    branches:
+      - main # Replace with your main branch if necessary
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Generate Doxygen documentation
+        run: |
+          cd doc
+          make doc
+
+      # Check if the documentation has changed
+      - name: Check if documentation changed
+        run: |
+          git diff --exit-code doc || echo "Documentation has changed, proceeding with deployment."
+
+      # Deploy documentation to GitHub Pages if changes are detected
+      - name: Deploy documentation to GitHub Pages
+        if: ${{ !steps.check.outputs.changed == 'true' }}
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: doc/html
+          token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
