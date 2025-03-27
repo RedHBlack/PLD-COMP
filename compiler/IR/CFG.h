@@ -129,6 +129,9 @@ public:
      */
     string getLabel();
 
+    void setSymbolsTable(SymbolsTable *symbolsTable);
+    SymbolsTable *getSymbolsTable() { return symbolsTable; };
+
 protected:
     SymbolsTable *symbolsTable;
 

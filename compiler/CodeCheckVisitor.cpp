@@ -30,6 +30,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
     for (int i = 0; i < ctx->VAR().size(); i++)
     {
         string varLeft = ctx->VAR(i)->getText();
+
         if (currentSymbolsTable->containsSymbol(varLeft))
         {
             cout << "#ERROR: " << varLeft << " is already declared" << endl;
@@ -213,6 +214,7 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
 antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
     SymbolsTable *newTable = new SymbolsTable(currentOffset - 4);
+
     currentSymbolsTable->addChild(newTable);
     currentSymbolsTable = newTable;
 

@@ -204,6 +204,7 @@ public:
         map<string, CFG *> getCFGS();
 
         SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
+        void setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable);
 
 protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).

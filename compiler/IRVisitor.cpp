@@ -43,21 +43,18 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
+
     if (childIndices.find(currentSymbolsTable) == childIndices.end())
     {
         childIndices[currentSymbolsTable] = 0;
     }
 
     int &childIndex = childIndices[currentSymbolsTable];
-
-    SymbolsTable *childTable = currentSymbolsTable->getChildren()[childIndex];
-    childIndex++;
-
-    currentSymbolsTable = childTable;
+    setCurrentSymbolsTable(currentSymbolsTable->getChildren()[childIndex++]);
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        if (any_cast<int>(visit(ctx->statement(i))) != 0)
+        if (any_cast<int>(visitChildren(ctx->statement(i))) != 0)
             return 1;
     }
 
@@ -67,7 +64,7 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
         return 1;
     }
 
-    currentSymbolsTable = currentSymbolsTable->getParent();
+    setCurrentSymbolsTable(currentSymbolsTable->getParent());
 
     return 0;
 }
@@ -328,4 +325,10 @@ CFG *IRVisitor::getCurrentCFG()
 map<string, CFG *> IRVisitor::getCFGS()
 {
     return cfgs;
+}
+
+void IRVisitor::setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable)
+{
+    this->currentSymbolsTable = currentSymbolsTable;
+    this->currentCFG->setSymbolsTable(currentSymbolsTable);
 }

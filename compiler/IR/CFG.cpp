@@ -108,3 +108,8 @@ string CFG::getLabel()
 {
     return label;
 }
+
+void CFG::setSymbolsTable(SymbolsTable *symbolsTable)
+{
+    this->symbolsTable = symbolsTable;
+}
