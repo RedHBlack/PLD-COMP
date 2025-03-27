@@ -47,5 +47,7 @@ public:
 protected:
     /// The basic block that this instruction belongs to.
     BasicBlock *bb;
+
+    /// The symbol table for the current scope.
     SymbolsTable *symbolsTable;
 };

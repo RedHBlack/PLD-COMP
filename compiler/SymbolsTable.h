@@ -9,8 +9,8 @@
 using namespace std;
 
 /**
- * @brief This class represents a symbol table. It stores information about variables,
- * including their names, types, usage status, and values.
+ * @brief Stores information about variables,including their names, types, usage status, and indexes.
+ *
  */
 class SymbolsTable
 {
@@ -45,6 +45,12 @@ public:
      */
     int getSymbolIndex(string name);
 
+    /**
+     * @brief Get the symbol type.
+     *
+     * @param name The name of the symbol.
+     * @return Type - The type of the symbol.
+     */
     Type getSymbolType(string name);
 
     /**

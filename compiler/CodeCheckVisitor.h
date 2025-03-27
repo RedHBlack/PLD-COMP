@@ -176,5 +176,6 @@ private:
         /// The current active symbol table.
         SymbolsTable *currentSymbolsTable;
 
+        /// The current offset for variables.
         int currentOffset = 0;
 };

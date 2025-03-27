@@ -42,11 +42,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
 
         currentOffset -= 4;
 
-        // Seulement si l'expression existe pour cette variable
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
             ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
-            // Si l'initialiseur est une variable, on la marque comme utilisée
             if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
             {
                 string varRight = varCtx->getText();
@@ -62,7 +60,6 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
                 currentSymbolsTable->setSymbolUsage(varRight, true);
                 currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
             }
-            // Sinon, on visite l'expression pour marquer les variables utilisées
             else
             {
                 visitExpr(exprCtx);
@@ -135,7 +132,6 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
 
 antlrcpp::Any CodeCheckVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
-    // Vérification dans une expression arithmétique
 
     visitExpr(ctx->expr(0));
     visitExpr(ctx->expr(1));
@@ -145,7 +141,6 @@ antlrcpp::Any CodeCheckVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
-    // Vérification dans une expression de multiplication ou division
 
     visitExpr(ctx->expr(0));
     visitExpr(ctx->expr(1));
@@ -155,7 +150,6 @@ antlrcpp::Any CodeCheckVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitBitwise(ifccParser::BitwiseContext *ctx)
 {
-    // Vérification dans une expression bit à bit
 
     visitExpr(ctx->expr(0));
     visitExpr(ctx->expr(1));
@@ -165,7 +159,6 @@ antlrcpp::Any CodeCheckVisitor::visitBitwise(ifccParser::BitwiseContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitComp(ifccParser::CompContext *ctx)
 {
-    // Vérification dans une expression de comparaison
 
     visitExpr(ctx->expr(0));
     visitExpr(ctx->expr(1));
@@ -181,7 +174,6 @@ antlrcpp::Any CodeCheckVisitor::visitUnary(ifccParser::UnaryContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitPre(ifccParser::PreContext *ctx)
 {
-    // Vérification dans une expression préfixée
     string varName = ctx->VAR()->getText();
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {

@@ -4,6 +4,8 @@
 
 /**
  * @brief Enumeration representing different data types.
+ *
+ * This enumeration represents different data types that can be used in the compiler.
  */
 enum class Type
 {

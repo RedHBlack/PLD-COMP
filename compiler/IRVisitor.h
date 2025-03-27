@@ -203,18 +203,31 @@ public:
          */
         map<string, CFG *> getCFGS();
 
+        /**
+         * @brief Retrieves the current symbols table.
+         * This method retrieves the current symbols table that is being used for the IR generation.
+         * @return The current symbols table.
+         */
         SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
+
+        /**
+         * @brief Sets the current symbols table.
+         * This method sets the current symbols table that is being used for the IR generation.
+         * @param currentSymbolsTable A pointer to the current symbols table.
+         */
         void setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable);
 
 protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
 
+        /// A map of symbols tables to their corresponding indices in theirs scope.
         map<SymbolsTable *, int> childIndices;
 
         /// The current control flow graph (CFG) being used.
         CFG *currentCFG;
 
+        /// The current symbols table being used.
         SymbolsTable *currentSymbolsTable;
 
 private:

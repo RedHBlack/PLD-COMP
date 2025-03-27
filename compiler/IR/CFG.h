@@ -129,10 +129,22 @@ public:
      */
     string getLabel();
 
+    /**
+     * Sets the symbols table for the control flow graph.
+     *
+     * @param symbolsTable A pointer to the symbols table to be set for the control flow graph.
+     */
     void setSymbolsTable(SymbolsTable *symbolsTable);
+
+    /**
+     * Retrieves the symbols table associated with the control flow graph.
+     *
+     * @return A pointer to the symbols table associated with the control flow graph.
+     */
     SymbolsTable *getSymbolsTable() { return symbolsTable; };
 
 protected:
+    /// The symbols table containing information about variables and their types.
     SymbolsTable *symbolsTable;
 
     /// The next available symbol index.

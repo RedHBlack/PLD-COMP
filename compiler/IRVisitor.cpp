@@ -100,21 +100,18 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     int exprIndex = 0;
-    // Parcourir tous les enfants du nœud de déclaration
+
     for (int i = 0; i < ctx->children.size(); i++)
     {
-        // On cherche un token de type VAR
         auto varNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
         if (varNode && varNode->getSymbol()->getType() == ifccParser::VAR)
         {
             string varName = varNode->getText();
-            // Vérifier si le token suivant est "="
             if (i + 1 < ctx->children.size())
             {
                 auto nextNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
                 if (nextNode && nextNode->getText() == "=")
                 {
-                    // La variable a bien un initialiseur, on utilise ctx->expr(exprIndex)
                     assignValueToVar(ctx->expr(exprIndex), varName);
                     exprIndex++;
                 }
