@@ -26,21 +26,17 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
     // name = function_stmt->getName()->geText()
     // this->cfgs[name] = new CFG(name, symbolsTable, baseStackOffset - 4);
     this->currentCFG->add_bb(new BasicBlock(this->currentCFG, "body"));
+    int resultVisit = 0;
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        visit(ctx->statement(i));
+        resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+        if (resultVisit != 0)
+            return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
     }
 
     visit(ctx->return_stmt());
-
-    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
-    output->add_IRInstr(new IRInstrClean(output));
-
-    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
-
-    this->currentCFG->add_bb(output);
 
     return 0;
 }
@@ -61,12 +57,14 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        visit(ctx->statement(i));
+        if (any_cast<int>(visit(ctx->statement(i))) != 0)
+            return 1;
     }
 
     if (ctx->return_stmt())
     {
         visit(ctx->return_stmt());
+        return 1;
     }
 
     currentSymbolsTable = currentSymbolsTable->getParent();
@@ -92,14 +90,21 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         visit(exprCtx);
     }
 
-    return 0;
+    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
+    output->add_IRInstr(new IRInstrClean(output));
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+
+    this->currentCFG->add_bb(output);
+
+    return 1;
 }
 
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     int exprIndex = 0;
     // Parcourir tous les enfants du nœud de déclaration
-    for (size_t i = 0; i < ctx->children.size(); i++)
+    for (int i = 0; i < ctx->children.size(); i++)
     {
         // On cherche un token de type VAR
         auto varNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
