@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../BasicBlock.h"
+#include "../../SymbolsTable.h"
 #include <string>
 #include <ostream>
 
@@ -24,7 +25,7 @@ public:
      *
      * @param bb_ The basic block to which this instruction belongs.
      */
-    BaseIRInstr(BasicBlock *bb_) : bb(bb_) {}
+    BaseIRInstr(BasicBlock *bb_);
 
     /**
      * @brief Gets the basic block that this instruction belongs to.
@@ -46,4 +47,7 @@ public:
 protected:
     /// The basic block that this instruction belongs to.
     BasicBlock *bb;
+
+    /// The symbol table for the current scope.
+    SymbolsTable *symbolsTable;
 };

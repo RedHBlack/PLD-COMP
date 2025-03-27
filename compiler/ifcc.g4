@@ -7,6 +7,7 @@ prog : 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
 statement:  decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
+        |   block
         ;
 
 decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
@@ -15,6 +16,7 @@ incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
 return_stmt: RETURN expr ';' ;
+block: '{' (statement)* return_stmt? '}' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var

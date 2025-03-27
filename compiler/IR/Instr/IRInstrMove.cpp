@@ -14,21 +14,19 @@ IRInstrMove::IRInstrMove(BasicBlock *bb_, string src, string dest)
  */
 void IRInstrMove::gen_asm(ostream &o)
 {
-    const int offsetSrcVar = this->getBB()->getCFG()->get_var_index(this->src);
-    const int offsetDestinationVar = this->getBB()->getCFG()->get_var_index(this->dest);
 
     if (src[0] != '%' && dest[0] != '%')
     {
-        o << "   movl " << offsetSrcVar << "(%rbp), %eax\n";
-        o << "   movl %eax, " << offsetDestinationVar << "(%rbp)\n";
+        o << "   movl " << this->symbolsTable->getSymbolIndex(this->src) << "(%rbp), %eax\n";
+        o << "   movl %eax, " << this->symbolsTable->getSymbolIndex(this->dest) << "(%rbp)\n";
     }
     else if (dest[0] != '%')
     {
-        o << "   movl " << src << ", " << offsetDestinationVar << "(%rbp)\n";
+        o << "   movl " << src << ", " << this->symbolsTable->getSymbolIndex(this->dest) << "(%rbp)\n";
     }
     else if (src[0] != '%')
     {
-        o << "   movl " << offsetSrcVar << "(%rbp), " << dest << "\n";
+        o << "   movl " << this->symbolsTable->getSymbolIndex(this->src) << "(%rbp), " << dest << "\n";
     }
     else
     {

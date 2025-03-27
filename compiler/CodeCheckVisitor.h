@@ -3,6 +3,7 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 #include "Type.h"
+#include "SymbolsTable.h"
 #include <map>
 
 using namespace std;
@@ -17,7 +18,21 @@ using namespace std;
 class CodeCheckVisitor : public ifccBaseVisitor
 {
 public:
-        antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+        /**
+         * @brief Constructs a new instance of the CodeCheckVisitor.
+         */
+        CodeCheckVisitor();
+
+        /**
+         * @brief Visits the program context in the parsed code.
+         *
+         * This method performs a global check of the program, ensuring all variables
+         * are declared and used properly.
+         *
+         * @param ctx The context for the program.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
         /**
          * @brief Visits an assignment statement in the parsed code.
@@ -50,7 +65,7 @@ public:
          * @param expr The expression context to check.
          * @return A result of the visit, typically unused.
          */
-        antlrcpp::Any visitExpr(ifccParser::ExprContext *expr);
+        virtual antlrcpp::Any visitExpr(ifccParser::ExprContext *expr);
 
         /**
          * @brief Visits an addition or subtraction expression.
@@ -129,46 +144,38 @@ public:
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
         /**
-         * @brief Retrieves the symbols table, which holds variable names and their associated offsets.
+         * @brief Visits a block of code in the parsed code.
          *
-         * @return The symbols table as a map of variable names and their associated offsets.
+         * This method ensures correct variable scoping and handles nested blocks properly.
+         *
+         * @param ctx The context for the block of code.
+         * @return A result of the visit, typically unused.
          */
-        map<string, int> getSymbolsTable() const { return symbolsTable; }
+        virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
-         * @brief Retrieves the symbol names and their corresponding types.
+         * @brief Gets the current symbols table.
          *
-         * @return A map of symbol names to their types.
+         * @return The current symbols table.
          */
-        map<string, Type> getSymbolsType() const { return symbolsType; }
+        SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
 
         /**
-         * @brief Retrieves the map indicating whether variables are used in the code.
+         * @brief Gets the root symbols table.
          *
-         * @return The map of variables and their usage status.
+         * @return The root symbols table.
          */
-        map<string, bool> getIsUsed() const { return isUsed; }
+        SymbolsTable *getRootSymbolsTable() { return root; }
 
-        /**
-         * @brief Retrieves the current offset used in the variable symbol table.
-         *
-         * @return The current offset value.
-         */
-        int getCurrentOffset() const { return currentOffset; }
+        int getCurrentOffset() { return currentOffset; }
 
-protected:
-        /// The symbols table containing variable names and their offsets.
-        map<string, int> symbolsTable;
+private:
+        /// The root symbol table for the program.
+        SymbolsTable *root;
 
-        /// The symbols table containing variable names and their types.
-        map<string, Type> symbolsType;
+        /// The current active symbol table.
+        SymbolsTable *currentSymbolsTable;
 
-        /// A map indicating if a variable has been used in the code.
-        map<string, bool> isUsed;
-
-        /// A map to track whether a variable has been assigned a value.
-        map<string, bool> hasAValue;
-
-        /// The current offset value used for the symbols table.
+        /// The current offset for variables.
         int currentOffset = 0;
 };
