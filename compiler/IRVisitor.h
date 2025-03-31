@@ -2,6 +2,7 @@
 
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
+#include "SymbolsTable.h"
 #include "IR/CFG.h"
 #include <map>
 #include <string>
@@ -27,7 +28,7 @@ public:
          * @param symbolsTable A map containing variable names and their associated stack offsets.
          * @param baseStackOffset The base offset for the stack.
          */
-        IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset);
+        IRVisitor(SymbolsTable *symbolsTable, int baseStackOffset);
 
         /**
          * @brief Visits the program and starts the IR generation process.
@@ -38,6 +39,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+
+        virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
          * @brief Visits a return statement and generates the IR.
@@ -200,12 +203,32 @@ public:
          */
         map<string, CFG *> getCFGS();
 
+        /**
+         * @brief Retrieves the current symbols table.
+         * This method retrieves the current symbols table that is being used for the IR generation.
+         * @return The current symbols table.
+         */
+        SymbolsTable *getCurrentSymbolsTable() { return currentSymbolsTable; }
+
+        /**
+         * @brief Sets the current symbols table.
+         * This method sets the current symbols table that is being used for the IR generation.
+         * @param currentSymbolsTable A pointer to the current symbols table.
+         */
+        void setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable);
+
 protected:
         /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
 
+        /// A map of symbols tables to their corresponding indices in theirs scope.
+        map<SymbolsTable *, int> childIndices;
+
         /// The current control flow graph (CFG) being used.
         CFG *currentCFG;
+
+        /// The current symbols table being used.
+        SymbolsTable *currentSymbolsTable;
 
 private:
         /**

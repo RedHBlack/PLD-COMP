@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include "../Type.h"
+#include "../SymbolsTable.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ public:
      * @param SymbolType A map that maps symbol names to their respective types.
      * @param initialNextFreeSymbolIndex The initial value for the next free symbol index.
      */
-    CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex);
+    CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolIndex);
 
     /**
      * @brief Adds a basic block to the control flow graph.
@@ -128,12 +129,23 @@ public:
      */
     string getLabel();
 
-protected:
-    /// A map of symbol names to their respective indices.
-    map<string, int> SymbolIndex;
+    /**
+     * Sets the symbols table for the control flow graph.
+     *
+     * @param symbolsTable A pointer to the symbols table to be set for the control flow graph.
+     */
+    void setSymbolsTable(SymbolsTable *symbolsTable);
 
-    /// The symbols table containing variable names and their types.
-    map<string, Type> SymbolType;
+    /**
+     * Retrieves the symbols table associated with the control flow graph.
+     *
+     * @return A pointer to the symbols table associated with the control flow graph.
+     */
+    SymbolsTable *getSymbolsTable() { return symbolsTable; };
+
+protected:
+    /// The symbols table containing information about variables and their types.
+    SymbolsTable *symbolsTable;
 
     /// The next available symbol index.
     int nextFreeSymbolIndex;

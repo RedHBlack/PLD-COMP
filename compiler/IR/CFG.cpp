@@ -2,7 +2,7 @@
 #include "Instr/IRInstrSet.h"
 #include <sstream>
 
-CFG::CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex) : label(label), SymbolIndex(SymbolIndex), SymbolType(SymbolType), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)
+CFG::CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolIndex) : label(label), symbolsTable(symbolsTable), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)
 {
     BasicBlock *input = new BasicBlock(this, "input");
     input->add_IRInstr(new IRInstrSet(input));
@@ -32,22 +32,20 @@ string CFG::create_new_tempvar(Type t)
 {
     const string newTmpVar = "tmp" + to_string(-nextFreeSymbolIndex);
 
-    this->SymbolIndex[newTmpVar] = nextFreeSymbolIndex;
+    this->symbolsTable->addSymbol(newTmpVar, t);
     this->nextFreeSymbolIndex -= 4;
-
-    this->SymbolType[newTmpVar] = t;
 
     return newTmpVar;
 }
 
 int CFG::get_var_index(string name)
 {
-    return this->SymbolIndex[name];
+    return this->symbolsTable->getSymbolIndex(name);
 }
 
 Type CFG::get_var_type(string name)
 {
-    return this->SymbolType[name];
+    return this->symbolsTable->getSymbolType(name);
 }
 
 BasicBlock *CFG::getCurrentBasicBlock()
@@ -109,4 +107,9 @@ void CFG::gen_cfg_graphviz(ostream &o)
 string CFG::getLabel()
 {
     return label;
+}
+
+void CFG::setSymbolsTable(SymbolsTable *symbolsTable)
+{
+    this->symbolsTable = symbolsTable;
 }
