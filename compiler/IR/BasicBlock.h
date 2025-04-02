@@ -120,6 +120,14 @@ public:
    */
   BasicBlock *getExitFalse();
 
+  void setTestVarName(const string &varName) {
+    testVarName = varName;
+  }
+
+  string getTestVarName() {
+    return testVarName;
+  }
+
 protected:
   /// Pointer to the basic block representing the "true" exit.
   /// This is used for the branch or conditional statement when the condition is true.
@@ -139,4 +147,6 @@ protected:
 
   /// A vector of instructions that belong to this basic block.
   vector<BaseIRInstr *> instrs;
+
+  string testVarName;
 };

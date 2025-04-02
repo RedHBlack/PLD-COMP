@@ -227,125 +227,117 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    BasicBlock *ifBB = new BasicBlock(this->currentCFG, "if_block");
-    BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");;
-    BasicBlock *elseBB = nullptr;
-    BasicBlock *endBB = new BasicBlock(this->currentCFG, "end_if");
-    /*
-    // Visiter l'expression conditionnelle et récupérer le registre du résultat
-    ifBB->add_IRInstr(new IRInstrIf(ifBB, "%ebx", "%eax",  "!=", ifBB->getLabel()));
-    this->currentCFG->add_bb(ifBB);
-    this->currentCFG->setCurrentBasicBlock(ifBB);
+    BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
+    BasicBlock *thenBB = new BasicBlock(this->currentCFG, "if_block");
+    BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else_block");
+    BasicBlock *endIfBB = new BasicBlock(this->currentCFG, "end_if");
 
-    // Visit the main if block
-    //visit(ctx->if_block()->expr());
+    // Linearisation de l'expression de test
+    any result = visit(ctx->if_block()->if_expr_block());
+    string testVar = "";
 
-    //ifBB->add_IRInstr(new IRInstrIf(ifBB, "!=", ifBB->getLabel()));
-
-    //this->currentCFG->add_bb(ifBB);
-    //this->currentCFG->setCurrentBasicBlock(ifBB);
-
-    // Gérer les else-if
-    vector<BasicBlock *> elseIfBlocks;
-    for (size_t i = 0; i < ctx->else_if_block().size(); i++) {
-        elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
-        //string condReg = std::any_cast<string>(visit(ctx->else_if_block(i)->expr()));
-        elseIfBB->add_IRInstr(new IRInstrIf(elseIfBB, "%ebx", "%eax",  "==",elseIfBB->getLabel()));
-        this->currentCFG->add_bb(elseIfBB);
-        this->currentCFG->setCurrentBasicBlock(elseIfBB);
-        elseIfBlocks.push_back(elseIfBB);
+    if (result.type() == typeid(string))
+    {
+        testVar = any_cast<string>(result);
     }
-    /*
-    // Visit all else-if blocks
+    else if (result.type() == typeid(int))
+    {
+        testVar = to_string(any_cast<int>(result)); // Convierte el int a string
+    }
+    else
+    {
+        cerr << "Error: Invalid type for testVar " << result.type().name() << endl;
+        exit(1);
+    }
+
+
+    testBB->setTestVarName(testVar);
+
+    // Connection du test block avec les blocks then et else
+    testBB->setExitTrue(thenBB);
+    testBB->setExitFalse(elseBB);
+
+    vector<BasicBlock *> elseIfBlocks;
     for (size_t i = 0; i < ctx->else_if_block().size(); i++)
     {
-        BasicBlock* elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
+        BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
+        elseIfBlocks.push_back(elseIfBB);
 
-        visit(ctx->else_if_block(i)->expr());
+        any result = visit(ctx->else_if_block(i)->else_if_expr_block());
+        string elseIfVar = "";
 
-        elseIfBB->add_IRInstr(new IRInstrIf(elseIfBB, "==", elseIfBB->getLabel()));
+        if (result.type() == typeid(string))
+        {
+            elseIfVar = any_cast<string>(result);
+        }
+        else if (result.type() == typeid(int))
+        {
+            elseIfVar = to_string(any_cast<int>(result)); // Convierte el int a string
+        }
+        else
+        {
+            cerr << "Error: Invalid type for elseIfVar " << result.type().name() << endl;
+            exit(1);
+        }
 
+        elseIfBB->setTestVarName(elseIfVar);
+
+        // Connection du block else_if avec le block end_if
+        if(i == 0) {
+            testBB->setExitFalse(elseIfBB);
+        } else {
+            elseIfBlocks[i - 1]->setExitFalse(elseIfBB);
+        }
+
+        // Visiter le block else_if
         this->currentCFG->add_bb(elseIfBB);
-        //this->currentCFG->getCurrentBasicBlock()->setExitTrue(elseIfBB);
-    }
-
-    // Visit the else block if it exists
-    if (ctx->else_block())
-    {
-        BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else_block");
-
-        this->currentCFG->add_bb(elseBB);
-
-        elseBB->add_IRInstr(new IRInstrIf(elseBB, "", elseBB->getLabel()));
-    }
-
-    // Visit the if block
-    visit(ctx->if_block());
-
-    for(size_t i = 0; i < ctx->else_if_block().size(); i++)
-    {
-        visit(ctx->else_if_block(i));
-    }
-
-    visit(ctx->else_block());
-    currentBB = this->currentCFG->getCurrentBasicBlock();
-    currentBB->add_IRInstr(new IRAfterIf(currentBB, "end"));
-    */
-
-    vector<BasicBlock *> elseIfBlocks;
-
-   // visit des expressions
-    visit(ctx->if_block());
-    
-    
-    currentBB->setExitTrue(ifBB);
-    
-    
-    
-    //visit des statements
-
-    visit(ctx->if_block()->if_stmt_block());
-    for(size_t i = 0; i < ctx->else_if_block().size(); i++)
-    {
+        this->currentCFG->setCurrentBasicBlock(elseIfBB);
         visit(ctx->else_if_block(i)->else_if_stmt_block());
+
+        // Connecter le dernier block du else if avec le block end_if
+        BasicBlock *elseIfLastBB = this->currentCFG->getCurrentBasicBlock();
+        elseIfLastBB->setExitTrue(endIfBB);
+        elseIfLastBB->setExitFalse(nullptr);
     }
-    //visit(ctx->else_if_stmt_block());
-    visit(ctx->else_block());
 
-
-    // Gérer le else s'il existe
-    /*if (ctx->else_block()) {
-        elseBB = new BasicBlock(this->currentCFG, "else_block");
-        this->currentCFG->add_bb(elseBB);
-        this->currentCFG->setCurrentBasicBlock(elseBB);
-    }*/
-
-    // Lier les blocs conditionnels
-    
-
-    // Visiter les blocs
-    /*visit(ctx->if_block());
-    for (size_t i = 0; i < ctx->else_if_block().size(); i++) {
-        visit(ctx->else_if_block(i));
+    // Manejo del bloque else
+    //BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else_block");
+    if (!elseIfBlocks.empty()) {
+        elseIfBlocks.back()->setExitFalse(elseBB);
+    } else {
+        testBB->setExitFalse(elseBB);
     }
+
+    this->currentCFG->add_bb(elseBB);
+    this->currentCFG->setCurrentBasicBlock(elseBB);
     if (ctx->else_block()) {
         visit(ctx->else_block());
     }
+    BasicBlock *elseLastBB = this->currentCFG->getCurrentBasicBlock();
 
-    this->currentCFG->add_bb(endBB);
-    endBB->add_IRInstr(new IRAfterIf(endBB, "end_if"));*/
+    // Conectar el último bloque del else con el bloque final
+    elseLastBB->setExitTrue(endIfBB);
+    elseLastBB->setExitFalse(nullptr);
+
+    // Conectar el bloque then con el bloque final
+    this->currentCFG->add_bb(thenBB);
+    this->currentCFG->setCurrentBasicBlock(thenBB);
+    visit(ctx->if_block()->if_stmt_block());
+    BasicBlock *thenLastBB = this->currentCFG->getCurrentBasicBlock();
+    thenLastBB->setExitTrue(endIfBB);
+    thenLastBB->setExitFalse(nullptr);
+
+    // Agregar el bloque final
+    this->currentCFG->add_bb(endIfBB);
+    this->currentCFG->setCurrentBasicBlock(endIfBB);
+
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
 {
-    visit(ctx->if_block()->if_expr_block());
+    visit(ctx->if_expr_block());
 
-    for(size_t i = 0; i < ctx->else_if_block().size(); i++)
-    {
-        visit(ctx->else_if_block(i)->else_if_expr_block());
-    }
     return 0;
 }
 
@@ -353,7 +345,7 @@ antlrcpp::Any IRVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ct
 {   
     BasicBlock *ifBB = new BasicBlock(this->currentCFG, "if_block");
 
-    ifBB->setLabel("if_block");
+    //ifBB->setLabel("if_block");
 
     ifBB->add_IRInstr(new IRInstrIf(ifBB, "%ebx", "%eax",  "!=", ifBB->getLabel()));
     this->currentCFG->add_bb(ifBB);
@@ -381,6 +373,7 @@ antlrcpp::Any IRVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ct
 
 antlrcpp::Any IRVisitor::visitElse_if_block(ifccParser::Else_if_blockContext *ctx)
 {
+    /*
     BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
     BasicBlock *ifBB = this->currentCFG->getCurrentBasicBlock();
     BasicBlock *elseBB = nullptr;
@@ -401,6 +394,7 @@ antlrcpp::Any IRVisitor::visitElse_if_block(ifccParser::Else_if_blockContext *ct
     if (elseBB) {
         elseBB->setExitFalse(endBB);
     }
+    */
     return 0;
 }
 
