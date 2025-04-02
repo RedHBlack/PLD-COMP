@@ -26,11 +26,14 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
     // name = function_stmt->getName()->geText()
     // this->cfgs[name] = new CFG(name, symbolsTable, baseStackOffset - 4);
     this->currentCFG->add_bb(new BasicBlock(this->currentCFG, "body"));
-    int resultVisit = 0;
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+#ifdef __APPLE__
+        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
+#else
+        int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+#endif
         if (resultVisit != 0)
             return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
@@ -43,7 +46,6 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
-
     if (childIndices.find(currentSymbolsTable) == childIndices.end())
     {
         childIndices[currentSymbolsTable] = 0;
@@ -54,7 +56,13 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        if (any_cast<int>(visitChildren(ctx->statement(i))) != 0)
+
+#ifdef __APPLE__
+        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
+#else
+        int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+#endif
+        if (resultVisit != 0)
             return 1;
     }
 
