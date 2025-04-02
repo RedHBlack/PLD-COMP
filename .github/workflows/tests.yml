@@ -23,7 +23,7 @@ jobs:
           unzip antlr4-cpp-runtime-4.13.2-source.zip
           mkdir build
           cd build
-          cmake ..
+          cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j8
           sudo make install
 
@@ -41,7 +41,7 @@ jobs:
         id: run_tests
         run: |
           chmod +x ifcc-test_PR.py
-          cd compiler && make -f test_PR.mk || true
+          cd compiler && make -f test_PR.mk
           cd ..
           python3 ifcc-test_PR.py testfiles/ || echo "Tests failed" > test_failure.log
 
