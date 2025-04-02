@@ -206,11 +206,11 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    visitExpr(ctx->if_block()->expr());
+    visit(ctx->if_block());
 
     for (size_t i = 0; i < ctx->else_if_block().size(); i++)
     {
-        visitExpr(ctx->else_if_block(i)->expr());
+        visit(ctx->else_if_block(i));
     }
 
     if (ctx->else_block())
@@ -218,5 +218,61 @@ antlrcpp::Any CodeCheckVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         visit(ctx->else_block());
     }
     
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
+{
+    visit(ctx->if_expr_block());
+
+    visit(ctx->if_stmt_block());
+    
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ctx)
+{
+    visit(ctx->expr());
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx)
+{
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitElse_if_block(ifccParser::Else_if_blockContext *ctx)
+{
+    visit(ctx->else_if_expr_block());
+
+    visit(ctx->else_if_stmt_block());
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitElse_if_expr_block(ifccParser::Else_if_expr_blockContext *ctx)
+{
+    visit(ctx->expr());
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitElse_if_stmt_block(ifccParser::Else_if_stmt_blockContext *ctx)
+{
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
+{
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
     return 0;
 }

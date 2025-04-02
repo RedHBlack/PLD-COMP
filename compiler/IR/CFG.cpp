@@ -26,8 +26,6 @@ void CFG::gen_asm(ostream &o)
     {
         bbs[i]->gen_asm(o);
     }
-
-    // mettre ici le code pour les cas de if/else-if/else. L'idée c'est de les mettre à la fin du code généré
 }
 
 string CFG::create_new_tempvar(Type t)
@@ -111,4 +109,9 @@ void CFG::gen_cfg_graphviz(ostream &o)
 string CFG::getLabel()
 {
     return label;
+}
+
+void CFG::setLabel(string label)
+{
+    this->label = label;
 }

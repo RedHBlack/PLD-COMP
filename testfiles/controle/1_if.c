@@ -1,8 +1,14 @@
 int main() {
 	int a = 1;
 	int b = 2;
-	if(b!=a) {
+	if(a!=b) {
+		b = 3;
 		return b;
+	} else if (a == b) {
+		a = 4;
+		return a;
+	} else {
+		return 1;
 	}
-	return 0;
+	return 2;
 }

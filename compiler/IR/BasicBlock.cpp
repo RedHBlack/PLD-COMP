@@ -27,6 +27,11 @@ string BasicBlock::getLabel()
     return label;
 }
 
+void BasicBlock::setLabel(string label)
+{
+    this->label = label;
+}
+
 vector<BaseIRInstr *> BasicBlock::getInstr()
 {
     return instrs;

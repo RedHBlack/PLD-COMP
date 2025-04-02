@@ -128,6 +128,8 @@ public:
      */
     string getLabel();
 
+    void setLabel(string label);
+
 protected:
     /// A map of symbol names to their respective indices.
     map<string, int> SymbolIndex;

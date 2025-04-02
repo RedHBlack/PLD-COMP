@@ -65,6 +65,8 @@ public:
    */
   string getLabel();
 
+  void setLabel(string label);
+
   /**
    * @brief Retrieves the list of instructions within the current block.
    *

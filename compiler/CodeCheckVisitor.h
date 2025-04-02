@@ -130,6 +130,20 @@ public:
 
         virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 
+        virtual antlrcpp::Any visitIf_block(ifccParser::If_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitIf_expr_block(ifccParser::If_expr_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitElse_if_block(ifccParser::Else_if_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitElse_if_expr_block(ifccParser::Else_if_expr_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitElse_if_stmt_block(ifccParser::Else_if_stmt_blockContext *ctx) override;
+
+        virtual antlrcpp::Any visitElse_block(ifccParser::Else_blockContext *ctx) override;
+
         /**
          * @brief Retrieves the symbols table, which holds variable names and their associated offsets.
          *

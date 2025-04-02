@@ -28,6 +28,8 @@ void IRInstrIf::gen_asm(ostream &o)
 	else if (op == "<=")
 	{
 		o << "le ";
+	}else{
+		o << "mp ";
 	}
 
 	o << label << endl;
