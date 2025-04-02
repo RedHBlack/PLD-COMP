@@ -85,7 +85,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
                 }
                 else if (!currentSymbolsTable->symbolHasAValue(varRight))
                 {
-                    cout << "#WARNING : The variable " << varRight << " is undefined." << endl;
+                    cerr << "#WARNING : The variable " << varRight << " is undefined." << endl;
                 }
                 currentSymbolsTable->setSymbolUsage(varRight, true);
                 currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
@@ -128,12 +128,12 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
             string varRight = varCtx->getText();
             if (currentSymbolsTable->getSymbolIndex(varRight) == 0)
             {
-                cout << "#ERROR : The variable " << varRight << " is not declared." << endl;
+                cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
                 exit(1);
             }
             else if (!currentSymbolsTable->symbolHasAValue(varRight))
             {
-                cout << "#WARNING : The variable " << varRight << " is undefined." << endl;
+                cerr << "#WARNING : The variable " << varRight << " is undefined." << endl;
             }
 
             currentSymbolsTable->setSymbolUsage(varRight, true);
@@ -161,7 +161,7 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
         }
         else if (!currentSymbolsTable->symbolHasAValue(varName))
         {
-            cout << "#WARNING : The variable " << varName << " is undefined." << endl;
+            cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
         }
         currentSymbolsTable->setSymbolUsage(varName, true);
     }
@@ -225,7 +225,7 @@ antlrcpp::Any CodeCheckVisitor::visitPre(ifccParser::PreContext *ctx)
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cout << "#WARNING : The variable " << varName << " is undefined." << endl;
+        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
     }
 
     return 0;
@@ -241,7 +241,7 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cout << "#WARNING : The variable " << varName << " is undefined." << endl;
+        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
     }
     return 0;
 }
