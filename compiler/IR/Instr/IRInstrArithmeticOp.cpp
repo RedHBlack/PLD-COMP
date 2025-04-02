@@ -28,6 +28,12 @@ void IRInstrArithmeticOp::gen_asm(ostream &o)
     case '^':
         handleBitwiseXor(o);
         break;
+    case '<':
+
+        break;
+    case '>':
+
+        break;
     }
 }
 
@@ -53,7 +59,6 @@ void IRInstrArithmeticOp::handleSubstraction(ostream &o)
 
 void IRInstrArithmeticOp::handleMult(ostream &o)
 {
-
     o << "   imull " << firstOp << ", " << secondOp << "\n";
 }
 
@@ -85,4 +90,14 @@ void IRInstrArithmeticOp::handleBitwiseOr(ostream &o)
 void IRInstrArithmeticOp::handleBitwiseXor(ostream &o)
 {
     o << "   xorl " << firstOp << ", " << secondOp << "\n";
+}
+
+void IRInstrArithmeticOp::handleLeftShift(ostream &o)
+{
+    o << "   shll " << firstOp << ", " << secondOp << "\n";
+}
+
+void IRInstrArithmeticOp::handleRightShift(ostream &o)
+{
+    o << "   shrl " << firstOp << ", " << secondOp << "\n";
 }

@@ -29,11 +29,9 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-#ifdef __APPLE__
-        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
-#else
+
         int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
-#endif
+
         if (resultVisit != 0)
             return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
@@ -56,12 +54,7 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-
-#ifdef __APPLE__
-        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
-#else
         int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
-#endif
         if (resultVisit != 0)
             return 1;
     }
@@ -255,6 +248,17 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
 
     currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitShift(ifccParser::ShiftContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", ctx->OP->getText()));
 
     return 0;
 }
