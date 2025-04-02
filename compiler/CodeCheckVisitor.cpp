@@ -10,7 +10,7 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
     {
         if (!it->second)
         {
-            cout << "# WARNING: " << it->first << " : declared but not used" << endl;
+            cerr << "# WARNING: " << it->first << " : declared but not used" << endl;
         }
     }
 
@@ -23,35 +23,66 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
     for (int i = 0; i < ctx->VAR().size(); i++)
     {
         string varLeft = ctx->VAR(i)->getText();
+        int arraySize = 1; //Par défaut, une variable simple
+
+        //Vérifie si c'est un tableau
+        if (ctx->CONST(i) != nullptr)
+        {
+            arraySize = stoi(ctx->CONST(i)->getText()); //Taille du tableau
+            if (arraySize <= 0)
+            {
+                cerr << "#ERROR: " << varLeft << " : array size must be greater than 0" << endl;
+                exit(1);
+            }
+        }
+
         if (symbolsTable.find(varLeft) != symbolsTable.end())
         {
-            cout << "#ERROR: " << varLeft << " is already declared" << endl;
+            cerr << "#ERROR: " << varLeft << " is already declared" << endl;
             exit(1);
         }
 
-        this->currentOffset -= 4;
+        this->currentOffset -= 4 * arraySize;
         symbolsTable[varLeft] = currentOffset;
 
         symbolsType[varLeft] = stringToType(ctx->TYPE()->getText());
 
         isUsed[varLeft] = false;
 
-        // Seulement si l'expression existe pour cette variable
+        // Seulement si l'expression existe pour cette variable/tableau
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
             ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
+
             // Si l'initialiseur est une variable, on la marque comme utilisée
-            if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
+            
+            if (arraySize > 1)
+            {
+                if (auto tabInitCtx = dynamic_cast<ifccParser::Array_initContext *>(exprCtx))
+                {
+                    if (tabInitCtx->expr().size() > arraySize)
+                    {
+                        cerr << "#ERROR: Too many elements in array initialization for " << varLeft << endl;
+                        exit(1);
+                    }
+                }
+                else
+                {
+                    cerr << "#ERROR: Invalid initialization for array " << varLeft << endl;
+                    exit(1);
+                }
+            }
+            else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
             {
                 string varRight = varCtx->getText();
                 if (symbolsTable.find(varRight) == symbolsTable.end())
                 {
-                    cout << "#ERROR : The variable " << varRight << " is not declared." << endl;
+                    cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
                     exit(1);
                 }
                 else if (hasAValue.find(varRight) == hasAValue.end())
                 {
-                    cout << "#WARNING : The variable " << varRight << " is not initialized." << endl;
+                    cerr << "#WARNING : The variable " << varRight << " is not initialized." << endl;
                 }
                 isUsed[varRight] = true;
                 hasAValue[varLeft] = true;
@@ -73,31 +104,42 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
 
     if (symbolsTable.find(varLeft) == symbolsTable.end())
     {
-        cout << "#ERROR: " << varLeft << " : use before declaration" << endl;
+        cerr << "#ERROR: " << varLeft << " : use before declaration" << endl;
         exit(1);
     }
 
-    auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr());
-    if (varCtx != nullptr)
-    {
-        string varRight = varCtx->getText();
-        if (symbolsTable.find(varRight) == symbolsTable.end())
-        {
-            cout << "#ERROR : The variable " << varRight << " is not declared." << endl;
-            exit(1);
-        }
-        else if (hasAValue.find(varRight) == hasAValue.end())
-        {
-            cout << "#WARNING : The variable " << varRight << " is not initialized." << endl;
-        }
-        isUsed[varRight] = true;
-        hasAValue[varLeft] = true;
+    int nbExpr;
+    if (ctx->expr(1) != nullptr) {
+        nbExpr=2;
     }
-    else
-    {
-        visitExpr(ctx->expr());
+    else {
+        nbExpr=1;
     }
-
+        
+    for (int i=0 ; i<nbExpr; i++)
+    {
+        auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i));
+        if (varCtx != nullptr)
+        {
+            string varRight = varCtx->getText();
+            if (symbolsTable.find(varRight) == symbolsTable.end())
+            {
+                cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
+                exit(1);
+            }
+            else if (hasAValue.find(varRight) == hasAValue.end())
+            {
+                cerr << "#WARNING : The variable " << varRight << " is not initialized." << endl;
+            }
+            isUsed[varRight] = true;
+            hasAValue[varLeft] = true;
+        }
+        else
+        {
+            visitExpr(ctx->expr(i));
+        }
+    }
+    
     return 0;
 }
 
@@ -109,12 +151,12 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
         string varName = varCtx->VAR()->getText();
         if (symbolsTable.find(varName) == symbolsTable.end())
         {
-            cout << "#ERROR: " << varName << " : use before declaration" << endl;
+            cerr << "#ERROR: " << varName << " : use before declaration" << endl;
             exit(1);
         }
         else if (hasAValue.find(varName) == hasAValue.end())
         {
-            cout << "#WARNING : The variable " << varName << " is not initialized." << endl;
+            cerr << "#WARNING : The variable " << varName << " is not initialized." << endl;
         }
         isUsed[varName] = true;
     }
@@ -178,12 +220,12 @@ antlrcpp::Any CodeCheckVisitor::visitPre(ifccParser::PreContext *ctx)
     string varName = ctx->VAR()->getText();
     if (symbolsTable.find(varName) == symbolsTable.end())
     {
-        cout << "#ERROR: " << varName << " : use before declaration" << endl;
+        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
         exit(1);
     }
     else if (hasAValue.find(varName) == hasAValue.end())
     {
-        cout << "#WARNING : The variable " << varName << " is not initialized." << endl;
+        cerr << "#WARNING : The variable " << varName << " is not initialized." << endl;
     }
 
     return 0;
@@ -194,12 +236,12 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
     string varName = ctx->VAR()->getText();
     if (symbolsTable.find(varName) == symbolsTable.end())
     {
-        cout << "#ERROR: " << varName << " : use before declaration" << endl;
+        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
         exit(1);
     }
     else if (hasAValue.find(varName) == hasAValue.end())
     {
-        cout << "#WARNING : The variable " << varName << " is not initialized." << endl;
+        cerr << "#WARNING : The variable " << varName << " is not initialized." << endl;
     }
     return 0;
 }

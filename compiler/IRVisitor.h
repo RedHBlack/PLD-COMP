@@ -59,6 +59,10 @@ public:
          */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
 
+        void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
+        void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
+
+
         /**
          * @brief Visits an assignment expression in the parse tree.
          *
@@ -80,6 +84,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
 
         /**
          * @brief Visits an expression and generates the IR.
@@ -141,6 +147,7 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
+
 
         /**
          * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.

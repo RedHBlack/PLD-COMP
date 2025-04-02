@@ -2,15 +2,15 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
+prog : TYPE 'main' '(' ')' '{' (statement)* return_stmt '}' ;
 
 statement:  decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
         ;
 
-decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
-assign_stmt: VAR '=' expr ';' ;
+decl_stmt: TYPE VAR ('[' CONST ']')? ('=' expr)? (',' VAR ('[' CONST ']')? ('=' expr)?)* ';' ;
+assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
@@ -18,6 +18,8 @@ return_stmt: RETURN expr ';' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var
+    |   VAR '[' expr ']'                                    #array_access
+    |   '{' expr (',' expr)* '}'                            #array_init
     |   '(' expr ')'                                        #par
     |   VAR OP=('++' | '--')                                #post
     |   OP=('++' | '--') VAR                                #pre
@@ -32,10 +34,11 @@ expr:   CONST                                               #const
 OPU:    ('++' | '--');
 
 RETURN : 'return' ;
-TYPE : 'int';
+TYPE : 'void' | 'int' ;
 
 VAR :   [a-zA-Z][a-zA-Z0-9_]*;
-CONST : '-'? [0-9]+ ;
+CONST : '-'? [0-9]+ | '\'' . '\'' ;
+
 
 COMMENT : '/*' .*? '*/' -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;

@@ -25,8 +25,4 @@ inline Type stringToType(const std::string &str)
         return Type::VOID;
     if (str == "int")
         return Type::INT;
-    if (str == "char")
-        return Type::CHAR;
-    if (str == "double")
-        return Type::DOUBLE;
 }

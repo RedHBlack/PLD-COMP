@@ -1,4 +1,6 @@
 #include "IRInstrLoadConst.h"
+#include <iostream>
+#include <cstring>
 
 /**
  * @brief Constructor for the IRInstrLoadConst instruction.
@@ -11,8 +13,10 @@ IRInstrLoadConst::IRInstrLoadConst(BasicBlock *bb_, int value, std::string dest)
  */
 void IRInstrLoadConst::gen_asm(std::ostream &o)
 {
-    if (dest[0] == '%')
+    // If the destination is a register
+    if (dest[0] == '%' || dest[0] == '-')
     {
+        // If the destination is a register, we can directly load the value into it
         o << "   movl $" << value << ", " << dest << "\n";
     }
     else
