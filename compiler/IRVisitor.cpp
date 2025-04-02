@@ -29,7 +29,7 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        if (!visitChildren(ctx->statement(i)).has_value())
+        if (!visitChildren(ctx->statement(i)).as<int>())
             return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
     }
@@ -52,7 +52,7 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        if (!(visitChildren(ctx->statement(i))).has_value())
+        if (!(visitChildren(ctx->statement(i))).as<int>())
             return {};
     }
 
