@@ -2,7 +2,7 @@
 
 CodeCheckVisitor::CodeCheckVisitor()
 {
-    this->root = new SymbolsTable(-4);
+    this->root = new SymbolsTable(0);
     this->currentSymbolsTable = this->root;
 }
 
@@ -31,7 +31,6 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
     {
         string varLeft = ctx->VAR(i)->getText();
         int arraySize = 1; // Par défaut, une variable simple
-
         // Vérifie si c'est un tableau
         if (ctx->CONST(i) != nullptr)
         {
@@ -48,10 +47,11 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
             cerr << "#ERROR: " << varLeft << " is already declared" << endl;
             exit(1);
         }
-
-        this->currentOffset -= 4 * arraySize;
-        currentSymbolsTable->addSymbol(varLeft, stringToType(ctx->TYPE()->getText()));
+        int symbolSize = size_of(stringToType(ctx->TYPE()->getText())) * arraySize;
+        this->currentOffset -= symbolSize;
+        currentSymbolsTable->addSymbol(varLeft, stringToType(ctx->TYPE()->getText()), symbolSize);
         currentSymbolsTable->setSymbolUsage(varLeft, false);
+
         // Seulement si l'expression existe pour cette variable/tableau
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {

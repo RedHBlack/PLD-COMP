@@ -28,7 +28,7 @@ public:
      * @param name The name of the symbol.
      * @param type The type of the symbol.
      */
-    void addSymbol(string name, Type type);
+    void addSymbol(string name, Type type, int symbolSize);
 
     /**
      * @brief Add a child symbol table to the current one.

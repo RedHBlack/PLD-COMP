@@ -1,6 +1,7 @@
-int main() {
+int main()
+{
     int a = 1;
-    int b = 5;
+    int b = 3;
     int tab[3];
 
     tab[1] = a;
@@ -15,7 +16,7 @@ int main() {
     d = tab[1];
 
     tab[1] = tab[tab[a]];
-    
+
     tab[tab[a]] = tab[1];
 
     return tab[a];

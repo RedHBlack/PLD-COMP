@@ -2,7 +2,8 @@
 
 IRInstrStoreToArray::IRInstrStoreToArray(BasicBlock *bb, int baseOffset, string indexRegister, string sourceRegister)
     : BaseIRInstr(bb), baseOffset(baseOffset), indexRegister(indexRegister), sourceRegister(sourceRegister)
-{}
+{
+}
 
 void IRInstrStoreToArray::gen_asm(ostream &o)
 {
