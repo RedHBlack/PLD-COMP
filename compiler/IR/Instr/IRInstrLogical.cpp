@@ -19,14 +19,14 @@ void IRInstrLogical::handleLogicalAnd(ostream &o)
     int falseLabel = label++;
     int trueLabel = label++;
     o << "   cmpl $0, " << firstOp << "\n";
-    o << "   je " << falseLabel << "\n";
+    o << "   je .lbl" << falseLabel << "\n";
     o << "   cmpl $0, " << secondOp << "\n";
-    o << "   je " << falseLabel << "\n";
+    o << "   je .lbl" << falseLabel << "\n";
     o << "   movl $1, %eax \n";
-    o << "   jmp " << trueLabel << "\n";
-    o << falseLabel << ":\n";
+    o << "   jmp .lbl" << trueLabel << "\n";
+    o << ".lbl" << falseLabel << ":\n";
     o << "   movl $0, %eax \n";
-    o << trueLabel << ":\n";
+    o << ".lbl" << trueLabel << ":\n";
 }
 
 void IRInstrLogical::handleLogicalOr(ostream &o)
@@ -34,12 +34,12 @@ void IRInstrLogical::handleLogicalOr(ostream &o)
     int falseLabel = label++;
     int trueLabel = label++;
     o << "   cmpl $0, " << firstOp << "\n";
-    o << "   jne " << trueLabel << "\n";
+    o << "   jne .lbl" << trueLabel << "\n";
     o << "   cmpl $0, " << secondOp << "\n";
-    o << "   jne " << trueLabel << "\n";
+    o << "   jne .lbl" << trueLabel << "\n";
     o << "   movl $0, %eax \n";
-    o << "   jmp " << falseLabel << "\n";
-    o << trueLabel << ":\n";
+    o << "   jmp .lbl" << falseLabel << "\n";
+    o << ".lbl" << trueLabel << ":\n";
     o << "   movl $1, %eax \n";
-    o << falseLabel << ":\n";
+    o << ".lbl" << falseLabel << ":\n";
 }
