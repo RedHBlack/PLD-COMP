@@ -2,11 +2,12 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
+prog : decl_func_stmt* 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
 
 statement:  decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
+        |   call_func_stmt
         |   block
         ;
 
@@ -15,6 +16,8 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
+decl_func_stmt: TYPE VAR '(' (TYPE VAR)+ (',' TYPE VAR)* ')' (block | ';');
+call_func_stmt: VAR '(' (expr)+ (',' expr)* ')' ';';
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
 
