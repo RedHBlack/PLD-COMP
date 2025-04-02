@@ -5,7 +5,7 @@
 include config_PR.mk
 
 CC=g++
-CCFLAGS=-g -c -std=c++17 -I$(ANTLRINC) -Wno-attributes # -Wno-defaulted-function-deleted -Wno-unknown-warning-option
+CCFLAGS=-g -c -std=c++17 -I$(ANTLRINC) -Wno-attributes
 LDFLAGS=-g
 BUILDDIR=build
 
@@ -13,49 +13,72 @@ default: all
 all: ifcc
 
 ##########################################
-# link together all pieces of our compiler
-
-SOURCES = $(shell find . -type f -name '*.cpp')
-OBJECTS = $(SOURCES:%.cpp=$(BUILDDIR)/%.o)
-
-ifcc: $(OBJECTS)
-	@mkdir -p build
-	$(CC) $(LDFLAGS) $(addprefix build/, $(notdir $(OBJECTS))) $(ANTLRLIB) -o ifcc
-
-
-##########################################
-# compile our hand-writen C++ code: main(), CodeGenVisitor, etc.
-$(BUILDDIR)/%.o: %.cpp generated/ifccParser.cpp main.cpp
-	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o  build/$(@F) $< 
-
-##########################################
-# compile all the antlr-generated C++
-build/%.o: generated/%.cpp
-	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o build/$(@F) $<
-
-
-# automagic dependency management: `gcc -MMD` generates all the .d files for us
--include build/*.d
-build/%.d:
-
-##########################################
-# generate the C++ implementation of our Lexer/Parser/Visitor
-generated/ifccLexer.cpp: generated/ifccParser.cpp
-generated/ifccVisitor.cpp: generated/ifccParser.cpp
-generated/ifccBaseVisitor.cpp: generated/ifccParser.cpp
-generated/ifccParser.cpp: ifcc.g4
+# Générer les fichiers ANTLR d'abord
+generated/ifccParser.cpp generated/ifccLexer.cpp generated/ifccVisitor.cpp generated/ifccBaseVisitor.cpp: ifcc.g4
 	@mkdir -p generated
 	java -jar $(ANTLRJAR) -visitor -no-listener -Dlanguage=Cpp -o generated ifcc.g4
 
-# prevent automatic cleanup of "intermediate" files like ifccLexer.cpp etc
-.PRECIOUS: generated/ifcc%.cpp   
+##########################################
+# Lister explicitement les objets dont nous avons besoin
+ANTLR_OBJECTS=build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o
+MAIN_OBJECTS=build/main.o build/CodeCheckVisitor.o build/IRVisitor.o build/SymbolsTable.o
+IR_OBJECTS=build/CFG.o build/BasicBlock.o
+IR_INSTR_OBJECTS=build/BaseIRInstr.o build/IRInstrLoadConst.o build/IRInstrClean.o build/IRInstrMove.o \
+                build/IRInstrSet.o build/IRInstrUnaryOp.o build/IRInstrArithmeticOp.o build/IRInstrComp.o
+
+OBJECTS=$(ANTLR_OBJECTS) $(MAIN_OBJECTS) $(IR_OBJECTS) $(IR_INSTR_OBJECTS)
 
 ##########################################
-# view the parse tree in a graphical window
+# Règle principale
+ifcc: generated/ifccParser.cpp $(OBJECTS)
+	@mkdir -p build
+	$(CC) $(LDFLAGS) $(OBJECTS) $(ANTLRLIB) -o $@
 
-# Usage: `make gui FILE=path/to/your/file.c`
+##########################################
+# Compile les fichiers dans le répertoire principal
+build/%.o: %.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+##########################################
+# Compile les fichiers dans le sous-répertoire IR
+build/%.o: IR/%.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+##########################################
+# Compile les fichiers dans le sous-répertoire IR/Instr
+build/%.o: IR/Instr/%.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+##########################################
+# Compile les fichiers ANTLR générés
+build/ifccBaseVisitor.o: generated/ifccBaseVisitor.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+build/ifccLexer.o: generated/ifccLexer.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+build/ifccVisitor.o: generated/ifccVisitor.cpp | generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+build/ifccParser.o: generated/ifccParser.cpp 
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
+
+# automagic dependency management
+-include build/*.d
+build/%.d:
+
+# Empêcher le nettoyage automatique
+.PRECIOUS: generated/ifcc%.cpp
+
+##########################################
+# GUI pour l'arbre d'analyse syntaxique
 FILE ?= ../testfiles/arithmetic/5_multiple_operations_and_assignation.c
 
 gui:
@@ -65,7 +88,7 @@ gui:
 	java -cp $(ANTLRJAR):build org.antlr.v4.gui.TestRig ifcc axiom -gui $(FILE)
 
 ##########################################
-# delete all machine-generated files
+# Nettoyage
 clean:
 	rm -rf build generated
 	rm -f ifcc
