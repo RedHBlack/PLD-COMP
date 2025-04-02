@@ -21,7 +21,7 @@ void IRInstrLoadConst::gen_asm(std::ostream &o)
     }
     else
     {
-        const int offsetDestinationVar = this->getBB()->getCFG()->get_var_index(this->dest);
+        const int offsetDestinationVar = this->symbolsTable->getSymbolIndex(this->dest);
         o << "   movl $" << value << " ," << offsetDestinationVar << "(%rbp)\n";
     }
 }

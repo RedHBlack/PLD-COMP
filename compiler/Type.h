@@ -4,13 +4,16 @@
 
 /**
  * @brief Enumeration representing different data types.
+ *
+ * This enumeration represents different data types that can be used in the compiler.
  */
 enum class Type
 {
-    VOID,  ///< Represents the void type.
-    INT,   ///< Represents the int type.
-    CHAR,  ///< Represents the char type.
-    DOUBLE ///< Represents the double type.
+    UNDEFINED, ///< Represents an undefined type.
+    VOID,      ///< Represents the void type.
+    INT,       ///< Represents the int type.
+    CHAR,      ///< Represents the char type.
+    DOUBLE     ///< Represents the double type.
 };
 
 /**
@@ -25,4 +28,10 @@ inline Type stringToType(const std::string &str)
         return Type::VOID;
     if (str == "int")
         return Type::INT;
+    if (str == "char")
+        return Type::CHAR;
+    if (str == "double")
+        return Type::DOUBLE;
+
+    return Type::UNDEFINED;
 }

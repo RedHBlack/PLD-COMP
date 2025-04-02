@@ -70,7 +70,7 @@ int main(int argn, const char **argv)
     sv.visit(tree);
 
     // Generate Intermediate Representation (IR)
-    IRVisitor v(sv.getSymbolsTable(), sv.getSymbolsType(), sv.getCurrentOffset());
+    IRVisitor v(sv.getRootSymbolsTable(), sv.getCurrentOffset());
     v.visit(tree); // Perform the IR transformation
 
     // Generate assembly code

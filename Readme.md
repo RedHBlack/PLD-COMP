@@ -7,11 +7,6 @@ Nous avons décidé d'organiser notre projet comme suit :
 Dans le repertoire `./compiler` à la racine du projet se trouve le code source de notre application.
 Vous y trouverez les fichiers suivants :
 
-- `main.cpp` : le fichier principal de notre application
-- `CodeGenerator.h/.cpp` : les fichiers contenant la classe CodeGenerator qui permet de générer le code assembleur de toutes les règles de notre grammaire.
-- `CodeCheckVisitor.h/.cpp` : les fichiers contenant la classe CodeCheckVisitor qui permet de vérifier la validité des règles de notre grammaire.
-  C'est dans ce code que les erreurs de notre grammaire sont détectées, certaines erreurs moins critiques
-  sont gérées comme des warnings.
 - `Makefile` : le fichier permettant de compiler notre application
 - `config.mk` : le fichier permettant l'éxecution de ANTLR4
 - `ifcc.g4` : le fichier de grammaire ANTLR4
@@ -25,100 +20,299 @@ Nous avons, pour l'instant, organisé nos tests en quatres sous répertoires :
 - `comparaison` : les tests concernant les comparaisons
 - `declaration` : les tests concernant les déclarations de variables
 
-Les noms de nos tests sont normés de la manière suivante : `<n°test>_<nom du test>.c`.
-Si ce test est voué à échouer, il est nommé de la manière suivante : `<n°test>_<nom du test>_FAILTEST.c`.
-Nous avons donc un large panel de tests afin de vérifier que les fonctionnalités de notre compilateur sont bien implémentées et réussissent quand elles doivent réussir et échouent quand elles doivent échouer.
-
 Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
 `python3 ifcc-test.py ./testfiles` pour exécuter tous les tests ou `python3 ifcc-test.py ./testfiles/<repertoire>` pour exécuter les tests d'un répertoire en particulier.
 
-## Les fonctionnalités implémentées
+## Stratégie de test
 
-Actuellement nous avons implémenté les fonctionnalités suivantes :
+### Conventions de nommage
 
-- Les opérations arithmétiques : addition, soustraction, multiplication, division, modulo, bit à bit, opérations unaires opposé (avec le signe -) et négation (avec le signe !), postfixe et préfixe.
-- Les affectations
-- Les comparaisons : égalité et inégalité qui renvoient l'équivalent d'un booléen (1 si vrai, 0 si faux)
-- Les déclarations de variables
+Nos tests suivent une convention de nommage claire :
 
+- Tests standards : `<n°test>_<nom du test>.c`
+- Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
+- Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
 
-## Cas où notre grammaire se comporte différent de gcc
+### Logique d'évaluation
 
-### Bit
+Notre système de test s'appuie sur la logique suivante :
 
-- Notre grammaire ne prend pas en compte le not bit à bit `~` qui est une opération unaire. Nous avons décidé de ne pas l'implémenter pour le moment.
+- **Tests standards** : Doivent compiler et s'exécuter correctement
+- **Tests FAILTEST** : Conçus pour échouer intentionnellement
+  - Un échec de ces tests est considéré comme un succès (comportement attendu)
+  - Un succès inattendu est considéré comme un échec (car notre compilateur accepte du code non valide)
 
-- Notre grammaire ne prend pas en compte les décalages de bits `<<` et `>>`. Nous avons décidé de ne pas les implémenter pour le moment.
+### Prévention des régressions
 
--Notre grammaire ne fait pas de return 0 par défaut.
+Pour garantir la stabilité du code :
 
-### Div
+- Tous les tests doivent passer avant toute fusion dans la branche principale
+- L'exécution complète de la suite de tests est requise pour chaque nouvelle fonctionnalité
 
-- Nous avons remarqué, en effectuant nos tests, que la division par 0 provoquait une boucle infinie lors du lancement du script python. Nous remarquons donc qu'il y a un problème mais nous n'allons pas le corriger pour le moment.
-  Aucun test sur la division par 0 n'est donc effectué dans le répertoire `./testfiles/arithmetic/div`.
+### Tests de fonctionnalités futures
 
-Noys avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+Les tests pour des fonctionnalités non encore implémentées sont :
 
-### Mod
+- Clairement identifiés par le suffixe `_NOT_IMPLEMENTED`
+- Inclus dans les statistiques de test final
+- Conservés pour documenter les fonctionnalités à développer
 
-- De même que pour la division, le modulo par 0 boucle à l'infini. Nous n'avons donc pas effectué de test sur le modulo par 0 dans le repertoire `./testfiles/arithmetic/mod`.
+# Description des fonctionnalitées
 
-Nous avons placé le test du modulo par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+## 1. Opérations arithmétiques
 
-### Multiple operations
+### 1.1 Addition et soustraction
 
-- Le test n°6 nommée `6_multiple_operations.c` est un test qui effectue plusieurs opérations arithmétiques complexes. Ce test est censé fonctionné mais ne fonctionne pas. En effet il renvoie un exit status différent de celui de gcc mais nous ne comprenons pas vraiment pourquoi. Nous avons effectué des tests pas à pas et nous avons donc remarqué que l'erreur était générée lors de l'ajout des parenthèses ce qui implique un problème dans la gestion des priorités des opérations arithmétiques.
+#### Fonctionnalités implémentées
 
-### Not
+- Addition simple entre deux constantes (1 + 2)
+- Addition entre deux variables (a + b)
+- Addition entre variables et constantes (a + 1)
+- Additions complexes avec plusieurs opérandes (a + b + c + d)
+- Utilisation de parenthèses pour spécifier l'ordre des opérations ((a + b) + c)
+- Gestion des expressions d'addition composées (((1 + 1) + (1 + 1)))
+- Même chose pour la soustraction
 
-- A posteriori, ce test
+#### Fonctionnalités non implémentées
 
-```c
-return !(!(1 == 0) || (1 > 0));
-```
+- Opérateur unaire plus (+a) n'est pas supporté comme expression valide
 
-devrait fonctionner. Cependant actuellement nous n'avons pas encore implémenté les ou exclusif `||` et et exclusif `&&`. Nous avons donc décidé de ne pas implémenter ce test pour le moment mais sommes conscients qu'il serait utile de les implémenter dans un second temps.
+### 1.2 Opérations bit à bit
 
-### Declaration
+#### Fonctionnalités implémentées
 
-- Durant nos tests, nous avons remarqué que la déclaration d'une variable nommée uniquement par un numéro passe avec notre compilateur, mais pas avec GCC.
+- Opérateur AND bit à bit (`&`) : Effectue un ET logique bit à bit entre deux opérandes
+- Opérateur OR bit à bit (`|`) : Effectue un OU logique bit à bit entre deux opérandes
+- Opérateur XOR bit à bit (`^`) : Effectue un OU exclusif bit à bit entre deux opérandes
 
-- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais il retournera une valeur indéterminée. C'est pour cette raison que le test ne passe pas en comparant les valeurs de sorties de `a`.
+#### Fonctionnalités non implémentées
 
-- L'affectation multiple sur la même ligne est acceptée par notre compilateur.
+- Opérateur NOT bit à bit (`~`) : Inverse tous les bits de l'opérande
+- Opérateurs de décalage de bits (`<<` et `>>`) : Déplacent les bits vers la gauche ou la droite
 
-### Operation postfix & prefix
+#### Comportement différent de GCC
 
-- Pour l'instant notre grammaire ne considere pas `a++`, `++a`, `a--` et `--a` comme des expressions et donc
+Notre compilateur diffère de GCC sur les points suivants :
 
-```c
-int a = 5;
-int b = 2;
-return a++ == ++b;
-```
+- L'opérateur NOT bit à bit (`~`) n'est pas supporté
+- Les opérateurs de décalage de bits (`<<` et `>>`) ne sont pas supportés
+- Les opérations bit à bit peuvent être utilisées de manière similaire aux opérations arithmétiques standard, mais avec des limitations concernant la précédence et la combinaison avec d'autres opérateurs
 
-ne fonctionne pas.
-Nous ne pouvons donc pas avoir de comparaison sur l'incrémentation postfixée et préfixée.
-A posteriori, nous souhaitons que ce type de tests fonctionne et nous allons donc les implémenter dans un second temps.
+### À implémenter pour une version future
 
-#### Comparaison
+- Support de l'opérateur NOT bit à bit (`~`)
+- Support des opérateurs de décalage de bits (`<<` et `>>`)
+- Amélioration de la gestion de la précédence des opérateurs bit à bit dans les expressions complexes
 
-- Ce test vérifie le comportement de l'incrémentation postfixée (a++) lorsqu'elle est utilisée dans une comparaison. L'opérateur ++ en mode postfixe retourne d'abord la valeur actuelle de a (5), puis l'incrémente après l'évaluation de l'expression. La comparaison 5 == 5 est donc vraie.
+### 1.3 Division Entière
 
-- Ce test évalue l'effet de l'incrémentation préfixée (++a) lorsqu'elle est utilisée dans une comparaison. Contrairement à la version postfixée, l'opérateur préfixé incrémente d'abord a avant de retourner sa nouvelle valeur. Ainsi, a passe à 6, et la comparaison 6 == 6 est vraie.
+#### Fonctionnalités implémentées
 
-- Ce test examine le comportement du compilateur lorsqu'une variable non déclarée (b) est utilisée dans une expression. La comparaison b == 2 ne peut pas être évaluée car b n'a pas été définie auparavant, ce qui devrait entraîner une erreur de compilation.
+- Division simple entre deux constantes (`2 / 3`)
+- Division entre deux variables (`a / b`)
+- Division entre variables et constantes (`a / 2`, `10 / b`)
+- Division avec valeurs négatives (`a / -1`)
+- Division de zéro par une constante (`0 / 2`)
 
-### Affectation de variable
+#### Fonctionnalités problématiques
 
-- Notre compilateur permet d'initialiser une variable non déclarée.
-- Notre compilateur permet d'utiliser une variable non déclarée en l'affectant à une variable déclarée.
-- Notre compilateur n'accepte pas l'affectation de la variable au return.
--Notre compilateur permet une affectation en cascade sur la même ligne.
+- Division par zéro - provoque une boucle infinie dans le script de test
+- Nous avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
 
-### Comparaison
+#### Comportement différent de GCC
 
-- Notre compilateur accepte la comparaison avec une variable qui n'est ni déclarée ni initialisée.
+Notre compilateur diffère de GCC sur les points suivants :
+
+- La division par zéro n'est pas correctement gérée et peut causer un blocage du programme
+- Nous ne générons pas d'avertissement pour les divisions qui pourraient causer un problème à l'exécution
+
+#### À implémenter pour une version future
+
+- Division float
+- Division double
+
+### 1.4 Opérateur Modulo
+
+#### Fonctionnalités implémentées
+
+- Modulo simple entre deux constantes (`2 % 3`)
+- Modulo entre variables et constantes (`a % 2`, `2 % b`)
+- Modulo entre deux variables (`a % b`)
+- Modulo avec valeurs négatives (`a % -1`)
+- Modulo avec zéro comme dividende (`0 % a`)
+
+#### Fonctionnalités problématiques
+
+- Modulo par zéro - provoque une boucle infinie dans le script de test, similaire à la division par zéro
+- Nous avons placé le test du modulo par zéro dans le dossier `./tesfiles_draft` car il ne fonctionne pas correctement
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Le modulo par zéro n'est pas correctement géré et peut causer un blocage du programme
+- Nous ne générons pas d'avertissement pour les opérations modulo qui pourraient causer un problème à l'exécution
+
+#### À implémenter pour une version future
+
+- Support du modulo avec des types float et double (une fois ces types supportés)
+
+### 1.5 Multiplication entière
+
+#### Fonctionnalités implémentées
+
+- Multiplication simple entre deux constantes (`2 * 3`)
+- Multiplication entre deux variables (`a * b`)
+- Multiplication entre variables et constantes (`a * 2`, `5 * b`)
+- Multiplications complexes avec plusieurs opérandes (`a * b * c`)
+- Multiplication avec nombres négatifs (`a * -1`)
+- Gestion correcte de la priorité des opérations (`a + b * c`)
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+#### À implémenter pour une version future
+
+- Support de la multiplication avec des types float et double
+
+### 1.6 Opérations multiples
+
+#### Fonctionnalités implémentées
+
+- Combinaison de différentes opérations arithmétiques (`a + b * c`)
+- Utilisation de parenthèses pour modifier la priorité des opérations (`(a + b) * c`)
+- Chaînages d'opérations de même type (`a + b + c + d`)
+- Expressions complexes avec variables et constantes (`a * 2 + b - 3`)
+- Combinaison d'opérations avec assignations (`a = b + c * d`)
+- Gestion basique des priorités d'opérateurs (multiplication/division avant addition/soustraction)
+- Support des opérations imbriquées dans des parenthèses (`a * (b + c)`)
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Notre compilateur ne génère pas d'optimisations sur les expressions constantes (contrairement à GCC qui effectue des calculs à la compilation)
+
+#### À implémenter pour une version future
+
+- Support des opérateurs logiques (`&&` et `||`)
+- Optimisation des expressions constantes à la compilation
+- Support des opérandes de types différents dans une même expression (une fois les types float/double implémentés)
+
+### 1.7 Opérateur unaire d'opposé (-)
+
+#### Fonctionnalités implémentées
+
+- Application de l'opérateur opposé à une constante `(-3)`
+- Application de l'opérateur opposé à une variable `(-a)`
+- Application de l'opérateur opposé à une expression constante `(-(1 + 2))`
+- Application de l'opérateur opposé à une expression avec variables `(-(a + b))`
+- Application de l'opérateur opposé à zéro `(-0)`
+- Chaînage d'opérateurs opposés comme `-(-a)` et `-(-(-a))` qui fonctionnent correctement
+
+#### Comportement différent de GCC
+
+- Notre compilateur se comporte de façon similaire à GCC pour l'opérateur d'opposé. Nous respectons la priorité standard des opérateurs et le traitement des expressions unaires.
+- Le double tiret `(--)` est interprété comme une tentative d'opérateur de décrémentation, qui n'est pas encore implémenté, et non comme un double opposé
+
+#### À implémenter pour une version future
+
+- Optimisations pour les cas particuliers (comme la double négation)
+- Meilleure intégration avec les types float/double quand ils seront supportés
+
+### 1.8 Opérations d'incrémentation et de décrémentation
+
+#### Fonctionnalités non implémentées
+
+Notre compilateur ne prend actuellement pas en charge les opérations d'incrémentation et de décrémentation:
+
+- Opérateur d'incrémentation postfixé (`a++`)
+- Opérateur de décrémentation postfixé (`a--`)
+- Opérateur d'incrémentation préfixé (`++a`)
+- Opérateur de décrémentation préfixé (`--a`)
+
+#### Différences avec GCC
+
+L'implémentation actuelle ne traite pas ces opérateurs comme GCC:
+
+#### À implémenter pour une version future
+
+- Support complet des opérateurs d'incrémentation et décrémentation (préfixés et postfixés)
+- Gestion correcte de la sémantique (valeur retournée avant ou après modification)
+- Support de ces opérateurs dans des expressions complexes
+- Vérification que l'opérande est bien une l-value modifiable
+- Gestion des cas d'erreurs comme `++(a++)` (l'opérande n'est pas une l-value)
+
+### 2. Affectation de variables
+
+#### Fonctionnalités implémentées
+
+- Affectation simple d'une constante à une variable (`a = 2`)
+- Affectation d'une variable à une autre variable (`a = b`)
+- Affectation d'expressions complexes à une variable (`a = b * c + 5`)
+- Réaffectation d'une valeur à une variable déjà initialisée (`a = 5; a = 10`)
+
+#### À implémenter pour une version future
+
+- Support pour les opérateurs d'affectation composée (`+=`, `-=`, `*=`, `/=`, etc.)
+- Vérification correcte des l-values du côté gauche des affectations
+- Vérification de compatibilité des types dans les affectations
+
+### 3. Déclaration de variables
+
+#### Fonctionnalités implémentées
+
+- Déclaration simple de variables (`int a;`)
+- Déclarations multiples sur une même ligne (`int a, b, c;`)
+- Initialisation lors de la déclaration (`int a = 5;`)
+- Initialisation avec des expressions complexes (`int a = 2+9;`)
+- Mélange de variables initialisées et non initialisées sur une même ligne (`int a=1, b, c=1;`)
+- Déclaration de variables avec noms valides incluant lettres, chiffres (sauf au début) et underscores
+
+#### Fonctionnalités problématiques
+
+- Notre compilateur accepte la déclaration d'une variable nommée uniquement par un numéro (`int 0;`)
+- Le compilateur n'empêche pas la redéclaration d'une variable déjà déclarée dans le même bloc
+- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais retournera une valeur indéterminée
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Notre compilateur n'empêche pas la redéclaration de variables dans le même bloc
+- Nous acceptons des noms de variables que GCC pourrait rejeter
+
+#### À implémenter pour une version future
+
+### 4. Opérateurs de comparaison
+
+#### Fonctionnalités implémentées
+
+- Opérateur d'égalité (`==`) entre variables et constantes
+- Opérateur d'inégalité (`!=`) entre variables et constantes
+- Opérateurs de relation (`>`, `<`, `>=`, `<=`) pour comparer des valeurs
+- Comparaisons combinées avec des opérations arithmétiques (`a + b > c`)
+- Opérateur de négation (`!`) appliqué aux comparaisons
+- Utilisation d'opérateurs bit à bit avec des comparaisons (`a & b == c`)
+
+#### Fonctionnalités problématiques
+
+- Notre compilateur accepte les comparaisons avec des variables non déclarées
+- Les comparaisons incomplètes (`10 >`) ne sont pas correctement détectées comme erreurs
+- Confusion possible entre l'opérateur d'affectation (`=`) et l'opérateur d'égalité (`==`)
+
+#### Comportement différent de GCC
+
+Notre compilateur diffère de GCC sur les points suivants :
+
+- Notre compilateur n'émet pas d'avertissement pour l'utilisation de `=` au lieu de `==` dans les expressions conditionnelles
+- La vérification des comparaisons incomplètes est moins stricte que GCC
+
+#### À implémenter pour une version future
+
+- Support des opérateurs logiques (`&&` et `||`) pour combiner des comparaisons
+- Avertissements pour les confusions courantes (`=` vs `==`)
 
 ## Organisation du travail
 
