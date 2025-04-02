@@ -13,10 +13,11 @@
 
 using namespace std;
 
-IRVisitor::IRVisitor(map<string, int> symbolsTable, map<string, Type> symbolsType, int baseStackOffset)
+IRVisitor::IRVisitor(SymbolsTable *symbolsTable, int baseStackOffset)
 {
-    this->cfgs["main"] = new CFG("main", symbolsTable, symbolsType, baseStackOffset - 4);
+    this->cfgs["main"] = new CFG("main", symbolsTable, baseStackOffset - 4);
     this->currentCFG = this->cfgs["main"];
+    this->currentSymbolsTable = symbolsTable;
 }
 
 antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
@@ -28,18 +29,50 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        visit(ctx->statement(i));
+#ifdef __APPLE__
+        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
+#else
+        int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+#endif
+        if (resultVisit != 0)
+            return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
     }
 
     visit(ctx->return_stmt());
 
-    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
-    output->add_IRInstr(new IRInstrClean(output));
+    return 0;
+}
 
-    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    if (childIndices.find(currentSymbolsTable) == childIndices.end())
+    {
+        childIndices[currentSymbolsTable] = 0;
+    }
 
-    this->currentCFG->add_bb(output);
+    int &childIndex = childIndices[currentSymbolsTable];
+    setCurrentSymbolsTable(currentSymbolsTable->getChildren()[childIndex++]);
+
+    for (int i = 0; i < ctx->statement().size(); i++)
+    {
+
+#ifdef __APPLE__
+        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
+#else
+        int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
+#endif
+        if (resultVisit != 0)
+            return 1;
+    }
+
+    if (ctx->return_stmt())
+    {
+        visit(ctx->return_stmt());
+        return 1;
+    }
+
+    setCurrentSymbolsTable(currentSymbolsTable->getParent());
 
     return 0;
 }
@@ -62,27 +95,31 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         visit(exprCtx);
     }
 
-    return 0;
+    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
+    output->add_IRInstr(new IRInstrClean(output));
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+
+    this->currentCFG->add_bb(output);
+
+    return 1;
 }
 
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     int exprIndex = 0;
-    // Parcourir tous les enfants du nœud de déclaration
-    for (size_t i = 0; i < ctx->children.size(); i++)
+
+    for (int i = 0; i < ctx->children.size(); i++)
     {
-        // On cherche un token de type VAR
         auto varNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i]);
         if (varNode && varNode->getSymbol()->getType() == ifccParser::VAR)
         {
             string varName = varNode->getText();
-            // Vérifier si le token suivant est "="
             if (i + 1 < ctx->children.size())
             {
                 auto nextNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
                 if (nextNode && nextNode->getText() == "=")
                 {
-                    // La variable a bien un initialiseur, on utilise ctx->expr(exprIndex)
                     assignValueToVar(ctx->expr(exprIndex), varName);
                     exprIndex++;
                 }
@@ -293,4 +330,10 @@ CFG *IRVisitor::getCurrentCFG()
 map<string, CFG *> IRVisitor::getCFGS()
 {
     return cfgs;
+}
+
+void IRVisitor::setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable)
+{
+    this->currentSymbolsTable = currentSymbolsTable;
+    this->currentCFG->setSymbolsTable(currentSymbolsTable);
 }
