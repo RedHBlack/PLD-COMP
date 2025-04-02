@@ -26,12 +26,10 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
     // name = function_stmt->getName()->geText()
     // this->cfgs[name] = new CFG(name, symbolsTable, baseStackOffset - 4);
     this->currentCFG->add_bb(new BasicBlock(this->currentCFG, "body"));
-    int resultVisit = 0;
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
-        if (resultVisit != 0)
+        if (!visitChildren(ctx->statement(i)).has_value())
             return 0;
         this->currentCFG->resetNextFreeSymbolIndex();
     }
@@ -54,14 +52,14 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-        if (any_cast<int>(visitChildren(ctx->statement(i))) != 0)
-            return 1;
+        if (!(visitChildren(ctx->statement(i))).has_value())
+            return {};
     }
 
     if (ctx->return_stmt())
     {
         visit(ctx->return_stmt());
-        return 1;
+        return {};
     }
 
     setCurrentSymbolsTable(currentSymbolsTable->getParent());
@@ -94,7 +92,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 
     this->currentCFG->add_bb(output);
 
-    return 1;
+    return {};
 }
 
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
