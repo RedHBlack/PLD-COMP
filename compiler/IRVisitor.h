@@ -163,14 +163,24 @@ public:
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
         /**
-         * @brief Visits a logical AND/OR expression and generates the IR.
+         * @brief Visits a logical AND expression and generates the IR.
          *
-         * This method processes logical AND/OR operations and generates the corresponding IR.
+         * This method processes logical AND operations and generates the corresponding IR.
          *
-         * @param ctx The context of the logical AND/OR expression.
+         * @param ctx The context of the logical AND expression.
          * @return A result of the visit, typically unused.
          */
-        virtual antlrcpp::Any visitLogical(ifccParser::LogicalContext *ctx) override;
+        virtual antlrcpp::Any visitLogicalAND(ifccParser::LogicalANDContext *ctx) override;
+
+        /**
+         * @brief Visits a logical OR expression and generates the IR.
+         *
+         * This method processes logical OR operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the logical OR expression.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitLogicalOR(ifccParser::LogicalORContext *ctx) override;
 
         /**
          * @brief Generates the assembly code for the IR.

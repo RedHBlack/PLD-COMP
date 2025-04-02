@@ -4,11 +4,11 @@ int IRInstrLogical::label = 0;
 
 void IRInstrLogical::gen_asm(ostream &o)
 {
-    if (op == "&&")
+    if (op == "and")
     {
         handleLogicalAnd(o);
     }
-    else if (op == "||")
+    else if (op == "or")
     {
         handleLogicalOr(o);
     }

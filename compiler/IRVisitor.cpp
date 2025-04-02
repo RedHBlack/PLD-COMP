@@ -267,14 +267,24 @@ void IRVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
     }
 }
 
-antlrcpp::Any IRVisitor::visitLogical(ifccParser::LogicalContext *ctx)
+antlrcpp::Any IRVisitor::visitLogicalAND(ifccParser::LogicalANDContext *ctx)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    const string op = ctx->OP->getText();
 
     loadRegisters(ctx->expr(0), ctx->expr(1));
 
-    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", op));
+    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "and"));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitLogicalOR(ifccParser::LogicalORContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "or"));
 
     return 0;
 }
