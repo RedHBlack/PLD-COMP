@@ -285,18 +285,32 @@ std::optional<int> IRVisitor::evaluateConstantExpression(ifccParser::ExprContext
         auto left = evaluateConstantExpression(addSubCtx->expr(0));
         auto right = evaluateConstantExpression(addSubCtx->expr(1));
 
-        // If both left and right are constants, we can evaluate the expression
+        // Eliminate neutral elements
+        if (right && *right == 0)
+            return left; // x + 0 = x, x - 0 = x
+        if (left && *left == 0 && addSubCtx->OP->getText() == "+")
+            return right; // 0 + x = x
+
         if (left && right)
         {
             return addSubCtx->OP->getText() == "+" ? (*left + *right) : (*left - *right);
         }
     }
 
-    // Case of an multiplication, division or modulo
+    // Case of a multiplication, division or modulo
     if (auto mulDivCtx = dynamic_cast<ifccParser::MuldivContext *>(ctx))
     {
         auto left = evaluateConstantExpression(mulDivCtx->expr(0));
         auto right = evaluateConstantExpression(mulDivCtx->expr(1));
+
+        // Eliminate neutral elements
+        if (right && *right == 1 && mulDivCtx->OP->getText() == "*")
+            return left; // x * 1 = x
+        if (left && *left == 1 && mulDivCtx->OP->getText() == "*")
+            return right; // 1 * x = x
+        if (right && *right == 1 && mulDivCtx->OP->getText() == "/")
+            return left; // x / 1 = x
+
         if (left && right)
         {
             if (mulDivCtx->OP->getText() == "*")
