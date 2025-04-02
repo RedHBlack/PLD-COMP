@@ -23,7 +23,7 @@ jobs:
           unzip antlr4-cpp-runtime-4.13.2-source.zip
           mkdir build
           cd build
-          cmake ..
+          cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j8
           sudo make install
 
