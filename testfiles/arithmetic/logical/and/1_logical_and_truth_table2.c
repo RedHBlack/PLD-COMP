@@ -1,4 +1,4 @@
-int main() {
-
-    return 0 && 1; // Expected: 0
+int main()
+{
+    return 0 && 1;
 }

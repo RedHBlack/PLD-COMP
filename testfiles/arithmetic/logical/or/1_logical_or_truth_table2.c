@@ -1,5 +1,5 @@
 
-int main() {
-    return 0 || 1; // Expected: 1
-
+int main()
+{
+    return 0 || 1;
 }
