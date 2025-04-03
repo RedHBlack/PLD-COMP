@@ -15,13 +15,10 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
-if_stmt: if_block (else_if_block)* (else_block)? ;
+if_stmt: if_block (else_block)? ;
 if_block: 'if' '(' if_expr_block ')' '{' if_stmt_block '}' ;
 if_expr_block: expr ;
 if_stmt_block: (statement)* return_stmt? ;
-else_if_block: 'else if' '(' else_if_expr_block ')' '{' else_if_stmt_block '}' ;
-else_if_expr_block: expr ;
-else_if_stmt_block: (statement)* return_stmt? ;
 else_block: 'else' '{' (statement)* return_stmt? '}' ;
 
 return_stmt: RETURN expr ';' ;

@@ -225,111 +225,64 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     return 0;
 }
 
+
+
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
+    // Crear el bloque de prueba
     BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
-    BasicBlock *thenBB = new BasicBlock(this->currentCFG, "if_block");
-    BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else_block");
+
+    // Linearizar la expresión de prueba
+    visit(ctx->if_block()->if_expr_block());
+
+    // Crear el bloque "then"
+    BasicBlock *thenBB = new BasicBlock(this->currentCFG, "then_block");
+    thenBB->setIsTestVar(true);
+    this->currentCFG->add_bb(thenBB);
+
+    // Crear el bloque "else" si existe
+    BasicBlock *elseBB = nullptr;
+    if (ctx->else_block()) {
+        elseBB = new BasicBlock(this->currentCFG, "else_block");
+        elseBB->setIsTestVar(true);
+        this->currentCFG->add_bb(elseBB);
+    }
+
+    // Crear el bloque final "end_if"
     BasicBlock *endIfBB = new BasicBlock(this->currentCFG, "end_if");
 
-    // Linearisation de l'expression de test
-    any result = visit(ctx->if_block()->if_expr_block());
-    string testVar = "";
+    this->currentCFG->add_bb(endIfBB);
 
-    if (result.type() == typeid(string))
-    {
-        testVar = any_cast<string>(result);
-    }
-    else if (result.type() == typeid(int))
-    {
-        testVar = to_string(any_cast<int>(result)); // Convierte el int a string
-    }
-    else
-    {
-        cerr << "Error: Invalid type for testVar " << result.type().name() << endl;
-        exit(1);
-    }
-
-
-    testBB->setTestVarName(testVar);
-
-    // Connection du test block avec les blocks then et else
+    // Conectar el bloque de prueba con los bloques "then" y "else"
     testBB->setExitTrue(thenBB);
-    testBB->setExitFalse(elseBB);
+    testBB->setExitFalse(elseBB ? elseBB : endIfBB);
 
-    vector<BasicBlock *> elseIfBlocks;
-    for (size_t i = 0; i < ctx->else_if_block().size(); i++)
-    {
-        BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
-        elseIfBlocks.push_back(elseIfBB);
-
-        any result = visit(ctx->else_if_block(i)->else_if_expr_block());
-        string elseIfVar = "";
-
-        if (result.type() == typeid(string))
-        {
-            elseIfVar = any_cast<string>(result);
-        }
-        else if (result.type() == typeid(int))
-        {
-            elseIfVar = to_string(any_cast<int>(result)); // Convierte el int a string
-        }
-        else
-        {
-            cerr << "Error: Invalid type for elseIfVar " << result.type().name() << endl;
-            exit(1);
-        }
-
-        elseIfBB->setTestVarName(elseIfVar);
-
-        // Connection du block else_if avec le block end_if
-        if(i == 0) {
-            testBB->setExitFalse(elseIfBB);
-        } else {
-            elseIfBlocks[i - 1]->setExitFalse(elseIfBB);
-        }
-
-        // Visiter le block else_if
-        this->currentCFG->add_bb(elseIfBB);
-        this->currentCFG->setCurrentBasicBlock(elseIfBB);
-        visit(ctx->else_if_block(i)->else_if_stmt_block());
-
-        // Connecter le dernier block du else if avec le block end_if
-        BasicBlock *elseIfLastBB = this->currentCFG->getCurrentBasicBlock();
-        elseIfLastBB->setExitTrue(endIfBB);
-        elseIfLastBB->setExitFalse(nullptr);
-    }
-
-    // Manejo del bloque else
-    //BasicBlock *elseBB = new BasicBlock(this->currentCFG, "else_block");
-    if (!elseIfBlocks.empty()) {
-        elseIfBlocks.back()->setExitFalse(elseBB);
-    } else {
-        testBB->setExitFalse(elseBB);
-    }
-
-    this->currentCFG->add_bb(elseBB);
-    this->currentCFG->setCurrentBasicBlock(elseBB);
-    if (ctx->else_block()) {
-        visit(ctx->else_block());
-    }
-    BasicBlock *elseLastBB = this->currentCFG->getCurrentBasicBlock();
-
-    // Conectar el último bloque del else con el bloque final
-    elseLastBB->setExitTrue(endIfBB);
-    elseLastBB->setExitFalse(nullptr);
-
-    // Conectar el bloque then con el bloque final
-    this->currentCFG->add_bb(thenBB);
+    // Visitar el bloque "then"
     this->currentCFG->setCurrentBasicBlock(thenBB);
     visit(ctx->if_block()->if_stmt_block());
     BasicBlock *thenLastBB = this->currentCFG->getCurrentBasicBlock();
-    thenLastBB->setExitTrue(endIfBB);
-    thenLastBB->setExitFalse(nullptr);
+    if(ctx->if_block()->if_stmt_block()->return_stmt()) {
+        thenLastBB->setExitTrue(nullptr); // No hay salida condicional después de un retorno
+    } else {
+        thenLastBB->setExitTrue(endIfBB);
+    }
 
-    // Agregar el bloque final
-    this->currentCFG->add_bb(endIfBB);
+    // Visitar el bloque "else" si existe
+    if (elseBB) {
+        this->currentCFG->setCurrentBasicBlock(elseBB);
+        visit(ctx->else_block());
+        BasicBlock *elseLastBB = this->currentCFG->getCurrentBasicBlock();
+        //elseLastBB->setIsTestVar(true);
+        if(ctx->else_block()->return_stmt()) {
+            elseLastBB->setExitTrue(nullptr); // No hay salida condicional después de un retorno
+        } else {
+            elseLastBB->setExitTrue(endIfBB);
+        }
+    }
+
     this->currentCFG->setCurrentBasicBlock(endIfBB);
+    endIfBB->add_IRInstr(new IRAfterIf(endIfBB, "end_if"));
+    // Establecer el bloque final como el bloque actual
 
     return 0;
 }
@@ -338,18 +291,17 @@ antlrcpp::Any IRVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
 {
     visit(ctx->if_expr_block());
 
+    visit(ctx->if_stmt_block());
+
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ctx)
 {   
-    BasicBlock *ifBB = new BasicBlock(this->currentCFG, "if_block");
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
 
-    //ifBB->setLabel("if_block");
+    currentBB->add_IRInstr(new IRInstrIf(currentBB, "%ebx", "%eax", "!=" , "then_block"));
 
-    ifBB->add_IRInstr(new IRInstrIf(ifBB, "%ebx", "%eax",  "!=", ifBB->getLabel()));
-    this->currentCFG->add_bb(ifBB);
-    this->currentCFG->setCurrentBasicBlock(ifBB);
     return 0;
 }
 
@@ -357,103 +309,32 @@ antlrcpp::Any IRVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ct
 {
     BasicBlock *ifBB = this->currentCFG->getCurrentBasicBlock();
 
-    ifBB->add_IRInstr(new IRAfterIf(ifBB, ifBB->getLabel()));
-
+    // Agregar las instrucciones del bloque "then"
     for (size_t i = 0; i < ctx->statement().size(); i++) {
         visit(ctx->statement(i));
     }
+
+    // Manejar el retorno si existe
     if (ctx->return_stmt()) {
         visit(ctx->return_stmt());
-    } else {
-        ifBB->add_IRInstr(new IRInstrJump(ifBB, "end_if"));
+        ifBB->setExitTrue(nullptr); // No hay salida condicional después de un retorno
     }
 
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitElse_if_block(ifccParser::Else_if_blockContext *ctx)
-{
-    /*
-    BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
-    BasicBlock *ifBB = this->currentCFG->getCurrentBasicBlock();
-    BasicBlock *elseBB = nullptr;
-
-    vector<BasicBlock *> elseIfBlocks;
-    for (size_t i = 0; i < elseIfBlocks.size(); i++) {
-        if (i == 0) {
-            ifBB->setExitFalse(elseIfBlocks[i]);
-        } else {
-            elseIfBlocks[i - 1]->setExitFalse(elseIfBlocks[i]);
-        }
-    }
-    if (!elseIfBlocks.empty()) {
-        elseIfBlocks.back()->setExitFalse(elseBB ? elseBB : endBB);
-    } else {
-        ifBB->setExitFalse(elseBB ? elseBB : endBB);
-    }
-    if (elseBB) {
-        elseBB->setExitFalse(endBB);
-    }
-    */
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitElse_if_expr_block(ifccParser::Else_if_expr_blockContext *ctx)
-{
-    BasicBlock *elseIfBB = new BasicBlock(this->currentCFG, "else_if_block");
-
-    // mettre ici les valeurs des expressions
-    elseIfBB->add_IRInstr(new IRInstrIf(elseIfBB, "%ebx", "%eax",  "==",elseIfBB->getLabel()));
-    this->currentCFG->add_bb(elseIfBB);
-    this->currentCFG->setCurrentBasicBlock(elseIfBB);
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitElse_if_stmt_block(ifccParser::Else_if_stmt_blockContext *ctx)
-{
-    BasicBlock *elseIfBB = this->currentCFG->getCurrentBasicBlock();
-
-    elseIfBB->add_IRInstr(new IRAfterIf(elseIfBB, elseIfBB->getLabel()));
-
-    for (size_t i = 0; i < ctx->statement().size(); i++) {
-        visit(ctx->statement(i));
-    }
-    if (ctx->return_stmt()) {
-        visit(ctx->return_stmt());
-    } else {
-        elseIfBB->add_IRInstr(new IRInstrJump(elseIfBB, "end_if"));
-
-    }
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
 {
-    /*BasicBlock *ifBB = new BasicBlock(this->currentCFG, "else_block");
-    this->currentCFG->getCurrentBasicBlock()->add_IRInstr(new IRAfterIf(this->currentCFG->getCurrentBasicBlock(), ifBB->getLabel()));
-
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }else{
-        this->currentCFG->getCurrentBasicBlock()->add_IRInstr(new IRInstrIf(this->currentCFG->getCurrentBasicBlock(), "", "end"));
-    }*/
     BasicBlock *elseBB = this->currentCFG->getCurrentBasicBlock();
 
-    elseBB->add_IRInstr(new IRAfterIf(elseBB, elseBB->getLabel()));
+    // Agregar las instrucciones del bloque "else"
     for (size_t i = 0; i < ctx->statement().size(); i++) {
         visit(ctx->statement(i));
     }
+
+    // Manejar el retorno si existe
     if (ctx->return_stmt()) {
         visit(ctx->return_stmt());
-    } else {
-        elseBB->add_IRInstr(new IRInstrJump(elseBB, "end_if"));
     }
 
     return 0;

@@ -128,6 +128,10 @@ public:
     return testVarName;
   }
 
+  void setIsTestVar(bool isTest) {
+    is_test_var = isTest;
+  }
+
 protected:
   /// Pointer to the basic block representing the "true" exit.
   /// This is used for the branch or conditional statement when the condition is true.
@@ -149,4 +153,6 @@ protected:
   vector<BaseIRInstr *> instrs;
 
   string testVarName;
+
+  bool is_test_var = false;
 };

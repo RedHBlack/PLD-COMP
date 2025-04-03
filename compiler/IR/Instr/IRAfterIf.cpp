@@ -2,5 +2,5 @@
 
 void IRAfterIf::gen_asm(ostream &o)
 {
-	o << "   " << label << ":" << endl;
+	o << label << ":" << endl;
 }

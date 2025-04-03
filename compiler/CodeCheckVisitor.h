@@ -136,12 +136,6 @@ public:
 
         virtual antlrcpp::Any visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx) override;
 
-        virtual antlrcpp::Any visitElse_if_block(ifccParser::Else_if_blockContext *ctx) override;
-
-        virtual antlrcpp::Any visitElse_if_expr_block(ifccParser::Else_if_expr_blockContext *ctx) override;
-
-        virtual antlrcpp::Any visitElse_if_stmt_block(ifccParser::Else_if_stmt_blockContext *ctx) override;
-
         virtual antlrcpp::Any visitElse_block(ifccParser::Else_blockContext *ctx) override;
 
         /**
