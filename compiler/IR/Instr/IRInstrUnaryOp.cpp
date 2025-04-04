@@ -8,6 +8,9 @@ void IRInstrUnaryOp::gen_asm(ostream &o)
         handleNeg(o);
     else if (op == "~")
         handleCompl(o);
+    else if (op == "cltq")
+        o << "   cltq\n";
+        
     // else if (op == "&")
     //     handleReference(o);
     // else if (op == "*")

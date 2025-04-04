@@ -35,3 +35,12 @@ inline Type stringToType(const std::string &str)
 
     return Type::UNDEFINED;
 }
+
+inline int size_of(Type t)
+{
+    if (t == Type::INT || t == Type::CHAR)
+        return 4;
+    if (t == Type::DOUBLE)
+        return 16;
+    return 1;
+}
