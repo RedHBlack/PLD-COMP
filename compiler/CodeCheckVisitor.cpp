@@ -203,6 +203,24 @@ antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
     return 0;
 }
 
+antlrcpp::Any CodeCheckVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx)
+{
+    string functionName = ctx->VAR()->getText();
+
+    if (ctx->expr().size() > 6)
+    {
+        cout << "#ERROR: Too many parameters for function (max: 6) " << functionName << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < ctx->expr().size(); ++i)
+    {
+        visitExpr(ctx->expr(i));
+    }
+
+    return 0;
+}
+
 antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
     SymbolsTable *newTable = new SymbolsTable(currentOffset - 4);
@@ -215,4 +233,11 @@ antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
     currentSymbolsTable = currentSymbolsTable->getParent();
 
     return 0;
+}
+
+int CodeCheckVisitor::getFunctionNumberOfParameters(string functionName)
+{
+    if (functionsNumberOfParameters.find(functionName) != functionsNumberOfParameters.end())
+        return functionsNumberOfParameters[functionName];
+    return -1;
 }

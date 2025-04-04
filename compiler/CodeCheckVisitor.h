@@ -143,6 +143,8 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
+
         /**
          * @brief Visits a block of code in the parsed code.
          *
