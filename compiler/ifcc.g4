@@ -2,11 +2,14 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : TYPE 'main' '(' ')' '{' (statement)* return_stmt '}' ;
+prog : decl_func_stmt* TYPE 'main' '(' ')' '{' (statement)* return_stmt '}' decl_func_stmt* ;
+
+decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
 
 statement:  decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
+        |   call_func_stmt
         |   block
         ;
 
@@ -15,11 +18,13 @@ assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
+call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var
+    |   call_func_stmt                                      #call
     |   VAR '[' expr ']'                                    #array_access
     |   '{' expr (',' expr)* '}'                            #array_init
     |   '(' expr ')'                                        #par
@@ -36,7 +41,7 @@ expr:   CONST                                               #const
 OPU:    ('++' | '--');
 
 RETURN : 'return' ;
-TYPE : 'void' | 'int' ;
+TYPE : 'void' | 'int';
 
 VAR :   [a-zA-Z][a-zA-Z0-9_]*;
 CONST : '-'? [0-9]+ | '\'' . '\'' ;

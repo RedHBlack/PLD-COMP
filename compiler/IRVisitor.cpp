@@ -4,6 +4,7 @@
 #include "IR/Instr/IRInstrUnaryOp.h"
 #include "IR/Instr/IRInstrComp.h"
 #include "IR/Instr/IRInstrClean.h"
+#include "IR/Instr/IRInstrCall.h"
 #include "IR/Instr/IRInstrStoreToArray.h"
 #include "IR/Instr/IRInstrLoadFromArray.h"
 #include "IRVisitor.h"
@@ -401,6 +402,34 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
 
     currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx)
+{
+    static const vector<string> regParams = {"%edi", "%esi", "%edx", "%ecx", "%r8", "%r9"};
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    for (int i = 0; i < ctx->expr().size(); ++i)
+    {
+        if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(i)))
+        {
+
+            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(constCtx->CONST()->getText()), regParams[i]));
+        }
+        else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i)))
+        {
+            currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), regParams[i]));
+        }
+        else
+        {
+            visitExpr(ctx->expr(i), true);
+            currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", regParams[i]));
+        }
+    }
+
+    currentBB->add_IRInstr(new IRInstrCall(currentBB, ctx->VAR()->getText()));
 
     return 0;
 }
