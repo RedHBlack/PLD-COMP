@@ -2,7 +2,9 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : decl_func_stmt* 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' decl_func_stmt* ;
+prog : decl_func_stmt* TYPE 'main' '(' ')' '{' (statement)* return_stmt '}' decl_func_stmt* ;
+
+decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
 
 statement:  decl_stmt
         |   assign_stmt
@@ -11,12 +13,11 @@ statement:  decl_stmt
         |   block
         ;
 
-decl_stmt: TYPE VAR ('=' expr)? (',' VAR ('=' expr)?)* ';' ;
-assign_stmt: VAR '=' expr ';' ;
+decl_stmt: TYPE VAR ('[' CONST ']')? ('=' expr)? (',' VAR ('[' CONST ']')? ('=' expr)?)* ';' ;
+assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
-decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
 call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
@@ -24,6 +25,8 @@ block: '{' (statement)* return_stmt? '}' ;
 expr:   CONST                                               #const
     |   VAR                                                 #var
     |   call_func_stmt                                      #call
+    |   VAR '[' expr ']'                                    #array_access
+    |   '{' expr (',' expr)* '}'                            #array_init
     |   '(' expr ')'                                        #par
     |   VAR OP=('++' | '--')                                #post
     |   OP=('++' | '--') VAR                                #pre
@@ -38,10 +41,11 @@ expr:   CONST                                               #const
 OPU:    ('++' | '--');
 
 RETURN : 'return' ;
-TYPE : 'int';
+TYPE : 'void' | 'int';
 
 VAR :   [a-zA-Z][a-zA-Z0-9_]*;
-CONST : '-'? [0-9]+ ;
+CONST : '-'? [0-9]+ | '\'' . '\'' ;
+
 
 COMMENT : '/*' .*? '*/' -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;

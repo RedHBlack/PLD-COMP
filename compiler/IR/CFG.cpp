@@ -1,4 +1,5 @@
 #include "CFG.h"
+#include "../Type.h"
 #include "Instr/IRInstrSet.h"
 #include <sstream>
 
@@ -32,8 +33,8 @@ string CFG::create_new_tempvar(Type t)
 {
     const string newTmpVar = "tmp" + to_string(-nextFreeSymbolIndex);
 
-    this->symbolsTable->addSymbol(newTmpVar, t);
-    this->nextFreeSymbolIndex -= 4;
+    this->symbolsTable->addSymbol(newTmpVar, t, size_of(t));
+    this->nextFreeSymbolIndex -= size_of(t);
 
     return newTmpVar;
 }

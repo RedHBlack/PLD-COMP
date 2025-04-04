@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <optional>
 
 using namespace std;
 
@@ -62,6 +63,10 @@ public:
          */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
 
+        void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
+        void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
+
+
         /**
          * @brief Visits an assignment expression in the parse tree.
          *
@@ -83,6 +88,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
 
         /**
          * @brief Visits an expression and generates the IR.
@@ -144,6 +151,7 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
+
 
         /**
          * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.
@@ -263,4 +271,15 @@ private:
          * @param op The operation to perform (e.g., "+" or "-").
          */
         void handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op);
+
+        /**
+         * @brief Evaluates a constant expression.
+         *
+         * This method evaluates a constant expression and returns its integer value if possible, if not
+         * it returns an empty optional (case of a variable).
+         *
+         * @param ctx The context of the expression to evaluate.
+         * @return An optional integer value of the evaluated expression, or an empty optional if not possible (e.g., variable).
+         */
+        std::optional<int> evaluateConstantExpression(ifccParser::ExprContext *ctx);
 };

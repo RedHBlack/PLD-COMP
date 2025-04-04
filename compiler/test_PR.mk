@@ -24,8 +24,8 @@ ANTLR_OBJECTS=build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o buil
 MAIN_OBJECTS=build/main.o build/CodeCheckVisitor.o build/IRVisitor.o build/SymbolsTable.o
 IR_OBJECTS=build/CFG.o build/BasicBlock.o
 IR_INSTR_OBJECTS=build/BaseIRInstr.o build/IRInstrLoadConst.o build/IRInstrClean.o build/IRInstrMove.o \
-                build/IRInstrSet.o build/IRInstrUnaryOp.o build/IRInstrArithmeticOp.o build/IRInstrComp.o
-				build/IRInstrCall.o
+                build/IRInstrSet.o build/IRInstrUnaryOp.o build/IRInstrArithmeticOp.o build/IRInstrComp.o \
+				build/IRInstrLoadFromArray.o build/IRInstrStoreToArray.o build/IRInstrCall.o
 
 OBJECTS=$(ANTLR_OBJECTS) $(MAIN_OBJECTS) $(IR_OBJECTS) $(IR_INSTR_OBJECTS)
 
