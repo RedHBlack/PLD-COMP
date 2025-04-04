@@ -3,13 +3,13 @@
 
 using namespace std;
 
-void SymbolsTable::addSymbol(string name, Type type)
+void SymbolsTable::addSymbol(string name, Type type, int symbolSize)
 {
+    this->currentOffset -= symbolSize;
+
     this->symbolsIndex[name] = this->currentOffset;
     this->symbolsType[name] = type;
     this->symbolsUsage[name] = false;
-
-    this->currentOffset -= 4;
 }
 
 bool SymbolsTable::containsSymbol(string name)
