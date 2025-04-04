@@ -17,12 +17,13 @@ incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
 decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
-call_func_stmt: VAR '(' (expr)? (',' expr)* ')' ';';
+call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var
+    |   call_func_stmt                                      #call
     |   '(' expr ')'                                        #par
     |   VAR OP=('++' | '--')                                #post
     |   OP=('++' | '--') VAR                                #pre
