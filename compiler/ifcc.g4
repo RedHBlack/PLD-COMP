@@ -2,7 +2,7 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : decl_func_stmt* 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
+prog : decl_func_stmt* 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' decl_func_stmt* ;
 
 statement:  decl_stmt
         |   assign_stmt
