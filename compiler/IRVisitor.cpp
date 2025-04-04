@@ -84,21 +84,15 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     ifccParser::ExprContext *exprCtx = ctx->expr();
 
-    if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(exprCtx))
+    auto evaluatedValue = evaluateConstantExpression(exprCtx);
+
+    if (evaluatedValue)
     {
-        string value = constCtx->CONST()->getText();
-        if (value.front() == '\'' && value.back() == '\'')
-        {
-            int asciiValue = static_cast<int>(value[1]);
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, asciiValue, "%eax"));
-        }
-        else
-        {
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(value), "%eax"));
-        }
+        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, "%eax"));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
     {
+        // if the expression is a variable, we need to load its value
         currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), "%eax"));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(exprCtx))
@@ -125,6 +119,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     }
     else
     {
+        // Else, we need to evaluate the expression
         visit(exprCtx);
     }
 
@@ -132,7 +127,6 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     output->add_IRInstr(new IRInstrClean(output));
 
     this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
-
     this->currentCFG->add_bb(output);
 
     return 1;
@@ -295,29 +289,28 @@ antlrcpp::Any IRVisitor::visitArray_access(ifccParser::Array_accessContext *ctx)
 antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    std::string targetRegister = isFirst ? "%eax" : "%ebx";
 
-    if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(expr))
+    // Try to evaluate the expression at compile-time
+    auto evaluatedValue = evaluateConstantExpression(expr);
+
+    if (evaluatedValue)
     {
-        string value = constCtx->CONST()->getText();
-        if (value.front() == '\'' && value.back() == '\'')
-        {
-            int asciiValue = static_cast<int>(value[1]);
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, asciiValue, (isFirst ? "%eax" : "%ebx")));
-        }
-        else
-        {
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(value), (isFirst ? "%eax" : "%ebx")));
-        }
+        // If it's a constant expression, load the computed value directly
+        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, targetRegister));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
     {
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), (isFirst ? "%eax" : "%ebx")));
+        // If it's a variable, move its value into the target register
+        currentBB->add_IRInstr(new IRInstrMove(currentBB, varCtx->VAR()->getText(), targetRegister));
     }
     else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
     {
         if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(assignCtx->VAR()))
         {
+            // Process the right-hand side expression
             visitExpr(assignCtx->expr(), false);
+            // Assign the result to the variable
             currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", assignCtx->VAR()->getText()));
         }
     }
@@ -328,6 +321,7 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
     }
     else
     {
+        // General case: visit the expression and move the result if necessary
         visit(expr);
 
         if (!isFirst)
@@ -411,22 +405,113 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     return 0;
 }
 
-void IRVisitor::assignValueToVar(ifccParser::ExprContext *ctx, string varName)
+std::optional<int> IRVisitor::evaluateConstantExpression(ifccParser::ExprContext *ctx)
 {
-    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-
+    // Case of a constant
     if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx))
     {
         string value = constCtx->CONST()->getText();
         if (value.front() == '\'' && value.back() == '\'')
         {
-            int asciiValue = static_cast<int>(value[1]);
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, asciiValue, varName));
+            return static_cast<int>(value[1]);
         }
-        else
+        return stoi(constCtx->CONST()->getText());
+    }
+
+    // Case of an addition or subtraction
+    if (auto addSubCtx = dynamic_cast<ifccParser::AddsubContext *>(ctx))
+    {
+        auto left = evaluateConstantExpression(addSubCtx->expr(0));
+        auto right = evaluateConstantExpression(addSubCtx->expr(1));
+
+        // Eliminate neutral elements
+        if (right && *right == 0)
+            return left; // x + 0 = x, x - 0 = x
+        if (left && *left == 0 && addSubCtx->OP->getText() == "+")
+            return right; // 0 + x = x
+
+        if (left && right)
         {
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(value), varName));
+            return addSubCtx->OP->getText() == "+" ? (*left + *right) : (*left - *right);
         }
+    }
+
+    // Case of a multiplication, division or modulo
+    if (auto mulDivCtx = dynamic_cast<ifccParser::MuldivContext *>(ctx))
+    {
+        auto left = evaluateConstantExpression(mulDivCtx->expr(0));
+        auto right = evaluateConstantExpression(mulDivCtx->expr(1));
+
+        // Eliminate neutral elements
+        if (right && *right == 1 && mulDivCtx->OP->getText() == "*")
+            return left; // x * 1 = x
+        if (left && *left == 1 && mulDivCtx->OP->getText() == "*")
+            return right; // 1 * x = x
+        if (right && *right == 1 && mulDivCtx->OP->getText() == "/")
+            return left; // x / 1 = x
+
+        if (left && right)
+        {
+            if (mulDivCtx->OP->getText() == "*")
+                return (*left * *right);
+            if (mulDivCtx->OP->getText() == "/")
+                return (*left / *right);
+            if (mulDivCtx->OP->getText() == "%")
+                return (*right != 0 ? (*left % *right) : 0);
+        }
+    }
+
+    // Case of a unary operation
+    if (auto bitwiseCtx = dynamic_cast<ifccParser::BitwiseContext *>(ctx))
+    {
+        auto left = evaluateConstantExpression(bitwiseCtx->expr(0));
+        auto right = evaluateConstantExpression(bitwiseCtx->expr(1));
+        if (left && right)
+        {
+            if (bitwiseCtx->OP->getText() == "&")
+                return (*left & *right);
+            if (bitwiseCtx->OP->getText() == "|")
+                return (*left | *right);
+            if (bitwiseCtx->OP->getText() == "^")
+                return (*left ^ *right);
+        }
+    }
+
+    // Case of a comparison
+    if (auto compCtx = dynamic_cast<ifccParser::CompContext *>(ctx))
+    {
+        auto left = evaluateConstantExpression(compCtx->expr(0));
+        auto right = evaluateConstantExpression(compCtx->expr(1));
+        if (left && right)
+        {
+            if (compCtx->OP->getText() == "==")
+                return (*left == *right);
+            if (compCtx->OP->getText() == "!=")
+                return (*left != *right);
+            if (compCtx->OP->getText() == "<")
+                return (*left < *right);
+            if (compCtx->OP->getText() == "<=")
+                return (*left <= *right);
+            if (compCtx->OP->getText() == ">")
+                return (*left > *right);
+            if (compCtx->OP->getText() == ">=")
+                return (*left >= *right);
+        }
+    }
+
+    // TODO : Handle other cases
+    return std::nullopt; // If none of the above cases matched, return nullopt
+}
+
+void IRVisitor::assignValueToVar(ifccParser::ExprContext *ctx, string varName)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    auto evaluatedValue = evaluateConstantExpression(ctx);
+
+    if (evaluatedValue)
+    {
+        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, varName));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx))
     {
@@ -440,6 +525,8 @@ void IRVisitor::assignValueToVar(ifccParser::ExprContext *ctx, string varName)
     }
     else
     {
+        // If the evaluated value is not a constant, we need to generate the code for the expression
+        // and then assign the result to the variable
         visit(ctx);
         currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", varName));
     }

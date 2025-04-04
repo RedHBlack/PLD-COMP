@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <optional>
 
 using namespace std;
 
@@ -268,4 +269,15 @@ private:
          * @param op The operation to perform (e.g., "+" or "-").
          */
         void handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op);
+
+        /**
+         * @brief Evaluates a constant expression.
+         *
+         * This method evaluates a constant expression and returns its integer value if possible, if not
+         * it returns an empty optional (case of a variable).
+         *
+         * @param ctx The context of the expression to evaluate.
+         * @return An optional integer value of the evaluated expression, or an empty optional if not possible (e.g., variable).
+         */
+        std::optional<int> evaluateConstantExpression(ifccParser::ExprContext *ctx);
 };
