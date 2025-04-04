@@ -25,6 +25,7 @@ MAIN_OBJECTS=build/main.o build/CodeCheckVisitor.o build/IRVisitor.o build/Symbo
 IR_OBJECTS=build/CFG.o build/BasicBlock.o
 IR_INSTR_OBJECTS=build/BaseIRInstr.o build/IRInstrLoadConst.o build/IRInstrClean.o build/IRInstrMove.o \
                 build/IRInstrSet.o build/IRInstrUnaryOp.o build/IRInstrArithmeticOp.o build/IRInstrComp.o
+				build/IRInstrCall.o
 
 OBJECTS=$(ANTLR_OBJECTS) $(MAIN_OBJECTS) $(IR_OBJECTS) $(IR_INSTR_OBJECTS)
 
