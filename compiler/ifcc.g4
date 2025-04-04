@@ -16,8 +16,8 @@ assign_stmt: VAR '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
-decl_func_stmt: TYPE VAR '(' (TYPE VAR)+ (',' TYPE VAR)* ')' (block | ';');
-call_func_stmt: VAR '(' (expr)+ (',' expr)* ')' ';';
+decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
+call_func_stmt: VAR '(' (expr)? (',' expr)* ')' ';';
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
 

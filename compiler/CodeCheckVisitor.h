@@ -143,6 +143,25 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        /**
+         * @brief Visits a function declaration statement.
+         *
+         * This method records information about the function being declared,
+         * such as its parameter count.
+         *
+         * @param ctx The context for the function declaration statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a function call statement.
+         *
+         * This method checks whether the called function exists and matches the expected arguments.
+         *
+         * @param ctx The context for the function call statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
 
         /**
@@ -172,11 +191,24 @@ public:
         int getCurrentOffset() { return currentOffset; }
 
 private:
+        /**
+         * @brief Gets the number of parameters for a function.
+         *
+         * This method retrieves the number of parameters for a given function name.
+         * If the function is not found, it returns -1.
+         * @param functionName The name of the function.
+         * @return The number of parameters for the function, -1 if not found.
+         */
+        int getFunctionNumberOfParameters(string functionName);
+
         /// The root symbol table for the program.
         SymbolsTable *root;
 
         /// The current active symbol table.
         SymbolsTable *currentSymbolsTable;
+
+        /// A map to track the number of parameters for each function.
+        map<string, int> functionsNumberOfParameters;
 
         /// The current offset for variables.
         int currentOffset = 0;
