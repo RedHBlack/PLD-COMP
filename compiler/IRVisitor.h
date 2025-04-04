@@ -165,6 +165,8 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
+
         /**
          * @brief Generates the assembly code for the IR.
          *
