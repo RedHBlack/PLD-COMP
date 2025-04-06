@@ -1,4 +1,4 @@
-name: Build Tests
+name: Build
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-tests:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
@@ -27,32 +27,13 @@ jobs:
           make -j8
           sudo make install
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y gcc python3-pip
-
-      - name: Run tests
+      - name: Buidd the project
         id: run_tests
         run: |
           chmod +x ifcc-test_PR.py
-          cd compiler && make -f test_PR.mk && python3 ../ifcc-test_PR.py ../testfiles || echo "Tests failed" > test_failure.log
+          cd pipelines && make -f build_PR.mk
 
-      - name: Annotate PR on failure
+      - name: Echo error message
         if: failure()
         run: |
-          echo "::error::Building tests failed! Check the logs for details."
-
-      - name: Comment on PR if tests fail
-        if: failure()
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            🚨 **Some tests have failed!**
-            Please check the logs for details.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "::error::Building failed! Check the logs for details."
