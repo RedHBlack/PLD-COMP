@@ -30,7 +30,6 @@ jobs:
       - name: Buidd the project
         id: run_tests
         run: |
-          chmod +x ifcc-test_PR.py
           cd pipelines && make -f build_PR.mk
 
       - name: Echo error message

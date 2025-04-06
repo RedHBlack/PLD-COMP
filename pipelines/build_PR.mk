@@ -1,12 +1,12 @@
 # ========================
 # config.mk contains paths to ANTLR etc.
-include config/config_PR.mk
+include config_PR.mk
 
 CC = g++
 CCFLAGS = -g -c -std=c++17 -I$(ANTLRINC) -Wno-attributes
 LDFLAGS = -g
-BUILDDIR = build
-SOURCEDIR = compiler/src
+BUILDDIR = /home/$(USER)/work/PLD-COMP/PLD-COMP/compiler/build
+SOURCEDIR = /home/$(USER)/work/PLD-COMP/PLD-COMP/compiler/src
 
 # === Colors ===
 GREEN := \033[1;32m
@@ -33,7 +33,7 @@ CPP_FILES := $(shell find $(SOURCEDIR) -name '*.cpp')
 OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp, $(BUILDDIR)/%.o, $(CPP_FILES))
 
 # Add generated ANTLR object files
-ANTLR_OBJECTS := build/generated/ifccBaseVisitor.o build/generated/ifccLexer.o build/generated/ifccVisitor.o build/generated/ifccParser.o
+ANTLR_OBJECTS := $(BUILDDIR)/generated/ifccBaseVisitor.o $(BUILDDIR)/generated/ifccLexer.o $(BUILDDIR)/generated/ifccVisitor.o $(BUILDDIR)/generated/ifccParser.o
 OBJECTS += $(ANTLR_OBJECTS)
 
 # ========================
@@ -48,18 +48,6 @@ $(BUILDDIR)/$(notdir %.o): $(SOURCEDIR)/%.cpp $(ANTLR_CPP_FILES)
 	@printf "$(GREEN)Compilation de $< -> $@$(NC)\n";
 	@mkdir -p $(dir $@);
 	@$(CC) $(CCFLAGS) -MMD -o $@ $<;
-
-
-# ========================
-# GUI for parsing tree visualization
-FILE ?= ../testfiles/arithmetic/5_multiple_operations_and_assignation.c
-
-gui:
-	@printf "$(BLUE)\nLaunching GUI on $(FILE)...$(NC)\n"
-	@mkdir -p $(SOURCEDIR)/generated/java build
-	@java -jar $(ANTLRJAR) -visitor -no-listener -Dlanguage=Java -o $(SOURCEDIR)/generated/java $(SOURCEDIR)/ifcc.g4
-	@javac -cp $(ANTLRJAR) -d build $(SOURCEDIR)/generated/java/*.java
-	@java -cp $(ANTLRJAR):build org.antlr.v4.gui.TestRig ifcc axiom -gui $(FILE)
 
 # ========================
 # Clean everything
