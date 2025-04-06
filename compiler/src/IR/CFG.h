@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "../Type.h"
-#include "../SymbolsTable.h"
+#include "../utils/Type.h"
+#include "../utils/SymbolsTable.h"
 
 using namespace std;
 

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "antlr4-runtime.h"
-#include "generated/ifccBaseVisitor.h"
-#include "SymbolsTable.h"
-#include "IR/CFG.h"
+#include "../generated/ifccBaseVisitor.h"
+#include "../utils/SymbolsTable.h"
+#include "../IR/CFG.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -65,7 +65,6 @@ public:
 
         void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
         void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
-
 
         /**
          * @brief Visits an assignment expression in the parse tree.
@@ -151,7 +150,6 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
-
 
         /**
          * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.

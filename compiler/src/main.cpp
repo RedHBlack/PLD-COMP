@@ -9,8 +9,8 @@
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
 
-#include "IRVisitor.h"
-#include "CodeCheckVisitor.h"
+#include "visitor/IRVisitor.h"
+#include "visitor/CodeCheckVisitor.h"
 
 namespace fs = std::filesystem; // Alias for filesystem
 
