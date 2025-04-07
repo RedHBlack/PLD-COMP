@@ -2,7 +2,7 @@
 #include "Instr/IRInstrSet.h"
 #include <sstream>
 
-CFG::CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex) : label(label), SymbolIndex(SymbolIndex), SymbolType(SymbolType), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)
+CFG::CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex, int idBB) : label(label), SymbolIndex(SymbolIndex), SymbolType(SymbolType), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex), idBB(0)
 {
     BasicBlock *input = new BasicBlock(this, "input");
     input->add_IRInstr(new IRInstrSet(input));
@@ -21,9 +21,9 @@ void CFG::add_bb(BasicBlock *bb)
 
 void CFG::gen_asm(ostream &o)
 {
-
     for (int i = 0; i < bbs.size(); i++)
     {
+        o << bbs[i]->getLabel() << ":" << endl;
         bbs[i]->gen_asm(o);
     }
 }
@@ -63,6 +63,11 @@ void CFG::setCurrentBasicBlock(BasicBlock *bb)
 void CFG::resetNextFreeSymbolIndex()
 {
     nextFreeSymbolIndex = initialTempPos;
+}
+
+string CFG::getBBName()
+{
+    return "BB_" + to_string(idBB++);
 }
 
 void CFG::gen_cfg_graphviz(ostream &o)

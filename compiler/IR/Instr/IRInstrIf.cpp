@@ -2,7 +2,9 @@
 
 void IRInstrIf::gen_asm(ostream &o)
 {
-	o << "    cmp " << firstOp << ", " << secondOp << endl;
+	o << "    cmp $0, " << condReg << endl;
+    o << "    je " << label << endl;
+	/*o << "    cmp " << firstOp << ", " << secondOp << endl;
 	o << "    j";
 
 	if (op == "==")
@@ -32,6 +34,6 @@ void IRInstrIf::gen_asm(ostream &o)
 		o << "mp ";
 	}
 
-	o << label << endl;
+	o << label << endl;*/
 	
 }

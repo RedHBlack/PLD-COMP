@@ -6,25 +6,21 @@ BasicBlock::BasicBlock(CFG *cfg, string entry_label) : cfg(cfg), label(entry_lab
 
 void BasicBlock::gen_asm(ostream &o)
 {
-    if (is_test_var) {
-        o << label << ":" << endl; // Generar la etiqueta del bloque
-        for (int i = 0; i < instrs.size(); i++)
-        {
-            instrs[i]->gen_asm(o);
-        }
-        if (exit_true) {
-            o << "jmp " << exit_true->getLabel() << endl;
-        }
-        if (exit_false) {
-            o << "jmp " << exit_false->getLabel() << endl;
-        }
-    } else {
-        for (int i = 0; i < instrs.size(); i++)
-        {
-            instrs[i]->gen_asm(o);
-        }
+    for (int i = 0; i < instrs.size(); i++)
+    {
+        instrs[i]->gen_asm(o);
     }
-    
+    if (is_test_var && exit_true != nullptr && exit_false != nullptr)
+    {
+        //o << "    movl " << testVarName << ", %eax" << endl;
+        o << "   cmp $0, %eax" << endl;
+        o << "   je " << exit_false->getLabel() << endl;
+        o << "   jmp " << exit_true->getLabel() << endl;
+    }
+    else if (exit_true != nullptr)
+    {
+        o << "   jmp " << exit_true->getLabel() << endl;
+    }
 }
 
 void BasicBlock::add_IRInstr(BaseIRInstr *instr)

@@ -1,15 +1,16 @@
 #pragma once
 
-#include "IRInstrBinaryOp.h"
+#include "BaseIRInstr.h"
 #include <ostream>
 
-class IRInstrIf : public IRInstrBinaryOp
+class IRInstrIf : public BaseIRInstr
 {
 public:
-	IRInstrIf(BasicBlock *bb_, string firstOp, string secondOp, string op, string label)
-		: IRInstrBinaryOp(bb_, firstOp, secondOp, op), label(label) {}
+	IRInstrIf(BasicBlock *bb_, string condReg, string label)
+		: BaseIRInstr(bb_), condReg(condReg), label(label) {}
 
 	virtual void gen_asm(ostream &o) override;
 private:
+	string condReg;
 	string label;
 };

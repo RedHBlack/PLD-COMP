@@ -31,7 +31,7 @@ public:
      * @param SymbolType A map that maps symbol names to their respective types.
      * @param initialNextFreeSymbolIndex The initial value for the next free symbol index.
      */
-    CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex);
+    CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex, int idBB = 0);
 
     /**
      * @brief Adds a basic block to the control flow graph.
@@ -106,6 +106,8 @@ public:
      */
     void resetNextFreeSymbolIndex();
 
+    string getBBName();
+
     /**
      * @brief Generates the Graphviz representation of the control flow graph (CFG).
      *
@@ -141,7 +143,7 @@ protected:
     int nextFreeSymbolIndex;
 
     /// The initial value for the next free symbol index.
-    const int initialTempPos;
+    const int initialTempPos = 0;
 
     /// A vector containing all the basic blocks in the control flow graph.
     vector<BasicBlock *> bbs;
@@ -151,4 +153,7 @@ protected:
 
     /// The label associated with the control flow graph.
     string label;
+
+    /// The ID of the basic block.
+    int idBB;
 };

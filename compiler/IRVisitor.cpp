@@ -5,8 +5,7 @@
 #include "IR/Instr/IRInstrComp.h"
 #include "IR/Instr/IRInstrClean.h"
 #include "IR/Instr/IRInstrIf.h"
-#include "IR/Instr/IRAfterIf.h"
-#include "IR/Instr/IRInstrJump.h"
+#include "IR/Instr/IRInstrJmpRet.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -228,28 +227,77 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 
 
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
-{
+{   /*
+    auto if_stmt = ctx->if_block();
+    string cond = if_stmt->if_expr_block()->expr()->getText();
+    visit(if_stmt->if_expr_block()->expr());
+
+    string joinLabel = this->currentCFG->getBBName();
+    BasicBlock *joinBB = new BasicBlock(this->currentCFG, joinLabel);
+    joinBB->setIsTestVar(true);
+    this->currentCFG->add_bb(joinBB);
+
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    currentBB->setTestVarName(cond);
+
+    string thenLabel = this->currentCFG->getBBName();
+    BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
+    thenBB->setIsTestVar(true);
+    this->currentCFG->add_bb(thenBB);
+
+    if (ctx->else_block())
+    {
+        string elseLabel = this->currentCFG->getBBName();
+        BasicBlock *elseBB = new BasicBlock(this->currentCFG, elseLabel);
+        elseBB->setIsTestVar(true);
+        this->currentCFG->add_bb(elseBB);
+
+        currentBB->setExitTrue(thenBB);
+        currentBB->setExitFalse(elseBB);
+
+        this->currentCFG->setCurrentBasicBlock(thenBB);
+        visit(ctx->if_block()->if_stmt_block());
+        thenBB->add_IRInstr(new IRInstrIf(thenBB, "%eax", joinLabel));
+
+        this->currentCFG->setCurrentBasicBlock(elseBB);
+        visit(ctx->else_block());
+        elseBB->add_IRInstr(new IRInstrIf(elseBB, "%eax", joinLabel));
+    } else {
+        currentBB->setExitTrue(thenBB);
+        currentBB->setExitFalse(joinBB);
+
+        this->currentCFG->setCurrentBasicBlock(thenBB);
+        visit(ctx->if_block()->if_stmt_block());
+        thenBB->add_IRInstr(new IRInstrIf(thenBB, "%eax", joinLabel));
+    }
+
+    this->currentCFG->setCurrentBasicBlock(joinBB);
+    */
     // Crear el bloque de prueba
     BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
+    testBB->setIsTestVar(true);
 
     // Linearizar la expresión de prueba
-    visit(ctx->if_block()->if_expr_block());
+    visit(ctx->if_block()->if_expr_block()->expr());
 
     // Crear el bloque "then"
-    BasicBlock *thenBB = new BasicBlock(this->currentCFG, "then_block");
+    string thenLabel = this->currentCFG->getBBName();
+    BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
     thenBB->setIsTestVar(true);
     this->currentCFG->add_bb(thenBB);
 
     // Crear el bloque "else" si existe
     BasicBlock *elseBB = nullptr;
     if (ctx->else_block()) {
-        elseBB = new BasicBlock(this->currentCFG, "else_block");
+        string elseLabel = this->currentCFG->getBBName();
+        elseBB = new BasicBlock(this->currentCFG, elseLabel);
         elseBB->setIsTestVar(true);
         this->currentCFG->add_bb(elseBB);
     }
 
     // Crear el bloque final "end_if"
-    BasicBlock *endIfBB = new BasicBlock(this->currentCFG, "end_if");
+    string endIfLabel = this->currentCFG->getBBName();
+    BasicBlock *endIfBB = new BasicBlock(this->currentCFG, endIfLabel);
 
     this->currentCFG->add_bb(endIfBB);
 
@@ -263,6 +311,7 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     BasicBlock *thenLastBB = this->currentCFG->getCurrentBasicBlock();
     if(ctx->if_block()->if_stmt_block()->return_stmt()) {
         thenLastBB->setExitTrue(nullptr); // No hay salida condicional después de un retorno
+        thenLastBB->add_IRInstr(new IRInstrJmpRet(thenLastBB, "output"));
     } else {
         thenLastBB->setExitTrue(endIfBB);
     }
@@ -275,15 +324,15 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         //elseLastBB->setIsTestVar(true);
         if(ctx->else_block()->return_stmt()) {
             elseLastBB->setExitTrue(nullptr); // No hay salida condicional después de un retorno
+            elseLastBB->add_IRInstr(new IRInstrJmpRet(elseLastBB, "output"));
         } else {
             elseLastBB->setExitTrue(endIfBB);
         }
     }
 
     this->currentCFG->setCurrentBasicBlock(endIfBB);
-    endIfBB->add_IRInstr(new IRAfterIf(endIfBB, "end_if"));
     // Establecer el bloque final como el bloque actual
-
+    
     return 0;
 }
 
@@ -298,9 +347,11 @@ antlrcpp::Any IRVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
 
 antlrcpp::Any IRVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ctx)
 {   
+    visit(ctx->expr());
+    
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
 
-    currentBB->add_IRInstr(new IRInstrIf(currentBB, "%ebx", "%eax", "!=" , "then_block"));
+    currentBB->add_IRInstr(new IRInstrIf(currentBB, "%eax", "thenBB"));
 
     return 0;
 }
