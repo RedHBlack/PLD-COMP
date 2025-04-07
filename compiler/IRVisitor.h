@@ -162,15 +162,55 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        /**
+         * @brief Visits an if statement and generates the IR.
+         *
+         * This method processes if statements and generates the corresponding IR for the conditional branching.
+         *
+         * @param ctx The context of the if statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 
-        virtual antlrcpp::Any visitIf_block(ifccParser::If_blockContext *ctx) override;
-
-        virtual antlrcpp::Any visitIf_expr_block(ifccParser::If_expr_blockContext *ctx) override;
-
+        /**
+         * @brief Visits an if statement block and generates the IR.
+         *
+         * This method processes the block of statements within an if statement and generates the corresponding IR.
+         *
+         * @param ctx The context of the if block.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx) override;
 
+        /**
+         * @brief Visits an else block and generates the IR.
+         * 
+         * This method processes the block of statements within an else statement and generates the corresponding IR.
+         * 
+         * @param ctx The context of the else block.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitElse_block(ifccParser::Else_blockContext *ctx) override;
+
+        /**
+         * @brief Visits a while statement and generates the IR.
+         *
+         * This method processes while statements and generates the corresponding IR for the loop.
+         *
+         * @param ctx The context of the while statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a while statement block and generates the IR.
+         *
+         * This method processes the block of statements within a while statement and generates the corresponding IR.
+         *
+         * @param ctx The context of the while block.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx) override;
 
         /**
          * @brief Generates the assembly code for the IR.

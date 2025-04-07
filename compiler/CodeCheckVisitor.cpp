@@ -260,3 +260,36 @@ antlrcpp::Any CodeCheckVisitor::visitElse_block(ifccParser::Else_blockContext *c
     }
     return 0;
 }
+
+antlrcpp::Any CodeCheckVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    visit(ctx->while_expr_block());
+    
+    visit(ctx->while_stmt_block());
+
+    return 0;
+}
+
+
+
+antlrcpp::Any CodeCheckVisitor::visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx)
+{
+    visit(ctx->expr());
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx)
+{
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
+        visit(ctx->statement(i));
+    }
+
+    if (ctx->return_stmt())
+    {
+        visit(ctx->return_stmt());
+    }
+
+    return 0;
+}

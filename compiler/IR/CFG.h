@@ -130,6 +130,13 @@ public:
      */
     string getLabel();
 
+    /**
+     * @brief Sets the label for the control flow graph (CFG).
+     *
+     * This function sets a new label for the current control flow graph. The label can be used to identify different parts of the program, such as functions or basic blocks.
+     *
+     * @param label The new label to set for the control flow graph.
+     */
     void setLabel(string label);
 
 protected:

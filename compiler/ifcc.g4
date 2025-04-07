@@ -5,6 +5,7 @@ axiom : prog EOF ;
 prog : 'int' 'main' '(' ')' '{' (statement)* return_stmt '}' ;
 
 statement:  if_stmt
+        |   while_stmt
         |   decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
@@ -20,6 +21,9 @@ if_block: 'if' '(' if_expr_block ')' '{' if_stmt_block '}' ;
 if_expr_block: expr ;
 if_stmt_block: (statement)* return_stmt? ;
 else_block: 'else' '{' (statement)* return_stmt? '}' ;
+while_stmt: 'while' '(' while_expr_block ')' '{' while_stmt_block '}' ;
+while_expr_block: expr ;
+while_stmt_block: (statement)* return_stmt? ;
 
 return_stmt: RETURN expr ';' ;
 

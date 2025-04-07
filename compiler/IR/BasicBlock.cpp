@@ -12,7 +12,6 @@ void BasicBlock::gen_asm(ostream &o)
     }
     if (is_test_var && exit_true != nullptr && exit_false != nullptr)
     {
-        //o << "    movl " << testVarName << ", %eax" << endl;
         o << "   cmp $0, %eax" << endl;
         o << "   je " << exit_false->getLabel() << endl;
         o << "   jmp " << exit_true->getLabel() << endl;

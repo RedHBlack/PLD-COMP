@@ -65,6 +65,14 @@ public:
    */
   string getLabel();
 
+  /**
+   * @brief Sets the label for the current block.
+   *
+   * This function sets a new label for this control flow block. The label is typically used
+   * to uniquely identify this block in control flow analysis.
+   *
+   * @param label The new label to set for this control flow block.
+   */
   void setLabel(string label);
 
   /**
@@ -120,14 +128,13 @@ public:
    */
   BasicBlock *getExitFalse();
 
-  void setTestVarName(const string &varName) {
-    testVarName = varName;
-  }
-
-  string getTestVarName() {
-    return testVarName;
-  }
-
+  /**
+   * @brief Sets the name of the test variable.
+   *
+   * This function sets the name of the test variable used in the basic block.
+   *
+   * @param name The name of the test variable.
+   */
   void setIsTestVar(bool isTest) {
     is_test_var = isTest;
   }
@@ -152,7 +159,6 @@ protected:
   /// A vector of instructions that belong to this basic block.
   vector<BaseIRInstr *> instrs;
 
-  string testVarName;
-
+  /// A flag indicating whether the block is a test variable.
   bool is_test_var = false;
 };
