@@ -1,9 +1,9 @@
 #pragma once
 
 #include "antlr4-runtime.h"
-#include "generated/ifccBaseVisitor.h"
-#include "SymbolsTable.h"
-#include "IR/CFG.h"
+#include "../generated/ifccBaseVisitor.h"
+#include "../utils/SymbolsTable.h"
+#include "../IR/CFG.h"
 #include <map>
 #include <string>
 #include <vector>

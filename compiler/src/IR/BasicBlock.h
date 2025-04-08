@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CFG.h"
-#include "Instr/BaseIRInstr.h"
+#include "instr/BaseIRInstr.h"
 #include <vector>
 
 using namespace std;

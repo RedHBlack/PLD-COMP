@@ -1,18 +1,18 @@
-#include "IR/Instr/IRInstrLoadConst.h"
-#include "IR/Instr/IRInstrMove.h"
-#include "IR/Instr/IRInstrArithmeticOp.h"
-#include "IR/Instr/IRInstrUnaryOp.h"
-#include "IR/Instr/IRInstrComp.h"
-#include "IR/Instr/IRInstrClean.h"
-#include "IR/Instr/IRInstrCall.h"
-#include "IR/Instr/IRInstrStoreToArray.h"
-#include "IR/Instr/IRInstrLoadFromArray.h"
+#include "../IR/instr/IRInstrLoadConst.h"
+#include "../IR/instr/IRInstrMove.h"
+#include "../IR/instr/IRInstrArithmeticOp.h"
+#include "../IR/instr/IRInstrUnaryOp.h"
+#include "../IR/instr/IRInstrComp.h"
+#include "../IR/instr/IRInstrClean.h"
+#include "../IR/instr/IRInstrCall.h"
+#include "../IR/instr/IRInstrStoreToArray.h"
+#include "../IR/instr/IRInstrLoadFromArray.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
 #include <string>
-#include "IR/CFG.h"
-#include "IR/BasicBlock.h"
+#include "../IR/CFG.h"
+#include "../IR/BasicBlock.h"
 
 using namespace std;
 
