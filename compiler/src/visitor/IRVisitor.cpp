@@ -415,6 +415,10 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
     static const vector<string> regParams = {"%edi", "%esi", "%edx", "%ecx", "%r8", "%r9"};
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
 
+    vector<string> savedTemps;
+
+    int numberOfArgs = ctx->expr().size();
+
     for (int i = 0; i < ctx->expr().size(); ++i)
     {
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(i)))
@@ -431,9 +435,19 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
             visitExpr(ctx->expr(i), true);
             currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", regParams[i]));
         }
+        string tmp = this->currentCFG->create_new_tempvar(Type::INT);
+        savedTemps.push_back(tmp);
+        this->currentCFG->getCurrentBasicBlock()->add_IRInstr(
+            new IRInstrMove(this->currentCFG->getCurrentBasicBlock(), regParams[i], this->currentCFG->toRegister(tmp)));
     }
 
     currentBB->add_IRInstr(new IRInstrCall(currentBB, ctx->VAR()->getText()));
+
+    for (int r = 0; r < numberOfArgs; r++)
+    {
+        this->currentCFG->getCurrentBasicBlock()->add_IRInstr(
+            new IRInstrMove(this->currentCFG->getCurrentBasicBlock(), this->currentCFG->toRegister(savedTemps[r]), regParams[r]));
+    }
 
     return 0;
 }

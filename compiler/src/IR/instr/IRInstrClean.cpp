@@ -2,6 +2,6 @@
 
 void IRInstrClean::gen_asm(ostream &o)
 {
-    o << "   popq %rbp\n";
+    o << "   leave\n ";
     o << "   ret\n";
 }

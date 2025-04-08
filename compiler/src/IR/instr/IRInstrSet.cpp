@@ -12,4 +12,5 @@ void IRInstrSet::gen_asm(ostream &o)
 
     o << "   pushq %rbp\n";
     o << "   movq %rsp, %rbp\n";
+    o << "   subq $16, %rsp\n ";
 }
