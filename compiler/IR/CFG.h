@@ -139,6 +139,33 @@ public:
      */
     void setLabel(string label);
 
+    /**
+     * @brief Adds a while loop to the control flow graph.
+     *
+     * This function adds a while loop to the control flow graph by creating the necessary basic blocks for the test condition, loop body, and exit block.
+     *
+     * @param test The basic block representing the test condition of the while loop.
+     * @param body The basic block representing the body of the while loop.
+     * @param end_bb The basic block representing the exit point of the while loop.
+     *
+     *
+     */
+    void add_while(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb);
+
+    /**
+     * @brief Adds an if-then-else structure to the control flow graph.
+     *
+     * This function adds an if-then-else structure to the control flow graph by creating the necessary basic blocks for the test condition, then block, else block, and end block.
+     *
+     * @param test The basic block representing the test condition of the if statement.
+     * @param then_bb The basic block representing the "then" branch of the if statement.
+     * @param else_bb The basic block representing the "else" branch of the if statement.
+     * @param end_bb The basic block representing the exit point of the if-then-else structure.
+     *
+     *
+     */
+    void add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb);
+
 protected:
     /// A map of symbol names to their respective indices.
     map<string, int> SymbolIndex;

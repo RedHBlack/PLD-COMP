@@ -6,6 +6,8 @@
 #include "IR/Instr/IRInstrClean.h"
 #include "IR/Instr/IRInstrIf.h"
 #include "IR/Instr/IRInstrJmpRet.h"
+#include "IR/Instr/IRInstrJmpCond.h"
+
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -64,6 +66,9 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     {
         visit(exprCtx);
     }
+
+    // Ajout : sauter directement au bloc de sortie pour ne pas continuer l'exécution
+    currentBB->add_IRInstr(new IRInstrJmpRet(currentBB, "output"));
 
     return 0;
 }

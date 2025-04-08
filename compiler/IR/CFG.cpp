@@ -1,6 +1,8 @@
 #include "CFG.h"
 #include "Instr/IRInstrSet.h"
 #include <sstream>
+#include "Instr/IRInstrJmpCond.h"
+#include "Instr/IRInstrJmpRet.h"
 
 CFG::CFG(string label, map<string, int> SymbolIndex, map<string, Type> SymbolType, int initialNextFreeSymbolIndex, int idBB) : label(label), SymbolIndex(SymbolIndex), SymbolType(SymbolType), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex), idBB(0)
 {
@@ -119,4 +121,24 @@ string CFG::getLabel()
 void CFG::setLabel(string label)
 {
     this->label = label;
+}
+
+void CFG::add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb)
+{
+    // Ajouter les sauts conditionnels depuis le bloc de test
+    test->add_IRInstr(new IRInstrJmpCond(test, "je", else_bb->getLabel(), "edx"));
+
+    // À la fin du bloc then, sauter à end_bb
+    then_bb->add_IRInstr(new IRInstrJmpRet(then_bb, end_bb->getLabel()));
+
+    // Pas besoin de jump à la fin du else car le flot de contrôle continue naturellement
+}
+
+void CFG::add_while(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb)
+{
+    // Le test saute à end_bb si la condition est fausse
+    test->add_IRInstr(new IRInstrJmpCond(test, "je", end_bb->getLabel(), "edx"));
+
+    // À la fin du corps, retourner au test
+    body->add_IRInstr(new IRInstrJmpRet(body, test->getLabel()));
 }
