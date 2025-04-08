@@ -13,15 +13,6 @@ IRInstrLoadConst::IRInstrLoadConst(BasicBlock *bb_, int value, std::string dest)
  */
 void IRInstrLoadConst::gen_asm(std::ostream &o)
 {
-    // If the destination is a register
-    if (dest[0] == '%' || dest[0] == '-')
-    {
-        // If the destination is a register, we can directly load the value into it
-        o << "   movl $" << value << ", " << dest << "\n";
-    }
-    else
-    {
-        const int offsetDestinationVar = this->symbolsTable->getSymbolIndex(this->dest);
-        o << "   movl $" << value << " ," << offsetDestinationVar << "(%rbp)\n";
-    }
+
+    o << "   movl $" << value << " ," << dest << "\n";
 }

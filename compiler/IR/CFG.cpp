@@ -9,6 +9,8 @@ CFG::CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolInde
     input->add_IRInstr(new IRInstrSet(input));
 
     bbs.push_back(input);
+
+    add_bb(new BasicBlock(this, "body"));
 }
 
 void CFG::add_bb(BasicBlock *bb)
