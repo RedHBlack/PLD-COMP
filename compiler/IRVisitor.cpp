@@ -48,6 +48,7 @@ antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
+    _returned = true;
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     ifccParser::ExprContext *exprCtx = ctx->expr();
 
@@ -84,9 +85,17 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
                 auto nextNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1]);
                 if (nextNode && nextNode->getText() == "=")
                 {
-                    // La variable a bien un initialiseur, on utilise ctx->expr(exprIndex)
-                    assignValueToVar(ctx->expr(exprIndex), varName);
-                    exprIndex++;
+                    if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
+                    {
+                        assignValueToVar(ctx->expr(exprIndex), varName);
+                        exprIndex++;
+                    }
+                    else
+                    {
+                        // Aucun initialiseur explicite : insérer une instruction qui charge 0 dans la variable
+                        BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+                        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, 0, varName));
+                    }
                 }
             }
         }
@@ -224,10 +233,8 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     return 0;
 }
 
-
-
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
-{   
+{
     // Creation du bloc de test
     BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
     testBB->setIsTestVar(true);
@@ -243,7 +250,8 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 
     // Creer le bloc "else" si existe
     BasicBlock *elseBB = nullptr;
-    if (ctx->else_block()) {
+    if (ctx->else_block())
+    {
         string elseLabel = this->currentCFG->getBBName();
         elseBB = new BasicBlock(this->currentCFG, elseLabel);
         elseBB->setIsTestVar(true);
@@ -264,29 +272,36 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     this->currentCFG->setCurrentBasicBlock(thenBB);
     visit(ctx->if_block()->if_stmt_block());
     BasicBlock *thenLastBB = this->currentCFG->getCurrentBasicBlock();
-    if(ctx->if_block()->if_stmt_block()->return_stmt()) {
+    if (ctx->if_block()->if_stmt_block()->return_stmt())
+    {
         thenLastBB->setExitTrue(nullptr);
         thenLastBB->add_IRInstr(new IRInstrJmpRet(thenLastBB, "output"));
-    } else {
+    }
+    else
+    {
         thenLastBB->setExitTrue(endIfBB);
     }
 
     // Visiter le bloc "else" si existe
-    if (elseBB) {
+    if (elseBB)
+    {
         this->currentCFG->setCurrentBasicBlock(elseBB);
         visit(ctx->else_block());
         BasicBlock *elseLastBB = this->currentCFG->getCurrentBasicBlock();
-        if(ctx->else_block()->return_stmt()) {
+        if (ctx->else_block()->return_stmt())
+        {
             elseLastBB->setExitTrue(nullptr);
             elseLastBB->add_IRInstr(new IRInstrJmpRet(elseLastBB, "output"));
-        } else {
+        }
+        else
+        {
             elseLastBB->setExitTrue(endIfBB);
         }
     }
 
     // Etablir el bloque de fin
     this->currentCFG->setCurrentBasicBlock(endIfBB);
-    
+
     return 0;
 }
 
@@ -294,11 +309,13 @@ antlrcpp::Any IRVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ct
 {
     BasicBlock *ifBB = this->currentCFG->getCurrentBasicBlock();
 
-    for (size_t i = 0; i < ctx->statement().size(); i++) {
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
         visit(ctx->statement(i));
     }
 
-    if (ctx->return_stmt()) {
+    if (ctx->return_stmt())
+    {
         visit(ctx->return_stmt());
     }
 
@@ -309,11 +326,13 @@ antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
 {
     BasicBlock *elseBB = this->currentCFG->getCurrentBasicBlock();
 
-    for (size_t i = 0; i < ctx->statement().size(); i++) {
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
         visit(ctx->statement(i));
     }
 
-    if (ctx->return_stmt()) {
+    if (ctx->return_stmt())
+    {
         visit(ctx->return_stmt());
     }
 
@@ -322,46 +341,61 @@ antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
 
 antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
-    BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
-    //testBB->setIsTestVar(true);
+    // Sauvegarder le bloc précédent la boucle (preLoop)
+    BasicBlock *preLoop = this->currentCFG->getCurrentBasicBlock();
 
-    string whileConditionLabel = this->currentCFG->getBBName();
-    BasicBlock *whileConditionBB = new BasicBlock(this->currentCFG, whileConditionLabel);
-    whileConditionBB->setIsTestVar(true);
-    this->currentCFG->add_bb(whileConditionBB);
+    // Créer le bloc de condition de la boucle (condBB)
+    string condLabel = this->currentCFG->getBBName();
+    BasicBlock *condBB = new BasicBlock(this->currentCFG, condLabel);
+    condBB->setIsTestVar(true);
+    this->currentCFG->add_bb(condBB);
 
+    // Depuis le bloc preLoop, on insère un saut vers le bloc de condition
+    preLoop->setExitTrue(condBB);
+
+    // Générer l’évaluation de la condition dans le bloc condBB
+    this->currentCFG->setCurrentBasicBlock(condBB);
     visit(ctx->while_expr_block()->expr());
 
-    string whileLabel = this->currentCFG->getBBName();
-    BasicBlock *whileBB = new BasicBlock(this->currentCFG, whileLabel);
-    whileBB->setIsTestVar(true);
-    this->currentCFG->add_bb(whileBB);
+    // Créer le bloc pour le corps de la boucle (bodyBB)
+    string bodyLabel = this->currentCFG->getBBName();
+    BasicBlock *bodyBB = new BasicBlock(this->currentCFG, bodyLabel);
+    bodyBB->setIsTestVar(true);
+    this->currentCFG->add_bb(bodyBB);
 
-    string endWhileLabel = this->currentCFG->getBBName();
-    BasicBlock *endWhileBB = new BasicBlock(this->currentCFG, endWhileLabel);
-    endWhileBB->setIsTestVar(true);
+    // Dans condBB, si la condition est vraie, brancher vers bodyBB ; si fausse, nous aurions un bloc exit
+    condBB->setExitTrue(bodyBB);
 
-    whileConditionBB->setExitTrue(whileBB);
-    whileConditionBB->setExitFalse(endWhileBB);
-    this->currentCFG->setCurrentBasicBlock(whileConditionBB);
-
-    this->currentCFG->add_bb(endWhileBB);
-
-    testBB->setExitTrue(whileConditionBB);
-    testBB->setExitFalse(endWhileBB);
-
-    this->currentCFG->setCurrentBasicBlock(whileBB);
+    // Réinitialiser le flag _returned avant de traiter le corps
+    _returned = false;
+    this->currentCFG->setCurrentBasicBlock(bodyBB);
     visit(ctx->while_stmt_block());
 
-    if (ctx->while_stmt_block()->return_stmt()) {
-        whileBB->setExitTrue(nullptr);
-        whileBB->add_IRInstr(new IRInstrJmpRet(whileBB, "output"));
-    } else {
-        whileBB->setExitTrue(whileConditionBB);
+    // Deux cas :
+    // (A) Si le corps n'a pas généré de return (_returned reste false),
+    //     alors on fait le lien de retour vers la condition et on crée un bloc de sortie.
+    // (B) Sinon, si un return a été généré, on ne crée pas de lien de retour et on ne modifie pas le bloc courant.
+    if (!_returned)
+    {
+        // Ajouter la branche de retour : à la fin du corps, reprendre en testant à nouveau la condition
+        bodyBB->setExitTrue(condBB);
 
+        // Créer le bloc de sortie (exitBB)
+        string exitLabel = this->currentCFG->getBBName();
+        BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
+        exitBB->setIsTestVar(true);
+        condBB->setExitFalse(exitBB);
+
+        // Ajouter exitBB au CFG et définir exitBB comme bloc courant pour le reste du programme
+        this->currentCFG->add_bb(exitBB);
+        this->currentCFG->setCurrentBasicBlock(exitBB);
     }
-
-    this->currentCFG->setCurrentBasicBlock(endWhileBB);
+    else
+    {
+        // Si un return a été généré, ne pas ajouter de branche de retour.
+        bodyBB->setExitTrue(nullptr);
+        // On ne modifie pas le bloc courant : il contient déjà la génération du jump vers output.
+    }
 
     return 0;
 }
@@ -369,15 +403,14 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 antlrcpp::Any IRVisitor::visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx)
 {
     BasicBlock *whileBB = this->currentCFG->getCurrentBasicBlock();
-
-    for (size_t i = 0; i < ctx->statement().size(); i++) {
+    for (size_t i = 0; i < ctx->statement().size(); i++)
+    {
         visit(ctx->statement(i));
     }
-
-    if (ctx->return_stmt()) {
+    if (ctx->return_stmt())
+    {
         visit(ctx->return_stmt());
     }
-
     return 0;
 }
 

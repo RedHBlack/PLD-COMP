@@ -184,9 +184,9 @@ public:
 
         /**
          * @brief Visits an else block and generates the IR.
-         * 
+         *
          * This method processes the block of statements within an else statement and generates the corresponding IR.
-         * 
+         *
          * @param ctx The context of the else block.
          * @return A result of the visit, typically unused.
          */
@@ -258,6 +258,7 @@ protected:
         CFG *currentCFG;
 
 private:
+        bool _returned = false;
         /**
          * @brief Assigns a value to a variable.
          *

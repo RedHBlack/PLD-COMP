@@ -135,9 +135,13 @@ public:
    *
    * @param name The name of the test variable.
    */
-  void setIsTestVar(bool isTest) {
+  void setIsTestVar(bool isTest)
+  {
     is_test_var = isTest;
   }
+
+  string getTrueLabel();
+  string getFalseLabel();
 
 protected:
   /// Pointer to the basic block representing the "true" exit.

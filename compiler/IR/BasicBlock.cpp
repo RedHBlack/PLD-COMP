@@ -42,6 +42,24 @@ void BasicBlock::setLabel(string label)
     this->label = label;
 }
 
+string BasicBlock::getTrueLabel()
+{
+    if (exit_true != nullptr)
+    {
+        return exit_true->getLabel();
+    }
+    return "";
+}
+
+string BasicBlock::getFalseLabel()
+{
+    if (exit_false != nullptr)
+    {
+        return exit_false->getLabel();
+    }
+    return "";
+}
+
 vector<BaseIRInstr *> BasicBlock::getInstr()
 {
     return instrs;
