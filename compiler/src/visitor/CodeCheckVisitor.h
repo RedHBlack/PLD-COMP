@@ -4,6 +4,8 @@
 #include "../generated/ifccBaseVisitor.h"
 #include "../utils/Type.h"
 #include "../utils/SymbolsTable.h"
+#include "../IR/CFG.h"
+
 #include <map>
 
 using namespace std;
@@ -190,6 +192,8 @@ public:
 
         int getCurrentOffset() { return currentOffset; }
 
+        map<string, CFG *> getCFGS() { return cfgs; };
+
 private:
         /**
          * @brief Gets the number of parameters for a function.
@@ -200,6 +204,8 @@ private:
          * @return The number of parameters for the function, -1 if not found.
          */
         int getFunctionNumberOfParameters(string functionName);
+
+        map<string, CFG *> cfgs;
 
         /// The root symbol table for the program.
         SymbolsTable *root;

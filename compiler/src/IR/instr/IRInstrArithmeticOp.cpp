@@ -33,22 +33,12 @@ void IRInstrArithmeticOp::gen_asm(ostream &o)
 
 void IRInstrArithmeticOp::handleAddition(ostream &o)
 {
-    if (firstOp[0] != '%' && firstOp[0] != '$')
-        o << "   addl " << firstOp << "(%rbp)";
-    else
-        o << "   addl " << firstOp;
-
-    o << ", " << secondOp << "\n";
+    o << "   addl " << firstOp << ", " << secondOp << "\n";
 }
 
 void IRInstrArithmeticOp::handleSubstraction(ostream &o)
 {
-    if (firstOp[0] != '%' && firstOp[0] != '$')
-        o << "   subl " << firstOp << "(%rbp)";
-    else
-        o << "   subl " << firstOp;
-
-    o << ", " << secondOp << "\n";
+    o << "   subl " << firstOp << ", " << secondOp << "\n";
 }
 
 void IRInstrArithmeticOp::handleMult(ostream &o)

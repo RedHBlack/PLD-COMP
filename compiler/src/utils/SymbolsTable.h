@@ -28,7 +28,7 @@ public:
      * @param name The name of the symbol.
      * @param type The type of the symbol.
      */
-    void addSymbol(string name, Type type, int symbolSize);
+    void addSymbol(string name, Type type, int symbolSize, int index = 0);
 
     /**
      * @brief Add a child symbol table to the current one.
@@ -134,6 +134,8 @@ public:
      * @return SymbolsTable * - The parent symbol table.
      */
     SymbolsTable *getParent() { return parent; }
+
+    void setParent(SymbolsTable *parent) { this->parent = parent; }
 
 private:
     /// The symbols index containing variable names and their offsets.

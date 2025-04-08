@@ -29,7 +29,7 @@ public:
          * @param symbolsTable A map containing variable names and their associated stack offsets.
          * @param baseStackOffset The base offset for the stack.
          */
-        IRVisitor(SymbolsTable *symbolsTable, int baseStackOffset);
+        IRVisitor(map<string, CFG *> cfgs);
 
         /**
          * @brief Visits the program and starts the IR generation process.
@@ -40,6 +40,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+
+        virtual antlrcpp::Any visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx) override;
 
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
@@ -89,6 +91,8 @@ public:
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
 
         virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
+
+        string evaluateCallExpr(ifccParser::Call_func_stmtContext *ctx);
 
         /**
          * @brief Visits an expression and generates the IR.
