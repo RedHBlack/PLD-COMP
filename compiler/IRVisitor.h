@@ -259,6 +259,7 @@ protected:
 
 private:
         bool _returned = false;
+        bool _inLoop = false;
         /**
          * @brief Assigns a value to a variable.
          *

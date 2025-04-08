@@ -237,23 +237,20 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 
     return 0;
 }
-
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    // Creation du bloc de test
+    // Récupérer le bloc de test courant et générer l'expression conditionnelle
     BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
     testBB->setIsTestVar(true);
-
-    // Lineariser le bloc de test
     visit(ctx->if_block()->if_expr_block()->expr());
 
-    // Creer le bloc "then"
+    // Création du bloc then
     string thenLabel = this->currentCFG->getBBName();
     BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
     thenBB->setIsTestVar(true);
     this->currentCFG->add_bb(thenBB);
 
-    // Creer le bloc "else" si existe
+    // Création éventuelle du bloc else
     BasicBlock *elseBB = nullptr;
     if (ctx->else_block())
     {
@@ -263,50 +260,53 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         this->currentCFG->add_bb(elseBB);
     }
 
-    // Creer le bloc de fin
-    string endIfLabel = this->currentCFG->getBBName();
-    BasicBlock *endIfBB = new BasicBlock(this->currentCFG, endIfLabel);
+    // Hors d'une boucle, on crée un bloc de fusion
+    BasicBlock *mergeBB = nullptr;
+    bool inLoop = _inLoop;
+    if (!inLoop)
+    {
+        string mergeLabel = this->currentCFG->getBBName();
+        mergeBB = new BasicBlock(this->currentCFG, mergeLabel);
+        this->currentCFG->add_bb(mergeBB);
+    }
 
-    this->currentCFG->add_bb(endIfBB);
-
-    // Connecter le bloc de test au bloc "then" et "else"
+    // Branches du test
     testBB->setExitTrue(thenBB);
-    testBB->setExitFalse(elseBB ? elseBB : endIfBB);
+    if (elseBB)
+        testBB->setExitFalse(elseBB);
+    else
+        testBB->setExitFalse(inLoop ? nullptr : mergeBB);
 
-    // Visiter le bloc "then"
+    // Traitement du bloc then
+    bool prevReturned = _returned;
+    _returned = false;
     this->currentCFG->setCurrentBasicBlock(thenBB);
     visit(ctx->if_block()->if_stmt_block());
-    BasicBlock *thenLastBB = this->currentCFG->getCurrentBasicBlock();
-    if (ctx->if_block()->if_stmt_block()->return_stmt())
-    {
-        thenLastBB->setExitTrue(nullptr);
-        thenLastBB->add_IRInstr(new IRInstrJmpRet(thenLastBB, "output"));
-    }
-    else
-    {
-        thenLastBB->setExitTrue(endIfBB);
-    }
+    BasicBlock *thenEnd = this->currentCFG->getCurrentBasicBlock();
+    bool thenReturned = _returned;
+    if (!thenReturned && !inLoop)
+        thenEnd->setExitTrue(mergeBB);
 
-    // Visiter le bloc "else" si existe
+    // Traitement éventuel du bloc else
+    bool elseReturned = false;
     if (elseBB)
     {
+        _returned = false;
         this->currentCFG->setCurrentBasicBlock(elseBB);
         visit(ctx->else_block());
-        BasicBlock *elseLastBB = this->currentCFG->getCurrentBasicBlock();
-        if (ctx->else_block()->return_stmt())
-        {
-            elseLastBB->setExitTrue(nullptr);
-            elseLastBB->add_IRInstr(new IRInstrJmpRet(elseLastBB, "output"));
-        }
-        else
-        {
-            elseLastBB->setExitTrue(endIfBB);
-        }
+        BasicBlock *elseEnd = this->currentCFG->getCurrentBasicBlock();
+        elseReturned = _returned;
+        if (!elseReturned && !inLoop)
+            elseEnd->setExitTrue(mergeBB);
     }
 
-    // Etablir el bloque de fin
-    this->currentCFG->setCurrentBasicBlock(endIfBB);
-
+    _returned = prevReturned || thenReturned || elseReturned;
+    if (!inLoop)
+    {
+        // Hors d'une boucle, on fixe le bloc courant sur le bloc de fusion
+        this->currentCFG->setCurrentBasicBlock(mergeBB);
+    }
+    // Dans une boucle, on ne fusionne pas : le reste du corps prendra la suite
     return 0;
 }
 
@@ -346,62 +346,50 @@ antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
 
 antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
-    // Sauvegarder le bloc précédent la boucle (preLoop)
+    // Sauvegarde du bloc précédent la boucle
     BasicBlock *preLoop = this->currentCFG->getCurrentBasicBlock();
 
-    // Créer le bloc de condition de la boucle (condBB)
+    // Création du bloc de condition (condBB)
     string condLabel = this->currentCFG->getBBName();
     BasicBlock *condBB = new BasicBlock(this->currentCFG, condLabel);
     condBB->setIsTestVar(true);
     this->currentCFG->add_bb(condBB);
-
-    // Depuis le bloc preLoop, on insère un saut vers le bloc de condition
     preLoop->setExitTrue(condBB);
 
-    // Générer l’évaluation de la condition dans le bloc condBB
+    // Passer à condBB et générer l'évaluation de la condition
     this->currentCFG->setCurrentBasicBlock(condBB);
     visit(ctx->while_expr_block()->expr());
 
-    // Créer le bloc pour le corps de la boucle (bodyBB)
+    // Création du bloc corps (bodyBB) et du bloc de sortie (exitBB)
     string bodyLabel = this->currentCFG->getBBName();
     BasicBlock *bodyBB = new BasicBlock(this->currentCFG, bodyLabel);
-    bodyBB->setIsTestVar(true);
     this->currentCFG->add_bb(bodyBB);
+    string exitLabel = this->currentCFG->getBBName();
+    BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
+    this->currentCFG->add_bb(exitBB);
 
-    // Dans condBB, si la condition est vraie, brancher vers bodyBB ; si fausse, nous aurions un bloc exit
+    // Branches conditionnelles
     condBB->setExitTrue(bodyBB);
+    condBB->setExitFalse(exitBB);
 
-    // Réinitialiser le flag _returned avant de traiter le corps
+    // Indiquer que nous sommes dans le corps d'une boucle
+    bool prevReturned = _returned;
+    bool savedInLoop = _inLoop;
+    _inLoop = true;
     _returned = false;
+
     this->currentCFG->setCurrentBasicBlock(bodyBB);
     visit(ctx->while_stmt_block());
-
-    // Deux cas :
-    // (A) Si le corps n'a pas généré de return (_returned reste false),
-    //     alors on fait le lien de retour vers la condition et on crée un bloc de sortie.
-    // (B) Sinon, si un return a été généré, on ne crée pas de lien de retour et on ne modifie pas le bloc courant.
+    BasicBlock *lastBody = this->currentCFG->getCurrentBasicBlock();
     if (!_returned)
-    {
-        // Ajouter la branche de retour : à la fin du corps, reprendre en testant à nouveau la condition
-        bodyBB->setExitTrue(condBB);
-
-        // Créer le bloc de sortie (exitBB)
-        string exitLabel = this->currentCFG->getBBName();
-        BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
-        exitBB->setIsTestVar(true);
-        condBB->setExitFalse(exitBB);
-
-        // Ajouter exitBB au CFG et définir exitBB comme bloc courant pour le reste du programme
-        this->currentCFG->add_bb(exitBB);
-        this->currentCFG->setCurrentBasicBlock(exitBB);
-    }
+        lastBody->setExitTrue(condBB); // Revenir à l'évaluation de la condition
     else
-    {
-        // Si un return a été généré, ne pas ajouter de branche de retour.
-        bodyBB->setExitTrue(nullptr);
-        // On ne modifie pas le bloc courant : il contient déjà la génération du jump vers output.
-    }
+        lastBody->setExitTrue(nullptr);
 
+    // Restaurer l'état de la boucle et fixer exitBB comme bloc courant
+    _inLoop = savedInLoop;
+    this->currentCFG->setCurrentBasicBlock(exitBB);
+    _returned = _returned || prevReturned;
     return 0;
 }
 
