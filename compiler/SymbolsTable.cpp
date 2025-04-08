@@ -3,11 +3,19 @@
 
 using namespace std;
 
-void SymbolsTable::addSymbol(string name, Type type, int symbolSize)
+void SymbolsTable::addSymbol(string name, Type type, int symbolSize, int index)
 {
-    this->currentOffset -= symbolSize;
 
-    this->symbolsIndex[name] = this->currentOffset;
+    if (index != 0)
+    {
+        this->symbolsIndex[name] = index;
+    }
+    else
+    {
+        this->currentOffset -= symbolSize;
+        this->symbolsIndex[name] = this->currentOffset;
+    }
+
     this->symbolsType[name] = type;
     this->symbolsUsage[name] = false;
 }

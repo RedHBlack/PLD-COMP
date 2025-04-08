@@ -267,6 +267,33 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
     // Add the function to the map with the number of parameters
     functionsNumberOfParameters[funcName] = ctx->VAR().size() - 1;
 
+    // Check if the function has a block
+    if (ctx->block())
+    {
+        // Create a new CFG for the function
+        SymbolsTable *newTable = new SymbolsTable(currentOffset - 4);
+
+        // Set the parent of the new table to the root
+        newTable->setParent(root);
+
+        for (int i = 1; i < ctx->VAR().size(); i++)
+        {
+            string paramName = ctx->VAR(i)->getText();
+            int paramSize = size_of(stringToType(ctx->TYPE(i)->getText()));
+            newTable->addSymbol(paramName, stringToType(ctx->TYPE(i)->getText()), paramSize, i);
+            newTable->setSymbolUsage(paramName, false);
+        }
+
+        this->currentSymbolsTable = newTable;
+
+        visit(ctx->block());
+
+        this->currentSymbolsTable = this->currentSymbolsTable->getParent();
+
+        // Create a new CFG for the function
+        cfgs[funcName] = new CFG(funcName, newTable, currentOffset - 4);
+    }
+
     return 0;
 }
 
@@ -304,7 +331,7 @@ antlrcpp::Any CodeCheckVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtCo
 
 antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
-    SymbolsTable *newTable = new SymbolsTable(currentOffset - 4);
+    SymbolsTable *newTable = new SymbolsTable(currentOffset);
 
     currentSymbolsTable->addChild(newTable);
     currentSymbolsTable = newTable;

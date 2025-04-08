@@ -2,7 +2,7 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : decl_func_stmt* TYPE 'main' '(' ')' '{' (statement)* return_stmt '}' decl_func_stmt* ;
+prog : decl_func_stmt* ;
 
 decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
 
