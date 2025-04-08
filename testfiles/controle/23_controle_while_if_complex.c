@@ -16,9 +16,3 @@ int main()
 	}
 	return y;
 }
-
-/*
-La condition x < 10 est vérifiée dans BB_0, mais le programme retourne toujours à BB_0 sans jamais incrémenter correctement x ou sortir de la boucle.
-Les blocs "vrai" et "faux" du if ne retournent pas correctement à la boucle externe.
-L'incrémentation de x est soit absente, soit mal placée, ce qui empêche la condition x < 10 de devenir fausse.
-*/
