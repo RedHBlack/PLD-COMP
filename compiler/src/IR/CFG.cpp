@@ -1,6 +1,6 @@
 #include "CFG.h"
-#include "../Type.h"
-#include "Instr/IRInstrSet.h"
+#include "../utils/Type.h"
+#include "instr/IRInstrSet.h"
 #include <sstream>
 
 CFG::CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolIndex) : label(label), symbolsTable(symbolsTable), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)

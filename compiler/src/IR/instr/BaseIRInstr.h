@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../BasicBlock.h"
-#include "../../SymbolsTable.h"
+#include "../../utils/SymbolsTable.h"
 #include <string>
 #include <ostream>
 

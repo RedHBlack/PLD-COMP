@@ -18,15 +18,15 @@
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 *.mk
-compiler/Makefile
 
-compiler/build/
-compiler/generated/
+compiler/*
+!compiler/src
+!compiler/welcome.md
+compiler/src/generated/*
+tests/ifcc-test.py
 
-ifcc-test-output/
-ifcc
+ifcc-test-output
 
-ifcc-test.py
 .DS_Store
 ifcc-wrapper.sh
 
