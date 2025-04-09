@@ -94,10 +94,10 @@ void IRInstrArithmeticOp::handleBitwiseXor(ostream &o)
 
 void IRInstrArithmeticOp::handleLeftShift(ostream &o)
 {
-    o << "   shll " << firstOp << ", " << secondOp << "\n";
+    o << "   sall " << firstOp << ", " << secondOp << "\n";
 }
 
 void IRInstrArithmeticOp::handleRightShift(ostream &o)
 {
-    o << "   shrl " << firstOp << ", " << secondOp << "\n";
+    o << "   sarl " << firstOp << ", " << secondOp << "\n";
 }
