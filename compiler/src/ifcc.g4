@@ -6,7 +6,9 @@ prog : decl_func_stmt* ;
 
 decl_func_stmt: TYPE VAR '(' (TYPE VAR)? (',' TYPE VAR)* ')' (block | ';');
 
-statement:  decl_stmt
+statement:  if_stmt
+        |   while_stmt
+        |   decl_stmt
         |   assign_stmt
         |   incrdecr_stmt
         |   call_func_stmt
@@ -18,6 +20,15 @@ assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
+if_stmt: if_block (else_block)? ;
+if_block: 'if' '(' if_expr_block ')' if_stmt_block ;
+if_expr_block: expr ;
+if_stmt_block: block;
+else_block: 'else' block ;
+while_stmt: 'while' '(' while_expr_block ')' while_stmt_block ;
+while_expr_block: expr ;
+while_stmt_block: block ;
+
 call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* return_stmt? '}' ;
