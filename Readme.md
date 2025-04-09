@@ -12,11 +12,13 @@ Vous y trouverez les fichiers suivants :
 - `ifcc.g4` : le fichier de grammaire ANTLR4
 - Le répertoire `generated` et `build` qui contiennent les fichiers générés par ANTLR4 et les fichiers objets générés par le Makefile. Ces dossiers sont générés lors de la compilation de notre application.
 
-C'est dans le repertoire `./testfiles` que tous nos tests sont implémentés.
-Nous avons, pour l'instant, organisé nos tests en quatres sous répertoires :
+C'est dans le repertoire `.tests/testfiles` que tous nos tests sont implémentés.
+Nous avons organisé nos tests sous répertoires afin de faciliter la navigation et la compréhension de notre code :
 
 - `arithmetic` : les tests concernant les opérations arithmétiques
 - `assignment` : les tests concernant les affectations
+- `block` : les tests concernant les blocs de code
+- `comparison` : les tests concernant les comparaisons
 - `comparaison` : les tests concernant les comparaisons
 - `declaration` : les tests concernant les déclarations de variables
 
