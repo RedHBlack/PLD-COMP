@@ -29,10 +29,10 @@ void IRInstrArithmeticOp::gen_asm(ostream &o)
         handleBitwiseXor(o);
         break;
     case '<':
-
+        handleLeftShift(o);
         break;
     case '>':
-
+        handleRightShift(o);
         break;
     }
 }
