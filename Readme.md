@@ -19,11 +19,14 @@ Nous avons organisé nos tests sous répertoires afin de faciliter la navigation
 - `assignment` : les tests concernant les affectations
 - `block` : les tests concernant les blocs de code
 - `comparison` : les tests concernant les comparaisons
-- `comparaison` : les tests concernant les comparaisons
 - `declaration` : les tests concernant les déclarations de variables
+- `function` : les tests concernant les fonctions
+- `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation (postfixées et préfixées)
+- `propagation_constants` : les tests concernant la propagation de constantes
 
-Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
+Enfin vous trouverez, dans ce même dossier `./test`, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
 `python3 ifcc-test.py ./testfiles` pour exécuter tous les tests ou `python3 ifcc-test.py ./testfiles/<repertoire>` pour exécuter les tests d'un répertoire en particulier.
+Il permet rapidement de voir combien de tests ont été passés et combien ont échoué.
 
 ## Stratégie de test
 
@@ -340,3 +343,30 @@ Nous comptons continuer sur cette organisation pour la suite du projet.
 - Southerland José
 - Abi Saleh Adrian
 - Marchi Mekari Gabriel
+
+qu'est ce qui a été implémenté :
+int main()
+{
+int x;
+return 1 + x = 2;
+}
+ça ça ne passe pas mais c'est normal, notre compilateur en gère pas ça
+
+nous aussi ces tests ne passent pas :
+int main()
+{
+int x;
+return 1 + x;
+}
+alors qu'ils passent en gcc car gcc donne une valeur aléatoire alors que vous on considère que si elle n'a pas été assignée alors on a une erreur
+elle a été declarée sans assignée
+
+int main()
+{
+{
+return 1;
+return 2;
+}
+}
+
+ça dans gcc ça marche mais nous ça ne fonctionne pas

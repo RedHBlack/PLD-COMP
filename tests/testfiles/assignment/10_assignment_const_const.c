@@ -1,5 +1,5 @@
 int main()
 {
-    getchar();
+    5 = 10;
     return 0;
 }
