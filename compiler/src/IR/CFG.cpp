@@ -7,19 +7,11 @@
 
 CFG::CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolIndex) : label(label), symbolsTable(symbolsTable), nextFreeSymbolIndex(initialNextFreeSymbolIndex), initialTempPos(initialNextFreeSymbolIndex)
 {
-    BasicBlock *input = new BasicBlock(this, "input");
-    input->add_IRInstr(new IRInstrSet(input));
-
-    bbs.push_back(input);
-
-    add_bb(new BasicBlock(this, "body"));
+    idBB = 0;
 }
 
 void CFG::add_bb(BasicBlock *bb)
 {
-    if (bbs.size() == 1)
-        bbs[0]->setExitTrue(bb);
-
     bbs.push_back(bb);
     this->setCurrentBasicBlock(bb);
 }
@@ -51,6 +43,26 @@ int CFG::get_var_index(string name)
 Type CFG::get_var_type(string name)
 {
     return this->symbolsTable->getSymbolType(name);
+}
+
+string CFG::toRegister(string name)
+
+{
+    const int index = this->get_var_index(name);
+
+    static const vector<string> regParams = {"%edi", "%esi", "%edx", "%ecx", "%r8", "%r9"};
+
+    if (index > 0)
+    {
+        return regParams[index - 1];
+    }
+
+    if (name[0] == 't')
+    {
+        int index = -stoi(name.substr(3));
+        return to_string(index) + "(%rbp)";
+    }
+    return to_string(index) + "(%rbp)";
 }
 
 BasicBlock *CFG::getCurrentBasicBlock()

@@ -10,6 +10,7 @@
 #include "../IR/instr/IRInstrIf.h"
 #include "../IR/instr/IRInstrJmpRet.h"
 #include "../IR/instr/IRInstrJmpCond.h"
+#include "../IR/instr/IRInstrSet.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -24,7 +25,6 @@ IRVisitor::IRVisitor(map<string, CFG *> cfgs)
     this->cfgs = cfgs;
     this->currentCFG = cfgs.begin()->second;
     this->currentSymbolsTable = this->currentCFG->getSymbolsTable()->getParent();
-    this->functionIndex = 0;
 }
 
 antlrcpp::Any IRVisitor::visitProg(ifccParser::ProgContext *ctx)
@@ -110,9 +110,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         visit(exprCtx);
     }
 
-    setCurrentSymbolsTable(currentSymbolsTable->getParent());
-
-    currentBB->setExitTrue(nullptr);
+    currentBB->add_IRInstr(new IRInstrJmpRet(currentBB, "output_" + this->currentCFG->getLabel()));
 
     return 0;
 }
@@ -461,39 +459,6 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     return 0;
 }
 
-antlrcpp::Any IRVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx)
-{
-    BasicBlock *ifBB = this->currentCFG->getCurrentBasicBlock();
-
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
-
-    return 0;
-}
-
-antlrcpp::Any IRVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
-{
-    BasicBlock *elseBB = this->currentCFG->getCurrentBasicBlock();
-
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
-
-    return 0;
-}
 antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
     // Récupérer le bloc avant la boucle
@@ -554,39 +519,39 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     return 0;
 }
 
-antlrcpp::Any IRVisitor::visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx)
-{
-    BasicBlock *whileBB = this->currentCFG->getCurrentBasicBlock();
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
-    return 0;
-}
-
 antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx)
 {
+
     if (ctx->block())
     {
         this->currentCFG = this->cfgs[ctx->VAR(0)->getText()];
-        setCurrentSymbolsTable(this->currentCFG->getSymbolsTable());
+        string currentCFGLabel = currentCFG->getLabel();
+
+        BasicBlock *input = new BasicBlock(currentCFG, "input_" + currentCFGLabel);
+        BasicBlock *body = new BasicBlock(currentCFG, "body_" + currentCFGLabel);
+
+        input->add_IRInstr(new IRInstrSet(input));
+
+        currentCFG->add_bb(input);
+
+        input->setExitTrue(body);
+
+        currentCFG->add_bb(body);
+
+        setCurrentSymbolsTable(currentCFG->getSymbolsTable());
 
         visit(ctx->block());
 
         setCurrentSymbolsTable(currentSymbolsTable->getParent());
 
-        string outputLabel = "output" + to_string(functionIndex++);
+        string outputLabel = "output_" + currentCFGLabel;
 
-        BasicBlock *output = new BasicBlock(this->currentCFG, outputLabel);
+        BasicBlock *output = new BasicBlock(currentCFG, outputLabel);
         output->add_IRInstr(new IRInstrClean(output));
 
-        this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+        currentCFG->getCurrentBasicBlock()->setExitTrue(output);
 
-        this->currentCFG->add_bb(output);
+        currentCFG->add_bb(output);
     }
     return 0;
 }

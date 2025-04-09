@@ -21,13 +21,13 @@ incrdecr_stmt:  VAR OP=('++' | '--') ';'
             |   OP=('++' | '--') VAR ';'
             ;
 if_stmt: if_block (else_block)? ;
-if_block: 'if' '(' if_expr_block ')' '{' if_stmt_block '}' ;
+if_block: 'if' '(' if_expr_block ')' if_stmt_block ;
 if_expr_block: expr ;
-if_stmt_block: (statement)* return_stmt? ;
-else_block: 'else' '{' (statement)* return_stmt? '}' ;
-while_stmt: 'while' '(' while_expr_block ')' '{' while_stmt_block '}' ;
+if_stmt_block: block;
+else_block: 'else' block ;
+while_stmt: 'while' '(' while_expr_block ')' while_stmt_block ;
 while_expr_block: expr ;
-while_stmt_block: (statement)* return_stmt? ;
+while_stmt_block: block ;
 
 call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;

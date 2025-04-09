@@ -55,6 +55,8 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
         // Seulement si l'expression existe pour cette variable/tableau
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
+            currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
+
             ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
 
             // Si l'initialiseur est une variable, on la marque comme utilisée
@@ -119,6 +121,8 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
     {
         nbExpr = 1;
     }
+
+    currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
 
     for (int i = 0; i < nbExpr; i++)
     {
@@ -371,35 +375,6 @@ antlrcpp::Any CodeCheckVisitor::visitIf_expr_block(ifccParser::If_expr_blockCont
     return 0;
 }
 
-antlrcpp::Any CodeCheckVisitor::visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx)
-{
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitElse_block(ifccParser::Else_blockContext *ctx)
-{
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
-    return 0;
-}
-
 antlrcpp::Any CodeCheckVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
     visit(ctx->while_expr_block());
@@ -412,21 +387,6 @@ antlrcpp::Any CodeCheckVisitor::visitWhile_stmt(ifccParser::While_stmtContext *c
 antlrcpp::Any CodeCheckVisitor::visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx)
 {
     visit(ctx->expr());
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx)
-{
-    for (size_t i = 0; i < ctx->statement().size(); i++)
-    {
-        visit(ctx->statement(i));
-    }
-
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-    }
 
     return 0;
 }

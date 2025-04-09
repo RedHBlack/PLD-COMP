@@ -92,8 +92,6 @@ public:
 
         virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
 
-        string evaluateCallExpr(ifccParser::Call_func_stmtContext *ctx);
-
         /**
          * @brief Visits an expression and generates the IR.
          *
@@ -188,26 +186,6 @@ public:
         virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 
         /**
-         * @brief Visits an if statement block and generates the IR.
-         *
-         * This method processes the block of statements within an if statement and generates the corresponding IR.
-         *
-         * @param ctx The context of the if block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx) override;
-
-        /**
-         * @brief Visits an else block and generates the IR.
-         *
-         * This method processes the block of statements within an else statement and generates the corresponding IR.
-         *
-         * @param ctx The context of the else block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitElse_block(ifccParser::Else_blockContext *ctx) override;
-
-        /**
          * @brief Visits a while statement and generates the IR.
          *
          * This method processes while statements and generates the corresponding IR for the loop.
@@ -216,16 +194,6 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
-
-        /**
-         * @brief Visits a while statement block and generates the IR.
-         *
-         * This method processes the block of statements within a while statement and generates the corresponding IR.
-         *
-         * @param ctx The context of the while block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx) override;
 
         /**
          * @brief Generates the assembly code for the IR.
@@ -295,7 +263,6 @@ protected:
 private:
         bool _returned = false;
         bool _inLoop = false;
-        int functionIndex;
         /**
          * @brief Assigns a value to a variable.
          *

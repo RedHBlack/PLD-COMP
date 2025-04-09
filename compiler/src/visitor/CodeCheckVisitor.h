@@ -179,28 +179,6 @@ public:
         virtual antlrcpp::Any visitIf_expr_block(ifccParser::If_expr_blockContext *ctx) override;
 
         /**
-         * @brief Visits an if statement block in the parsed code.
-         *
-         * This method processes the block of statements within an if statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the if statement block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_stmt_block(ifccParser::If_stmt_blockContext *ctx) override;
-
-        /**
-         * @brief Visits an else block in the parsed code.
-         *
-         * This method processes the block of statements within an else statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the else block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitElse_block(ifccParser::Else_blockContext *ctx) override;
-
-        /**
          * @brief Visits a while statement in the parsed code.
          *
          * This method processes while statements and checks for correctness
@@ -221,17 +199,6 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx) override;
-
-        /**
-         * @brief Visits a while statement block in the parsed code.
-         *
-         * This method processes the block of statements within a while statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the while statement block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitWhile_stmt_block(ifccParser::While_stmt_blockContext *ctx) override;
 
         /**
          * @brief Visits a function declaration statement.

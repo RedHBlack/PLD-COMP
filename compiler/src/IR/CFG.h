@@ -91,24 +91,7 @@ public:
      * @param name The name of the variable to convert.
      * @return The register name corresponding to the input variable.
      */
-    string toRegister(string name)
-    {
-        const int index = this->get_var_index(name);
-
-        static const vector<string> regParams = {"%edi", "%esi", "%edx", "%ecx", "%r8", "%r9"};
-
-        if (index > 0)
-        {
-            return regParams[this->get_var_index(name) - 1];
-        }
-
-        if (name[0] == 't')
-        {
-            int index = -stoi(name.substr(3)); // Récupère la sous-chaîne après "tmp"
-            return to_string(index) + "(%rbp)";
-        }
-        return to_string(index) + "(%rbp)";
-    }
+    string toRegister(string name);
 
     /**
      * @brief Retrieves the current basic block in the control flow graph.
