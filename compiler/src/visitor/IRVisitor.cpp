@@ -57,12 +57,6 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
             return 1;
     }
 
-    if (ctx->return_stmt())
-    {
-        visit(ctx->return_stmt());
-        return 1;
-    }
-
     setCurrentSymbolsTable(currentSymbolsTable->getParent());
 
     return 0;

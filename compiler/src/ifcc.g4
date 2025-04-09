@@ -11,6 +11,7 @@ statement:  decl_stmt
         |   incrdecr_stmt
         |   call_func_stmt
         |   block
+        |   return_stmt
         ;
 
 decl_stmt: TYPE VAR ('[' CONST ']')? ('=' expr)? (',' VAR ('[' CONST ']')? ('=' expr)?)* ';' ;
@@ -20,7 +21,7 @@ incrdecr_stmt:  VAR OP=('++' | '--') ';'
             ;
 call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
-block: '{' (statement)* return_stmt? '}' ;
+block: '{' (statement)* '}' ;
 
 expr:   CONST                                               #const
     |   VAR                                                 #var
