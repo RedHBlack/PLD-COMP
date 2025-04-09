@@ -1,10 +1,11 @@
 int main()
 {
     int a = 1;
-    int b = 3;
+    int b = 2;
     int tab[3];
 
     tab[1] = a;
+    tab[2] = 2;
 
     tab[a] = b;
 

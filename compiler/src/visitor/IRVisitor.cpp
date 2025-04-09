@@ -218,6 +218,13 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         // Cas dynamique : on évalue l'index dans %eax, on sauvegarde le résultat, on effectue cltq, etc.
         visitExpr(indexExpr, true);
 
+        //If it's an assignment in the index
+        if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(indexExpr))
+        {
+            //On doit mettre la variable assignée dans %eax
+            currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
+        }
+
         currentBB->add_IRInstr(new IRInstrUnaryOp(currentBB, "%eax", "cltq"));
         int baseOffset = this->currentCFG->get_var_index(arrayName);
         currentBB->add_IRInstr(new IRInstrStoreToArray(currentBB, baseOffset, "%rax", "%ebx"));
@@ -297,13 +304,12 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
     }
     else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
     {
-        if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(assignCtx->VAR()))
-        {
-            // Process the right-hand side expression
-            visitExpr(assignCtx->expr(), false);
-            // Assign the result to the variable
-            currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(assignCtx->VAR()->getText())));
-        }
+        std::string varName = assignCtx->VAR()->getText();
+        // Obtain the right value
+        
+        visitExpr(assignCtx->expr(), true);
+        // Move the value into the target register
+        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(expr))
     {
