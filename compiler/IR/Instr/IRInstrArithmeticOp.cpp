@@ -99,5 +99,7 @@ void IRInstrArithmeticOp::handleLeftShift(ostream &o)
 
 void IRInstrArithmeticOp::handleRightShift(ostream &o)
 {
-    o << "   sarl " << firstOp << ", " << secondOp << "\n";
+    o << "   movl " << secondOp << ", %ecx\n";
+    o << "   sarl %cl," << firstOp << "\n";
+    o << "   movl " << firstOp << ", %eax\n";
 }
