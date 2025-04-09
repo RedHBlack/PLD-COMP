@@ -338,3 +338,30 @@ Nous comptons continuer sur cette organisation pour la suite du projet.
 - Southerland José
 - Abi Saleh Adrian
 - Marchi Mekari Gabriel
+
+qu'est ce qui a été implémenté :
+int main()
+{
+int x;
+return 1 + x = 2;
+}
+ça ça ne passe pas mais c'est normal, notre compilateur en gère pas ça
+
+nous aussi ces tests ne passent pas :
+int main()
+{
+int x;
+return 1 + x;
+}
+alors qu'ils passent en gcc car gcc donne une valeur aléatoire alors que vous on considère que si elle n'a pas été assignée alors on a une erreur
+elle a été declarée sans assignée
+
+int main()
+{
+{
+return 1;
+return 2;
+}
+}
+
+ça dans gcc ça marche mais nous ça ne fonctionne pas
