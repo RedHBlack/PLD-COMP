@@ -314,6 +314,22 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Support des opérateurs logiques (`&&` et `||`) pour combiner des comparaisons
 - Avertissements pour les confusions courantes (`=` vs `==`)
 
+### 4. Tableaux statiques
+
+#### Fonctionnalités implémentées
+
+- Declaration d'un tableau
+- Initialisation à la déclaration (ex: tab[2] = {1,2})
+- Assignation à un tableau
+- Assignation depuis un tableau
+- Tableaux imbriqués (tab[tab[tab[a]]])
+- Index dynamiques (tab[7>5], tab[a=1] si "a" déclaré) 
+
+#### Fonctionnalités problématiques
+
+- les opérations arithmétiques dans l'index ne sont pas implémentés (tab[a+5])
+
+
 ## Organisation du travail
 
 Pour la repartition du travail, nous avons décidé de travailler en hexanôme dès la 3ème séance.
