@@ -55,6 +55,8 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
         // Seulement si l'expression existe pour cette variable/tableau
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
+            currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
+
             ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
 
             // Si l'initialiseur est une variable, on la marque comme utilisée
@@ -119,6 +121,8 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
     {
         nbExpr = 1;
     }
+
+    currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
 
     for (int i = 0; i < nbExpr; i++)
     {
@@ -339,6 +343,50 @@ antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
     visitChildren(ctx);
 
     currentSymbolsTable = currentSymbolsTable->getParent();
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    visit(ctx->if_block());
+
+    if (ctx->else_block())
+    {
+        visit(ctx->else_block());
+    }
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
+{
+    visit(ctx->if_expr_block());
+
+    visit(ctx->if_stmt_block());
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ctx)
+{
+    visit(ctx->expr());
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    visit(ctx->while_expr_block());
+
+    visit(ctx->while_stmt_block());
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx)
+{
+    visit(ctx->expr());
 
     return 0;
 }

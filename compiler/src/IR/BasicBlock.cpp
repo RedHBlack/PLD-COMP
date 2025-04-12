@@ -10,6 +10,16 @@ void BasicBlock::gen_asm(ostream &o)
     {
         instrs[i]->gen_asm(o);
     }
+    if (is_test_var && exit_true != nullptr && exit_false != nullptr)
+    {
+        o << "   cmp $0, %eax" << endl;
+        o << "   je " << exit_false->getLabel() << endl;
+        o << "   jmp " << exit_true->getLabel() << endl;
+    }
+    else if (exit_true != nullptr)
+    {
+        o << "   jmp " << exit_true->getLabel() << endl;
+    }
 }
 
 void BasicBlock::add_IRInstr(BaseIRInstr *instr)
@@ -25,6 +35,29 @@ CFG *BasicBlock::getCFG()
 string BasicBlock::getLabel()
 {
     return label;
+}
+
+void BasicBlock::setLabel(string label)
+{
+    this->label = label;
+}
+
+string BasicBlock::getTrueLabel()
+{
+    if (exit_true != nullptr)
+    {
+        return exit_true->getLabel();
+    }
+    return "";
+}
+
+string BasicBlock::getFalseLabel()
+{
+    if (exit_false != nullptr)
+    {
+        return exit_false->getLabel();
+    }
+    return "";
 }
 
 vector<BaseIRInstr *> BasicBlock::getInstr()
