@@ -1,4 +1,13 @@
-# Présentation mi-parcours
+# Présentation du projet
+
+Ce document fournit une vue d'ensemble technique et organisationnelle du projet. Vous y trouverez des informations essentielles pour :
+
+- Comprendre l'architecture et la structure du projet.
+- Configurer et exécuter le projet sur différents systèmes d'exploitation.
+- Découvrir la stratégie de test adoptée pour garantir la qualité du code.
+- Appréhender la gestion de projet et la répartition des tâches au sein de l'équipe.
+
+Ce guide est conçu pour être une référence claire et concise, facilitant la prise en main du projet et la collaboration entre les membres de l'équipe.
 
 ## Notre architecture de projet
 
@@ -12,21 +21,22 @@ Vous y trouverez les fichiers suivants :
 - `ifcc.g4` : le fichier de grammaire ANTLR4
 - Le répertoire `generated` et `build` qui contiennent les fichiers générés par ANTLR4 et les fichiers objets générés par le Makefile. Ces dossiers sont générés lors de la compilation de notre application.
 
-C'est dans le repertoire `.tests/testfiles` que tous nos tests sont implémentés.
-Nous avons organisé nos tests sous répertoires afin de faciliter la navigation et la compréhension de notre code :
+C'est dans le répertoire `./testfiles` que tous nos tests sont implémentés.  
+Nous avons, pour l'instant, organisé nos tests en plusieurs sous-répertoires :
 
-- `arithmetic` : les tests concernant les opérations arithmétiques
-- `assignment` : les tests concernant les affectations
-- `block` : les tests concernant les blocs de code
-- `comparison` : les tests concernant les comparaisons
-- `declaration` : les tests concernant les déclarations de variables
-- `function` : les tests concernant les fonctions
-- `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation (postfixées et préfixées)
-- `propagation_constant` : les tests concernant la propagation de constantes
+- `arithmetic` : les tests concernant les opérations arithmétiques.
+- `assignment` : les tests concernant les affectations.
+- `comparison` : les tests concernant les comparaisons.
+- `declaration` : les tests concernant les déclarations de variables.
+- `block` : les tests concernant les blocs de code, comme les blocs conditionnels (`if`, `else`) ou les boucles (`while`, `for`).
+- `function` : les tests concernant les définitions et appels de fonctions.
+- `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation.
+- `propagation_constant` : les tests concernant l'optimisation du compilateur. Ces tests peuvent être similaires à d'autres tests placés ailleurs, mais ce répertoire permettent de les regrouper afin de vérifier manuellement le code assembleur généré pour valider les optimisations.
 
-Enfin vous trouverez, dans ce même dossier `./test`, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
+Cette organisation nous permet de structurer nos tests de manière claire et de cibler facilement les fonctionnalités à valider ou à corriger.
+
+Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
 `python3 ifcc-test.py ./testfiles` pour exécuter tous les tests ou `python3 ifcc-test.py ./testfiles/<repertoire>` pour exécuter les tests d'un répertoire en particulier.
-Il permet rapidement de voir combien de tests sont passés et combien ont échoué.
 
 ## Stratégie de test
 
@@ -36,7 +46,6 @@ Nos tests suivent une convention de nommage claire :
 
 - Tests standards : `<n°test>_<nom du test>.c`
 - Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
-- Tests de où l'on ne peut pas savoir s'il passera ou non (indépendant de notre volonté) : `<n°test>_<nom du test>_UKNOWN.c`
 - Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
 
 ### Logique d'évaluation
@@ -63,198 +72,62 @@ Les tests pour des fonctionnalités non encore implémentées sont :
 - Inclus dans les statistiques de test final
 - Conservés pour documenter les fonctionnalités à développer
 
-# Description des fonctionnalitées
+## Lancement du code
 
-## 1. Opérations arithmétiques
+### Instructions pour macOS
 
-### 1.1 Addition et soustraction
+Si vous êtes sous macOS et que votre machine utilise une architecture ARM (comme les Mac équipés de puces Apple Silicon), il est nécessaire d'utiliser un émulateur Rosetta pour exécuter le code en mode x86_64. Cela est dû au fait que notre projet n'est pas compatible avec l'architecture ARM par défaut.
 
-#### Fonctionnalités implémentées
+Pour activer Rosetta, suivez les étapes ci-dessous :
 
-- Addition simple entre deux constantes (1 + 2)
-- Addition entre deux variables (a + b)
-- Addition entre variables et constantes (a + 1)
-- Additions complexes avec plusieurs opérandes (a + b + c + d)
-- Utilisation de parenthèses pour spécifier l'ordre des opérations ((a + b) + c)
-- Gestion des expressions d'addition composées (((1 + 1) + (1 + 1)))
-- Même chose pour la soustraction
+1. Ouvrez un terminal.
+2. Lancez une session bash en mode x86_64 avec la commande suivante :
 
-#### Fonctionnalités non implémentées
+```bash
+arch -x86_64 bash
+```
 
-- Opérateur unaire plus (+a) n'est pas supporté comme expression valide de notre language
+3. Une fois dans cette session, vous pouvez compiler et exécuter le projet normalement en utilisant le `Makefile`.
 
-### 1.2 Opérations bit à bit
+### Vérification de l'architecture
 
-#### Fonctionnalités implémentées
+Pour vérifier l'architecture utilisée par votre terminal, vous pouvez exécuter la commande suivante :
 
-- Opérateur AND bit à bit (`&`) : Effectue un ET logique bit à bit entre deux opérandes
-- Opérateur OR bit à bit (`|`) : Effectue un OU logique bit à bit entre deux opérandes
-- Opérateur XOR bit à bit (`^`) : Effectue un OU exclusif bit à bit entre deux opérandes
-- Opérateur NOT bit à bit (`~`) : Inverse les bits d'un opérande
+```bash
+uname -m
+```
 
-#### Fonctionnalités non implémentées
+- Si la sortie est `arm64`, vous êtes en mode ARM.
+- Si la sortie est `x86_64`, vous êtes en mode x86_64.
 
-- Opérateurs de décalage de bits (`<<` et `>>`) : Déplacent les bits vers la gauche ou la droite
+### Résolution des problèmes courants
 
-### 1.3 Division Entière
+- **Erreur de compilation liée à l'architecture** : Assurez-vous d'avoir bien lancé le terminal en mode x86_64 avant de compiler.
+- **Rosetta non installé** : Si vous n'avez pas encore installé Rosetta, macOS vous proposera de le faire automatiquement lors de la première tentative d'exécution d'une application x86_64. Suivez les instructions à l'écran pour l'installer.
 
-#### Fonctionnalités implémentées
+### Compatibilité future
 
-- Division simple entre deux constantes (`2 / 3`)
-- Division entre deux variables (`a / b`)
-- Division entre variables et constantes (`a / 2`, `10 / b`)
-- Division avec valeurs négatives (`a / -1`)
-- Division de zéro par une constante (`0 / 2`)
+Nous arions prévu (si nous avions eu plus de temps) d'ajouter la compatibilité avec l'architecture ARM dans une version future du projet. Cela permettra d'exécuter le code nativement sur les machines Apple Silicon sans nécessiter Rosetta.
 
-#### Fonctionnalités problématiques
+### Pour les autres systèmes d'exploitation
 
-- Division par zéro - provoque une boucle infinie dans le script de test
-- Nous avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
+- **Linux** : Aucune configuration spécifique n'est requise. Assurez-vous simplement d'avoir les dépendances nécessaires installées (comme Python3 et ANTLR4).
+- **Windows** : Utilisez un environnement WSL (Windows Subsystem for Linux) ou un terminal compatible avec les outils GNU pour exécuter le projet.
 
-#### Comportement différent de GCC
+### Commandes utiles
 
-Notre compilateur diffère de GCC sur les points suivants :
-
-- La division par zéro n'est pas correctement gérée et peut causer un blocage du programme
-- Nous ne générons pas d'avertissement pour les divisions qui pourraient causer un problème à l'exécution
-
-#### À implémenter pour une version future
-
-- Division float
-- Division double
-
-### 1.4 Opérateur Modulo
-
-#### Fonctionnalités implémentées
-
-- Modulo simple entre deux constantes (`2 % 3`)
-- Modulo entre variables et constantes (`a % 2`, `2 % b`)
-- Modulo entre deux variables (`a % b`)
-- Modulo avec valeurs négatives (`a % -1`)
-- Modulo avec zéro comme dividende (`0 % a`)
-
-#### Fonctionnalités problématiques
-
-- Modulo par zéro : problème très similaire à la division par zéro traité ci-dessus.
-  - Provoque une boucle infinie dans le script de test
-  - Nous avons placé le test de la division par 0 dans le dossier `./tesfiles_draft` car il ne fonctionne pas.
-
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Le modulo par zéro n'est pas correctement géré et peut causer un blocage du programme
-- Nous ne générons pas d'avertissement pour les opérations modulo qui pourraient causer un problème à l'exécution
-
-#### À implémenter pour une version future
-
-- Support du modulo avec des types float et double (une fois ces types supportés)
-
-### 1.5 Multiplication entière
-
-#### Fonctionnalités implémentées
-
-- Multiplication simple entre deux constantes (`2 * 3`)
-- Multiplication entre deux variables (`a * b`)
-- Multiplication entre variables et constantes (`a * 2`, `5 * b`)
-- Multiplications complexes avec plusieurs opérandes (`a * b * c`)
-- Multiplication avec nombres négatifs (`a * -1`)
-- Gestion correcte de la priorité des opérations (`a + b * c`)
-
-#### À implémenter pour une version future
-
-- Support de la multiplication avec des types float et double
-
-### 1.6 Opérateurs logiques
-
-#### Fonctionnalités implémentées
-
-- Opérateur logique ET (`&&`) : Évalue à vrai si les deux opérandes sont vrais
-- Opérateur logique OU (`||`) : Évalue à vrai si au moins un des opérandes est vrai
-- Opérateur logique NON (`!`) : Inverse la valeur de vérité de l'opérande
-
-### 1.7 Opérateur unaire d'opposé (-)
-
-#### Fonctionnalités implémentées
-
-- Application de l'opérateur opposé à une constante `(-3)`
-- Application de l'opérateur opposé à une variable `(-a)`
-- Application de l'opérateur opposé à une expression constante `(-(1 + 2))`
-- Application de l'opérateur opposé à une expression avec variables `(-(a + b))`
-- Application de l'opérateur opposé à zéro `(-0)`
-- Chaînage d'opérateurs opposés comme `-(-a)` et `-(-(-a))` qui fonctionnent correctement
-
-### 1.8 Opérations d'incrémentation et de décrémentation
-
-#### Fonctionnalités implémentées
-
-- Opérateur d'incrémentation postfixé (`a++`)
-- Opérateur de décrémentation postfixé (`a--`)
-- Opérateur d'incrémentation préfixé (`++a`)
-- Opérateur de décrémentation préfixé (`--a`)
-
-### 2. Affectation de variables
-
-#### Fonctionnalités implémentées
-
-- Affectation simple d'une constante à une variable (`a = 2`)
-- Affectation d'une variable à une autre variable (`a = b`)
-- Affectation d'expressions complexes à une variable (`a = b * c + 5`)
-- Réaffectation d'une valeur à une variable déjà initialisée (`a = 5; a = 10`)
-
-#### Fonctionnalités problématiques
-
-- Support pour les opérateurs d'affectation composée (`+=`, `-=`, `*=`, `/=`)
-
-### 3. Déclaration de variables
-
-#### Fonctionnalités implémentées
-
-- Déclaration simple de variables (`int a;`)
-- Déclarations multiples sur une même ligne (`int a, b, c;`)
-- Déclaration mulitples et initialisation sur une même ligne (`int a,b,c = 1 `;)
-- Initialisation lors de la déclaration (`int a = 5;`)
-- Initialisation avec des expressions complexes (`int a = 2+9;`)
-- Mélange de variables initialisées et non initialisées sur une même ligne (`int a=1, b, c=1;`)
-- Déclaration de variables avec noms valides incluant lettres, chiffres (sauf au début) et underscores
-
-#### Fonctionnalités différentes de GCC
-
-- Notre compilateur accepte la déclaration d'une variable nommée uniquement par un numéro (`int 0;`)
-- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais retournera une valeur indéterminée (le test porterait donc le mot UNKOWN dans le nom du fichier car ne nous pouvons pas savoir si le resultat de notre compilateur sera la même que GCC).
-
-- Nous acceptons des noms de variables que GCC pourrait rejeter
-
-#### À implémenter pour une version future
-
-### 4. Opérateurs de comparaison
-
-#### Fonctionnalités implémentées
-
-- Opérateur d'égalité (`==`) entre variables et constantes
-- Opérateur d'inégalité (`!=`) entre variables et constantes
-- Opérateurs de relation (`>`, `<`, `>=`, `<=`) pour comparer des valeurs
-- Comparaisons combinées avec des opérations arithmétiques (`a + b > c`)
-- Opérateur de négation (`!`) appliqué aux comparaisons
-- Utilisation d'opérateurs bit à bit avec des comparaisons (`a & b == c`)
-
-#### Fonctionnalités problématiques
-
-- Notre compilateur accepte les comparaisons avec des variables non déclarées
-- Les comparaisons incomplètes (`10 >`) ne sont pas correctement détectées comme erreurs
-- Confusion possible entre l'opérateur d'affectation (`=`) et l'opérateur d'égalité (`==`)
-
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Notre compilateur n'émet pas d'avertissement pour l'utilisation de `=` au lieu de `==` dans les expressions conditionnelles
-- La vérification des comparaisons incomplètes est moins stricte que GCC
-
-#### À implémenter pour une version future
-
-- Support des opérateurs logiques (`&&` et `||`) pour combiner des comparaisons
-- Avertissements pour les confusions courantes (`=` vs `==`)
+- Pour compiler le projet :
+  ```bash
+  make
+  ```
+- Pour exécuter les tests :
+  ```bash
+  python3 ifcc-test.py ./testfiles
+  ```
+- Pour nettoyer les fichiers générés :
+  ```bash
+  make clean
+  ```
 
 ## Organisation du travail
 
@@ -280,30 +153,3 @@ Nous comptons continuer sur cette organisation pour la suite du projet.
 - Southerland José
 - Abi Saleh Adrian
 - Marchi Mekari Gabriel
-
-qu'est ce qui a été implémenté :
-int main()
-{
-int x;
-return 1 + x = 2;
-}
-ça ça ne passe pas mais c'est normal, notre compilateur en gère pas ça
-
-nous aussi ces tests ne passent pas :
-int main()
-{
-int x;
-return 1 + x;
-}
-alors qu'ils passent en gcc car gcc donne une valeur aléatoire alors que vous on considère que si elle n'a pas été assignée alors on a une erreur
-elle a été declarée sans assignée
-
-int main()
-{
-{
-return 1;
-return 2;
-}
-}
-
-ça dans gcc ça marche mais nous ça ne fonctionne pas
