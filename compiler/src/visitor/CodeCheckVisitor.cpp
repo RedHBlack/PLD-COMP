@@ -10,7 +10,8 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     visitChildren(ctx);
 
-    map<string, bool> symbolsUsage = root->getSymbolsUsage();
+    // Collecte l'utilisation des symboles depuis la racine et tous ses enfants
+    map<string, bool> symbolsUsage = collectSymbolsUsage(root);
 
     for (auto it = symbolsUsage.begin(); it != symbolsUsage.end(); it++)
     {
@@ -18,6 +19,16 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
         {
             cerr << "# WARNING: " << it->first << " : declared but not used" << endl;
         }
+    }
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitReturn(ifccParser::Return_stmtContext *ctx)
+{
+    if (ctx->expr() != nullptr)
+    {
+        visitExpr(ctx->expr());
     }
 
     return 0;
@@ -59,8 +70,6 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
 
             ifccParser::ExprContext *exprCtx = ctx->expr(exprIndex);
 
-            // Si l'initialiseur est une variable, on la marque comme utilisée
-
             if (arraySize > 1)
             {
                 if (auto tabInitCtx = dynamic_cast<ifccParser::Array_initContext *>(exprCtx))
@@ -80,7 +89,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
             else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
             {
                 string varRight = varCtx->getText();
-                if (currentSymbolsTable->getSymbolIndex(varRight) == 0)
+                if (!currentSymbolsTable->containsSymbol(varRight))
                 {
                     cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
                     exit(1);
@@ -152,9 +161,27 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
     return 0;
 }
 
+antlrcpp::Any CodeCheckVisitor::visitVar(ifccParser::VarContext *ctx)
+{
+    string varName = ctx->VAR()->getText();
+    if (currentSymbolsTable->getSymbolIndex(varName) == 0)
+    {
+        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        exit(1);
+    }
+    else if (!currentSymbolsTable->symbolHasAValue(varName))
+    {
+        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+    }
+
+    currentSymbolsTable->setSymbolUsage(varName, true);
+
+    return 0;
+}
+
+
 antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
 {
-
     if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
     {
         string varName = varCtx->VAR()->getText();
@@ -168,6 +195,25 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
             cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
         }
         currentSymbolsTable->setSymbolUsage(varName, true);
+    }
+    if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
+    {
+        string varName = assignCtx->VAR()->getText();
+        currentSymbolsTable->setSymbolDefinitionStatus(varName, true);
+        if (currentSymbolsTable->getSymbolIndex(varName) == 0)
+        {
+            cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+            exit(1);
+        }
+        else if (!currentSymbolsTable->symbolHasAValue(varName))
+        {
+            cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        }
+
+        if (auto innerAssign = dynamic_cast<ifccParser::AssignContext *>(assignCtx->expr()))
+        {
+            visitExpr(innerAssign);
+        }
     }
     else
     {
@@ -279,6 +325,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
 
         // Set the parent of the new table to the root
         newTable->setParent(root);
+
+        // *** Ajout de newTable au root ***
+        root->addChild(newTable);
 
         for (int i = 1; i < ctx->VAR().size(); i++)
         {
@@ -396,4 +445,17 @@ int CodeCheckVisitor::getFunctionNumberOfParameters(string functionName)
     if (functionsNumberOfParameters.find(functionName) != functionsNumberOfParameters.end())
         return functionsNumberOfParameters[functionName];
     return -1;
+}
+
+map<string, bool> CodeCheckVisitor::collectSymbolsUsage(SymbolsTable *table)
+{
+    map<string, bool> symbolsUsage = table->getSymbolsUsage();
+
+    for (auto child : table->getChildren())
+    {
+        auto childSymbolsUsage = collectSymbolsUsage(child);
+        symbolsUsage.insert(childSymbolsUsage.begin(), childSymbolsUsage.end());
+    }
+
+    return symbolsUsage;
 }
