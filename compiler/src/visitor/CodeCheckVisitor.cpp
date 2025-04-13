@@ -179,7 +179,6 @@ antlrcpp::Any CodeCheckVisitor::visitVar(ifccParser::VarContext *ctx)
     return 0;
 }
 
-
 antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
 {
     if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
@@ -262,6 +261,38 @@ antlrcpp::Any CodeCheckVisitor::visitComp(ifccParser::CompContext *ctx)
 antlrcpp::Any CodeCheckVisitor::visitUnary(ifccParser::UnaryContext *ctx)
 {
     visitExpr(ctx->expr());
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx)
+{
+    string varName = ctx->VAR()->getText();
+    if (currentSymbolsTable->getSymbolIndex(varName) == 0)
+    {
+        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        exit(1);
+    }
+    else if (!currentSymbolsTable->symbolHasAValue(varName))
+    {
+        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+    }
+
+    return 0;
+}
+
+antlrcpp::Any CodeCheckVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
+{
+    string varName = ctx->VAR()->getText();
+    if (currentSymbolsTable->getSymbolIndex(varName) == 0)
+    {
+        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        exit(1);
+    }
+    else if (!currentSymbolsTable->symbolHasAValue(varName))
+    {
+        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+    }
+
     return 0;
 }
 
