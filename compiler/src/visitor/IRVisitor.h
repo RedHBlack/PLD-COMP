@@ -92,8 +92,6 @@ public:
 
         virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
 
-        string evaluateCallExpr(ifccParser::Call_func_stmtContext *ctx);
-
         /**
          * @brief Visits an expression and generates the IR.
          *
@@ -178,6 +176,40 @@ public:
         virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
 
         /**
+         * @brief Visits an if statement and generates the IR.
+         *
+         * This method processes if statements and generates the corresponding IR for the conditional branching.
+         *
+         * @param ctx The context of the if statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a while statement and generates the IR.
+         *
+         * This method processes while statements and generates the corresponding IR for the loop.
+         *
+         * @param ctx The context of the while statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a shift operation (e.g., left or right shift) and generates the IR.
+         *
+         * This method processes shift operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the shift operation.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitShift(ifccParser::ShiftContext *ctx) override;
+
+        /**
          * @brief Generates the assembly code for the IR.
          *
          * This method generates assembly code from the Intermediate Representation (IR) for output.
@@ -243,6 +275,8 @@ protected:
         SymbolsTable *currentSymbolsTable;
 
 private:
+        bool _returned = false;
+        bool _inLoop = false;
         /**
          * @brief Assigns a value to a variable.
          *

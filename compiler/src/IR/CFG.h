@@ -91,24 +91,7 @@ public:
      * @param name The name of the variable to convert.
      * @return The register name corresponding to the input variable.
      */
-    string toRegister(string name)
-    {
-        const int index = this->get_var_index(name);
-
-        static const vector<string> regParams = {"%edi", "%esi", "%edx", "%ecx", "%r8", "%r9"};
-
-        if (index > 0)
-        {
-            return regParams[this->get_var_index(name) - 1];
-        }
-
-        if (name[0] == 't')
-        {
-            int index = -stoi(name.substr(3)); // Récupère la sous-chaîne après "tmp"
-            return to_string(index) + "(%rbp)";
-        }
-        return to_string(index) + "(%rbp)";
-    }
+    string toRegister(string name);
 
     /**
      * @brief Retrieves the current basic block in the control flow graph.
@@ -135,6 +118,8 @@ public:
      */
     void resetNextFreeSymbolIndex();
 
+    string getBBName();
+
     /**
      * @brief Generates the Graphviz representation of the control flow graph (CFG).
      *
@@ -158,6 +143,43 @@ public:
     string getLabel();
 
     /**
+     * @brief Sets the label for the control flow graph (CFG).
+     *
+     * This function sets a new label for the current control flow graph. The label can be used to identify different parts of the program, such as functions or basic blocks.
+     *
+     * @param label The new label to set for the control flow graph.
+     */
+    void setLabel(string label);
+
+    /**
+     * @brief Adds a while loop to the control flow graph.
+     *
+     * This function adds a while loop to the control flow graph by creating the necessary basic blocks for the test condition, loop body, and exit block.
+     *
+     * @param test The basic block representing the test condition of the while loop.
+     * @param body The basic block representing the body of the while loop.
+     * @param end_bb The basic block representing the exit point of the while loop.
+     *
+     *
+     */
+    void add_while(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb);
+
+    /**
+     * @brief Adds an if-then-else structure to the control flow graph.
+     *
+     * This function adds an if-then-else structure to the control flow graph by creating the necessary basic blocks for the test condition, then block, else block, and end block.
+     *
+     * @param test The basic block representing the test condition of the if statement.
+     * @param then_bb The basic block representing the "then" branch of the if statement.
+     * @param else_bb The basic block representing the "else" branch of the if statement.
+     * @param end_bb The basic block representing the exit point of the if-then-else structure.
+     *
+     *
+     */
+    void add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb);
+
+    /**
+     *
      * Sets the symbols table for the control flow graph.
      *
      * @param symbolsTable A pointer to the symbols table to be set for the control flow graph.
@@ -179,7 +201,7 @@ protected:
     int nextFreeSymbolIndex;
 
     /// The initial value for the next free symbol index.
-    const int initialTempPos;
+    const int initialTempPos = 0;
 
     /// A vector containing all the basic blocks in the control flow graph.
     vector<BasicBlock *> bbs;
@@ -189,4 +211,7 @@ protected:
 
     /// The label associated with the control flow graph.
     string label;
+
+    /// The ID of the basic block.
+    int idBB;
 };

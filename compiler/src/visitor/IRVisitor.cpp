@@ -7,6 +7,10 @@
 #include "../IR/instr/IRInstrCall.h"
 #include "../IR/instr/IRInstrStoreToArray.h"
 #include "../IR/instr/IRInstrLoadFromArray.h"
+#include "../IR/instr/IRInstrIf.h"
+#include "../IR/instr/IRInstrJmpRet.h"
+#include "../IR/instr/IRInstrJmpCond.h"
+#include "../IR/instr/IRInstrSet.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -46,15 +50,13 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
 
     for (int i = 0; i < ctx->statement().size(); i++)
     {
-
-#ifdef __APPLE__
-        int resultVisit = visitChildren(ctx->statement(i)).as<int>();
-#else
-        int resultVisit = any_cast<int>(visitChildren(ctx->statement(i)));
-#endif
+        visitChildren(ctx->statement(i));
         this->currentCFG->resetNextFreeSymbolIndex();
-        if (resultVisit != 0)
-            return 1;
+    }
+
+    if (ctx->return_stmt())
+    {
+        visit(ctx->return_stmt());
     }
 
     setCurrentSymbolsTable(currentSymbolsTable->getParent());
@@ -62,8 +64,21 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
     return 0;
 }
 
+antlrcpp::Any IRVisitor::visitShift(ifccParser::ShiftContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", ctx->OP->getText()));
+
+    return 0;
+}
+
 antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
+    _returned = true;
+
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     ifccParser::ExprContext *exprCtx = ctx->expr();
 
@@ -106,15 +121,9 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         visit(exprCtx);
     }
 
-    BasicBlock *output = new BasicBlock(this->currentCFG, "output");
-    output->add_IRInstr(new IRInstrClean(output));
+    currentBB->add_IRInstr(new IRInstrJmpRet(currentBB, "output_" + this->currentCFG->getLabel()));
 
-    this->currentCFG->getCurrentBasicBlock()->setExitTrue(output);
-    this->currentCFG->add_bb(output);
-
-    setCurrentSymbolsTable(currentSymbolsTable->getParent());
-
-    return 1;
+    return 0;
 }
 
 antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
@@ -212,6 +221,13 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         // Cas dynamique : on évalue l'index dans %eax, on sauvegarde le résultat, on effectue cltq, etc.
         visitExpr(indexExpr, true);
 
+        // If it's an assignment in the index
+        if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(indexExpr))
+        {
+            // On doit mettre la variable assignée dans %eax
+            currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
+        }
+
         currentBB->add_IRInstr(new IRInstrUnaryOp(currentBB, "%eax", "cltq"));
         int baseOffset = this->currentCFG->get_var_index(arrayName);
         currentBB->add_IRInstr(new IRInstrStoreToArray(currentBB, baseOffset, "%rax", "%ebx"));
@@ -291,13 +307,12 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
     }
     else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
     {
-        if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(assignCtx->VAR()))
-        {
-            // Process the right-hand side expression
-            visitExpr(assignCtx->expr(), false);
-            // Assign the result to the variable
-            currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(assignCtx->VAR()->getText())));
-        }
+        std::string varName = assignCtx->VAR()->getText();
+        // Obtain the right value
+
+        visitExpr(assignCtx->expr(), true);
+        // Move the value into the target register
+        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(expr))
     {
@@ -365,41 +380,242 @@ antlrcpp::Any IRVisitor::visitUnary(ifccParser::UnaryContext *ctx)
     return 0;
 }
 
-antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+antlrcpp::Any IRVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    const string op = ctx->OP->getText();
-    const int offsetVar = this->currentCFG->get_var_index(ctx->VAR()->getText());
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName);
 
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", this->currentCFG->toRegister(ctx->VAR()->getText()), op[0] + ""));
+    // Determine the operation symbol
+    string opSymbol = (op == "++") ? "+" : "-";
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    // Step 2 : load the value of the variable into another register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     return 0;
 }
 
-// INVALID
+antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName);
+
+    // Determine the operation symbol
+    string opSymbol = (op == "++") ? "+" : "-";
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    // Step 2 : load the value of the variable into another register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName); // register for the variable
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+
+    // Step 2 : load the value of the variable into another register
+    string opSymbol = (op == "++") ? "+" : "-";
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    return 0;
+}
+
 antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName); // register for the variable
 
-    const string op = ctx->OP->getText();
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
+    // Step 2 : load the value of the variable into another register
+    string opSymbol = (op == "++") ? "+" : "-";
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    // Évaluation de la condition
+    BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
+    testBB->setIsTestVar(true);
+    visit(ctx->if_block()->if_expr_block()->expr());
+
+    // Création du bloc then
+    string thenLabel = this->currentCFG->getBBName();
+    BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
+    thenBB->setIsTestVar(true);
+    this->currentCFG->add_bb(thenBB);
+
+    // Création du bloc else s'il existe
+    BasicBlock *elseBB = nullptr;
+    if (ctx->else_block())
+    {
+        string elseLabel = this->currentCFG->getBBName();
+        elseBB = new BasicBlock(this->currentCFG, elseLabel);
+        elseBB->setIsTestVar(true);
+        this->currentCFG->add_bb(elseBB);
+    }
+
+    // Créer un bloc de fusion
+    string mergeLabel = this->currentCFG->getBBName();
+    BasicBlock *mergeBB = new BasicBlock(this->currentCFG, mergeLabel);
+    this->currentCFG->add_bb(mergeBB);
+
+    // Branches du test
+    testBB->setExitTrue(thenBB);
+    testBB->setExitFalse(elseBB ? elseBB : mergeBB);
+
+    bool prevReturned = _returned;
+
+    // Traitement de la branche then
+    _returned = false;
+    this->currentCFG->setCurrentBasicBlock(thenBB);
+    visit(ctx->if_block()->if_stmt_block());
+    bool thenReturned = _returned;
+
+    // Si then ne retourne pas, le relier au bloc de fusion
+    if (!thenReturned)
+    {
+        this->currentCFG->getCurrentBasicBlock()->setExitTrue(mergeBB);
+    }
+
+    // Traitement de la branche else si présente
+    bool elseReturned = false;
+    if (elseBB)
+    {
+        _returned = false;
+        this->currentCFG->setCurrentBasicBlock(elseBB);
+        visit(ctx->else_block());
+        elseReturned = _returned;
+
+        // Si else ne retourne pas, le relier au bloc de fusion
+        if (!elseReturned)
+        {
+            this->currentCFG->getCurrentBasicBlock()->setExitTrue(mergeBB);
+        }
+    }
+
+    // Mettre à jour le flag _returned
+    _returned = prevReturned || thenReturned || elseReturned;
+
+    // Placer le bloc courant sur le bloc de fusion
+    this->currentCFG->setCurrentBasicBlock(mergeBB);
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    // Récupérer le bloc avant la boucle
+    BasicBlock *preLoop = this->currentCFG->getCurrentBasicBlock();
+
+    // Créer le bloc de condition
+    string condLabel = this->currentCFG->getBBName();
+    BasicBlock *condBB = new BasicBlock(this->currentCFG, condLabel);
+    condBB->setIsTestVar(true);
+    this->currentCFG->add_bb(condBB);
+    preLoop->setExitTrue(condBB);
+
+    // Générer la condition
+    this->currentCFG->setCurrentBasicBlock(condBB);
+    visit(ctx->while_expr_block()->expr());
+
+    // Créer le bloc du corps et le bloc de sortie
+    string bodyLabel = this->currentCFG->getBBName();
+    BasicBlock *bodyBB = new BasicBlock(this->currentCFG, bodyLabel);
+    this->currentCFG->add_bb(bodyBB);
+
+    string exitLabel = this->currentCFG->getBBName();
+    BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
+    this->currentCFG->add_bb(exitBB);
+
+    // Branches de la condition
+    condBB->setExitTrue(bodyBB);
+    condBB->setExitFalse(exitBB);
+
+    // Sauvegarder le contexte avant d'entrer dans la boucle
+    bool prevReturned = _returned;
+    bool prevInLoop = _inLoop;
+    _inLoop = true;
+    _returned = false;
+
+    // Sauvegarder le bloc de condition pour les répétitions
+    BasicBlock *savedCondBB = condBB;
+
+    // Traiter le corps de la boucle
+    this->currentCFG->setCurrentBasicBlock(bodyBB);
+    visit(ctx->while_stmt_block());
+
+    // Si le corps n'a pas retourné, ajouter un branchement vers la condition
+    if (!_returned)
+    {
+        BasicBlock *lastBodyBB = this->currentCFG->getCurrentBasicBlock();
+        if (lastBodyBB)
+        {
+            lastBodyBB->setExitTrue(condBB);
+        }
+    }
+
+    // Restaurer le contexte et placer le bloc de sortie comme bloc courant
+    _inLoop = prevInLoop;
+    this->currentCFG->setCurrentBasicBlock(exitBB);
+    _returned = _returned || prevReturned;
 
     return 0;
 }
 
 antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx)
 {
+
     if (ctx->block())
     {
         this->currentCFG = this->cfgs[ctx->VAR(0)->getText()];
-        setCurrentSymbolsTable(this->currentCFG->getSymbolsTable());
+        string currentCFGLabel = currentCFG->getLabel();
+
+        BasicBlock *input = new BasicBlock(currentCFG, "input_" + currentCFGLabel);
+        BasicBlock *body = new BasicBlock(currentCFG, "body_" + currentCFGLabel);
+
+        input->add_IRInstr(new IRInstrSet(input));
+
+        currentCFG->add_bb(input);
+
+        input->setExitTrue(body);
+
+        currentCFG->add_bb(body);
+
+        setCurrentSymbolsTable(currentCFG->getSymbolsTable());
 
         visit(ctx->block());
 
         setCurrentSymbolsTable(currentSymbolsTable->getParent());
+
+        string outputLabel = "output_" + currentCFGLabel;
+
+        BasicBlock *output = new BasicBlock(currentCFG, outputLabel);
+        output->add_IRInstr(new IRInstrClean(output));
+
+        currentCFG->getCurrentBasicBlock()->setExitTrue(output);
+
+        currentCFG->add_bb(output);
     }
     return 0;
 }
