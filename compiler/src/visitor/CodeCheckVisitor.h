@@ -95,8 +95,6 @@ public:
          */
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
 
-
-
         /**
          * @brief Visits a bitwise operation expression.
          *
@@ -130,6 +128,10 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
+
+        virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
 
         /**
          * @brief Visits a pre-unary operation (e.g., prefix increment/decrement).

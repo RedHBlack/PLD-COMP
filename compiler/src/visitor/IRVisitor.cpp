@@ -221,10 +221,10 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         // Cas dynamique : on évalue l'index dans %eax, on sauvegarde le résultat, on effectue cltq, etc.
         visitExpr(indexExpr, true);
 
-        //If it's an assignment in the index
+        // If it's an assignment in the index
         if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(indexExpr))
         {
-            //On doit mettre la variable assignée dans %eax
+            // On doit mettre la variable assignée dans %eax
             currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
         }
 
@@ -309,7 +309,7 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, bool isFirst)
     {
         std::string varName = assignCtx->VAR()->getText();
         // Obtain the right value
-        
+
         visitExpr(assignCtx->expr(), true);
         // Move the value into the target register
         currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
@@ -380,27 +380,74 @@ antlrcpp::Any IRVisitor::visitUnary(ifccParser::UnaryContext *ctx)
     return 0;
 }
 
-antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+antlrcpp::Any IRVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
-    const string op = ctx->OP->getText();
-    const int offsetVar = this->currentCFG->get_var_index(ctx->VAR()->getText());
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName);
 
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", this->currentCFG->toRegister(ctx->VAR()->getText()), op[0] + ""));
+    // Determine the operation symbol
+    string opSymbol = (op == "++") ? "+" : "-";
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    // Step 2 : load the value of the variable into another register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     return 0;
 }
 
-// INVALID
+antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName);
+
+    // Determine the operation symbol
+    string opSymbol = (op == "++") ? "+" : "-";
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    // Step 2 : load the value of the variable into another register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName); // register for the variable
+
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+
+    // Step 2 : load the value of the variable into another register
+    string opSymbol = (op == "++") ? "+" : "-";
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+
+    return 0;
+}
+
 antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+    const string op = ctx->OP->getText(); // "++" or "--"
+    const string varName = ctx->VAR()->getText();
+    const string regVar = this->currentCFG->toRegister(varName); // register for the variable
 
-    const string op = ctx->OP->getText();
+    // Step 1 : load the variable into a register
+    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, ctx->VAR()->getText(), "%eax"));
-
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", "%eax", op[0] + ""));
+    // Step 2 : load the value of the variable into another register
+    string opSymbol = (op == "++") ? "+" : "-";
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
     return 0;
 }

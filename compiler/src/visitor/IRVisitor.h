@@ -195,6 +195,10 @@ public:
          */
         virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
+        virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
+
         /**
          * @brief Visits a shift operation (e.g., left or right shift) and generates the IR.
          *

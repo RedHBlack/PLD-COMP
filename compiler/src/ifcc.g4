@@ -17,8 +17,8 @@ statement:  if_stmt
 
 decl_stmt: TYPE VAR ('[' CONST ']')? ('=' expr)? (',' VAR ('[' CONST ']')? ('=' expr)?)* ';' ;
 assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
-incrdecr_stmt:  VAR OP=('++' | '--') ';'
-            |   OP=('++' | '--') VAR ';'
+incrdecr_stmt:  VAR OP=('++' | '--') ';' #post_stmt
+            |   OP=('++' | '--') VAR ';' #pre_stmt
             ;
 if_stmt: if_block (else_block)? ;
 if_block: 'if' '(' if_expr_block ')' if_stmt_block ;
