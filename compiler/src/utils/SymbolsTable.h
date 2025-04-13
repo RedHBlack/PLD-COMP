@@ -78,6 +78,13 @@ public:
     void setSymbolUsage(string name, bool isUsed);
 
     /**
+     * @brief Returns the symbols usage mapping variable names to their usage status.
+     *
+     * @return map<string, bool> - The symbols usage.
+     */
+    map<string, bool> getSymbolsUsage() { return symbolsUsage; }
+
+    /**
      * @brief Sets the definition status of a symbol (whether it has been assigned a value).
      *
      * @param name The name of the symbol.
@@ -106,13 +113,6 @@ public:
      * @return map<string, Type> - The symbols type.
      */
     map<string, Type> getSymbolsType() { return symbolsType; }
-
-    /**
-     * @brief Returns the symbols usage mapping variable names to their usage status.
-     *
-     * @return map<string, bool> - The symbols usage.
-     */
-    map<string, bool> getSymbolsUsage() { return symbolsUsage; }
 
     /**
      * @brief Returns the symbols definition status mapping variable names to their assignment status.

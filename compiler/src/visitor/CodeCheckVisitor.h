@@ -36,6 +36,10 @@ public:
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
+        virtual antlrcpp::Any visitReturn(ifccParser::Return_stmtContext *ctx);
+
+        virtual antlrcpp::Any visitVar(ifccParser::VarContext *ctx) override;
+
         /**
          * @brief Visits an assignment statement in the parsed code.
          *
@@ -90,6 +94,8 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
+
+
 
         /**
          * @brief Visits a bitwise operation expression.
@@ -248,6 +254,8 @@ public:
         int getCurrentOffset() { return currentOffset; }
 
         map<string, CFG *> getCFGS() { return cfgs; };
+
+        map<string, bool> collectSymbolsUsage(SymbolsTable *table);
 
 private:
         /**
