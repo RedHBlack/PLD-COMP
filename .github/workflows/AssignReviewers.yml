@@ -1,0 +1,19 @@
+name: "Assign reviewers"
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+
+jobs:
+  add-reviewers:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write # Ensures the workflow can assign reviewers
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Assign reviewers
+        uses: kentaro-m/auto-assign-action@v2.0.0

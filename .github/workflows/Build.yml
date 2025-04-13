@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Download and install ANTLR
+        run: |
+          mkdir ~/antlr4-install
+          cd ~/antlr4-install
+          wget https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          wget https://www.antlr.org/download/antlr4-cpp-runtime-4.13.2-source.zip
+          unzip antlr4-cpp-runtime-4.13.2-source.zip
+          mkdir build
+          cd build
+          cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          make -j8
+          sudo make install
+
+      - name: Buidd the project
+        id: run_tests
+        run: |
+          cd pipelines && make -f build_PR.mk
+
+      - name: Echo error message
+        if: failure()
+        run: |
+          echo "::error::Building failed! Check the logs for details."
