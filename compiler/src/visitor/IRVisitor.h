@@ -196,6 +196,16 @@ public:
         virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
         /**
+         * @brief Visits a shift operation (e.g., left or right shift) and generates the IR.
+         *
+         * This method processes shift operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the shift operation.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitShift(ifccParser::ShiftContext *ctx) override;
+
+        /**
          * @brief Generates the assembly code for the IR.
          *
          * This method generates assembly code from the Intermediate Representation (IR) for output.

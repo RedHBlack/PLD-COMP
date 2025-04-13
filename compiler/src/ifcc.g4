@@ -44,6 +44,7 @@ expr:   CONST                                               #const
     |   OP=('!' | '-' | '~') expr                           #unary
     |   expr OP=('*' | '/' | '%') expr                      #muldiv
     |   expr OP=('+' | '-') expr                            #addsub
+    |   expr OP=('<<' | '>>') expr                          #shift 
     |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
     |   VAR '=' expr                                        #assign

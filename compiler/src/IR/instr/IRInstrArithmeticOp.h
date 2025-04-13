@@ -108,4 +108,22 @@ private:
      * @param o The output stream where the generated assembly code will be written.
      */
     void handleBitwiseXor(ostream &o);
+
+    /**
+     * @brief Handles the left shift operation.
+     *
+     * This method generates assembly code for the left shift operation (`<<`).
+     *
+     * @param o The output stream where the generated assembly code will be written.
+     */
+    void handleLeftShift(ostream &o);
+
+    /**
+     * @brief Handles the right shift operation.
+     *
+     * This method generates assembly code for the right shift operation (`>>`).
+     *
+     * @param o The output stream where the generated assembly code will be written.
+     */
+    void handleRightShift(ostream &o);
 };

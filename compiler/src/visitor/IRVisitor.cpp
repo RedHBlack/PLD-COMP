@@ -64,6 +64,17 @@ antlrcpp::Any IRVisitor::visitBlock(ifccParser::BlockContext *ctx)
     return 0;
 }
 
+antlrcpp::Any IRVisitor::visitShift(ifccParser::ShiftContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", ctx->OP->getText()));
+
+    return 0;
+}
+
 antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
     _returned = true;
