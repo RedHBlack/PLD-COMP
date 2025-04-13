@@ -25,25 +25,11 @@
 - Opérateur AND bit à bit (`&`) : Effectue un ET logique bit à bit entre deux opérandes
 - Opérateur OR bit à bit (`|`) : Effectue un OU logique bit à bit entre deux opérandes
 - Opérateur XOR bit à bit (`^`) : Effectue un OU exclusif bit à bit entre deux opérandes
+- Opérateur NOT bit à bit (`~`) : Inverse les bits d'un opérande
 
 #### Fonctionnalités non implémentées
 
-- Opérateur NOT bit à bit (`~`) : Inverse tous les bits de l'opérande
 - Opérateurs de décalage de bits (`<<` et `>>`) : Déplacent les bits vers la gauche ou la droite
-
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- L'opérateur NOT bit à bit (`~`) n'est pas supporté
-- Les opérateurs de décalage de bits (`<<` et `>>`) ne sont pas supportés
-- Les opérations bit à bit peuvent être utilisées de manière similaire aux opérations arithmétiques standard, mais avec des limitations concernant la précédence et la combinaison avec d'autres opérateurs
-
-### À implémenter pour une version future
-
-- Support de l'opérateur NOT bit à bit (`~`)
-- Support des opérateurs de décalage de bits (`<<` et `>>`)
-- Amélioration de la gestion de la précédence des opérateurs bit à bit dans les expressions complexes
 
 ### 1.3 Division Entière
 
@@ -87,13 +73,6 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Modulo par zéro - provoque une boucle infinie dans le script de test, similaire à la division par zéro
 - Nous avons placé le test du modulo par zéro dans le dossier `./tesfiles_draft` car il ne fonctionne pas correctement
 
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Le modulo par zéro n'est pas correctement géré et peut causer un blocage du programme
-- Nous ne générons pas d'avertissement pour les opérations modulo qui pourraient causer un problème à l'exécution
-
 #### À implémenter pour une version future
 
 - Support du modulo avec des types float et double (une fois ces types supportés)
@@ -108,10 +87,6 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Multiplications complexes avec plusieurs opérandes (`a * b * c`)
 - Multiplication avec nombres négatifs (`a * -1`)
 - Gestion correcte de la priorité des opérations (`a + b * c`)
-
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
 
 #### À implémenter pour une version future
 
@@ -129,19 +104,15 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Gestion basique des priorités d'opérateurs (multiplication/division avant addition/soustraction)
 - Support des opérations imbriquées dans des parenthèses (`a * (b + c)`)
 
-#### Comportement différent de GCC
+## 1.7 Opérateurs logiques
 
-Notre compilateur diffère de GCC sur les points suivants :
+#### Fonctionnalités implémentées
 
-- Notre compilateur ne génère pas d'optimisations sur les expressions constantes (contrairement à GCC qui effectue des calculs à la compilation)
+- Opérateur logique ET (`&&`) : Évalue à vrai si les deux opérandes sont vrais
+- Opérateur logique OU (`||`) : Évalue à vrai si au moins un des opérandes est vrai
+- Opérateur logique NON (`!`) : Inverse la valeur de vérité de l'opérande
 
-#### À implémenter pour une version future
-
-- Support des opérateurs logiques (`&&` et `||`)
-- Optimisation des expressions constantes à la compilation
-- Support des opérandes de types différents dans une même expression (une fois les types float/double implémentés)
-
-### 1.7 Opérateur unaire d'opposé (-)
+### 1.8 Opérateur unaire d'opposé (-)
 
 #### Fonctionnalités implémentées
 
@@ -152,38 +123,14 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Application de l'opérateur opposé à zéro `(-0)`
 - Chaînage d'opérateurs opposés comme `-(-a)` et `-(-(-a))` qui fonctionnent correctement
 
-#### Comportement différent de GCC
+### 1.9 Opérations d'incrémentation et de décrémentation
 
-- Notre compilateur se comporte de façon similaire à GCC pour l'opérateur d'opposé. Nous respectons la priorité standard des opérateurs et le traitement des expressions unaires.
-- Le double tiret `(--)` est interprété comme une tentative d'opérateur de décrémentation, qui n'est pas encore implémenté, et non comme un double opposé
-
-#### À implémenter pour une version future
-
-- Optimisations pour les cas particuliers (comme la double négation)
-- Meilleure intégration avec les types float/double quand ils seront supportés
-
-### 1.8 Opérations d'incrémentation et de décrémentation
-
-#### Fonctionnalités non implémentées
-
-Notre compilateur ne prend actuellement pas en charge les opérations d'incrémentation et de décrémentation:
+#### Fonctionnalités implémentées
 
 - Opérateur d'incrémentation postfixé (`a++`)
 - Opérateur de décrémentation postfixé (`a--`)
 - Opérateur d'incrémentation préfixé (`++a`)
 - Opérateur de décrémentation préfixé (`--a`)
-
-#### Différences avec GCC
-
-L'implémentation actuelle ne traite pas ces opérateurs comme GCC:
-
-#### À implémenter pour une version future
-
-- Support complet des opérateurs d'incrémentation et décrémentation (préfixés et postfixés)
-- Gestion correcte de la sémantique (valeur retournée avant ou après modification)
-- Support de ces opérateurs dans des expressions complexes
-- Vérification que l'opérande est bien une l-value modifiable
-- Gestion des cas d'erreurs comme `++(a++)` (l'opérande n'est pas une l-value)
 
 ### 2. Affectation de variables
 
@@ -194,11 +141,9 @@ L'implémentation actuelle ne traite pas ces opérateurs comme GCC:
 - Affectation d'expressions complexes à une variable (`a = b * c + 5`)
 - Réaffectation d'une valeur à une variable déjà initialisée (`a = 5; a = 10`)
 
-#### À implémenter pour une version future
+#### Fonctionnalités problématiques
 
-- Support pour les opérateurs d'affectation composée (`+=`, `-=`, `*=`, `/=`, etc.)
-- Vérification correcte des l-values du côté gauche des affectations
-- Vérification de compatibilité des types dans les affectations
+- Support pour les opérateurs d'affectation composée (`+=`, `-=`, `*=`, `/=`)
 
 ### 3. Déclaration de variables
 
@@ -214,14 +159,8 @@ L'implémentation actuelle ne traite pas ces opérateurs comme GCC:
 #### Fonctionnalités problématiques
 
 - Notre compilateur accepte la déclaration d'une variable nommée uniquement par un numéro (`int 0;`)
-- Le compilateur n'empêche pas la redéclaration d'une variable déjà déclarée dans le même bloc
-- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais retournera une valeur indéterminée
+- Le test où l'on déclare `a` et le retourne sans l'initialiser fonctionne, mais retournera une valeur indéterminée (le test porterait donc le mot UNKOWN dans le nom du fichier car ne nous pouvons pas savoir si le resultat de notre compilateur sera la même que GCC).
 
-#### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Notre compilateur n'empêche pas la redéclaration de variables dans le même bloc
 - Nous acceptons des noms de variables que GCC pourrait rejeter
 
 #### À implémenter pour une version future
@@ -265,17 +204,11 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Utilisation d'éléments de tableaux dans des expressions (`a = arr[1] + 2;`)
 - Assignation d'une valeur à un élément de tableau (`arr[2] = a + b;`)
 
-### Fonctionnalités problématiques
+### Limitations et différences avec GCC
 
-- Pas de vérification des dépassements d'index (accès hors des limites du tableau)
+- Pas de vérification des dépassements d'index (accès hors des limites)
 - Les tableaux multidimensionnels ne sont pas supportés
 - Les tableaux ne peuvent pas être passés comme arguments de fonctions
-
-### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Les dépassements d'index ne génèrent pas d'erreur ou d'avertissement
 - Les tableaux ne peuvent pas être initialisés sans spécifier explicitement leur taille (`int arr[] = {1, 2, 3};` n'est pas supporté)
 
 ### À implémenter pour une version future
@@ -294,17 +227,11 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Retour de valeurs depuis une fonction (`return a + b;`)
 - Support des appels récursifs (`int fib(int n) { if (n <= 1) return n; return fib(n - 1) + fib(n - 2); }`)
 
-### Fonctionnalités problématiques
+### Limitations et différences avec GCC
 
 - Pas de support pour les fonctions sans retour explicite (`void` non supporté)
 - Pas de vérification stricte des types des arguments passés aux fonctions
 - Les fonctions ne peuvent pas être surchargées
-
-### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Les fonctions sans retour explicite (`void`) ne sont pas supportées
 - Les erreurs de type dans les arguments des fonctions ne sont pas détectées
 
 ### À implémenter pour une version future
@@ -322,23 +249,12 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Blocs conditionnels avec `else` (`if (a > b) { ... } else { ... }`)
 - Boucles `while` (`while (a < 10) { ... }`)
 
-### Fonctionnalités problématiques
+### Limitations et différences avec GCC
 
 - Les boucles imbriquées complexes peuvent causer des problèmes de performance
 - Les instructions `break` et `continue` ne sont pas supportées
-- Les expressions conditionnelles complexes avec des opérateurs logiques (`&&`, `||`) ne sont pas entièrement supportées
-
-### Comportement différent de GCC
-
-Notre compilateur diffère de GCC sur les points suivants :
-
-- Les instructions `break` et `continue` ne sont pas reconnues
+- Support limité des expressions conditionnelles avec opérateurs logiques (`&&`, `||`)
+- Expressions conditionnelles en ligne non supportées (`a = b > c ? b : c;`)
+- Parenthèses obligatoires pour le if
+- Comparaisons entre structures complexes impossibles (tableaux, etc.)
 - Les expressions conditionnelles complexes ne sont pas évaluées correctement dans tous les cas
-
-### À implémenter pour une version future
-
-- Support des instructions `break` et `continue`
-- Amélioration de la gestion des expressions conditionnelles complexes
-- Optimisation des boucles imbriquées pour de meilleures performances
-- Support des boucles `do-while`
-- Gestion des labels et des instructions `goto`

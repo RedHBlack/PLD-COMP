@@ -21,7 +21,7 @@ Vous y trouverez les fichiers suivants :
 - `ifcc.g4` : le fichier de grammaire ANTLR4
 - Le répertoire `generated` et `build` qui contiennent les fichiers générés par ANTLR4 et les fichiers objets générés par le Makefile. Ces dossiers sont générés lors de la compilation de notre application.
 
-C'est dans le répertoire `./testfiles` que tous nos tests sont implémentés.  
+C'est dans le répertoire `./test/testfiles` que tous nos tests sont implémentés.  
 Nous avons, pour l'instant, organisé nos tests en plusieurs sous-répertoires :
 
 - `arithmetic` : les tests concernant les opérations arithmétiques.
@@ -33,9 +33,7 @@ Nous avons, pour l'instant, organisé nos tests en plusieurs sous-répertoires :
 - `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation.
 - `propagation_constant` : les tests concernant l'optimisation du compilateur. Ces tests peuvent être similaires à d'autres tests placés ailleurs, mais ce répertoire permettent de les regrouper afin de vérifier manuellement le code assembleur généré pour valider les optimisations.
 
-Cette organisation nous permet de structurer nos tests de manière claire et de cibler facilement les fonctionnalités à valider ou à corriger.
-
-Enfin vous trouverez, à la racine de notre projet, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
+Enfin vous trouverez, dans ce même dossier `./test`, le fichier `ifcc-test.py` qui permet de lancer tous nos tests en une seule commande :
 `python3 ifcc-test.py ./testfiles` pour exécuter tous les tests ou `python3 ifcc-test.py ./testfiles/<repertoire>` pour exécuter les tests d'un répertoire en particulier.
 
 ## Stratégie de test
@@ -47,6 +45,7 @@ Nos tests suivent une convention de nommage claire :
 - Tests standards : `<n°test>_<nom du test>.c`
 - Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
 - Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
+- Tests donc le comportement est aléatoire pour gcc donc qui sont soit FAIL soient OK : `<n°test>_<nom du test>_UNKNOWN.c`
 
 ### Logique d'évaluation
 
@@ -86,6 +85,8 @@ Pour activer Rosetta, suivez les étapes ci-dessous :
 ```bash
 arch -x86_64 bash
 ```
+
+Pour information, si vous avez lancé make sous arm64, veuillez make clean avant de remake avec i386.
 
 3. Une fois dans cette session, vous pouvez compiler et exécuter le projet normalement en utilisant le `Makefile`.
 
