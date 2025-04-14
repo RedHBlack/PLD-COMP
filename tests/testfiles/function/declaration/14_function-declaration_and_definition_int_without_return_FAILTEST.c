@@ -1,5 +1,8 @@
+int add(int a, int b)
+{
+}
+
 int main()
 {
-    getchar();
     return 0;
 }

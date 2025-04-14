@@ -103,7 +103,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
             currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
         }
     }
-    else
+    else if (exprCtx)
     {
         // Else, we need to evaluate the expression
         visit(exprCtx);
@@ -621,8 +621,8 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
     {
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(i)))
         {
-
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(constCtx->cst()->getText()), regParams[i]));
+            int value = constCtx->cst()->CHAR() ? static_cast<int>(constCtx->cst()->CHAR()->getText()[1]) : stoi(constCtx->cst()->getText());
+            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, value, regParams[i]));
         }
         else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i)))
         {
