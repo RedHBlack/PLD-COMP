@@ -210,6 +210,26 @@ public:
         virtual antlrcpp::Any visitShift(ifccParser::ShiftContext *ctx) override;
 
         /**
+         * @brief Visits a logical AND expression and generates the IR.
+         *
+         * This method processes logical AND operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the logical AND expression.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitLogicalAND(ifccParser::LogicalANDContext *ctx) override;
+
+        /**
+         * @brief Visits a logical OR expression and generates the IR.
+         *
+         * This method processes logical OR operations and generates the corresponding IR.
+         *
+         * @param ctx The context of the logical OR expression.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitLogicalOR(ifccParser::LogicalORContext *ctx) override;
+
+        /**
          * @brief Generates the assembly code for the IR.
          *
          * This method generates assembly code from the Intermediate Representation (IR) for output.

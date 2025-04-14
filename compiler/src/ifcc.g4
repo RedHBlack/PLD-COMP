@@ -48,6 +48,8 @@ expr:   cst                                               #const
     |   expr OP=('<<' | '>>') expr                          #shift 
     |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
+    |   expr '&&' expr                                      #logicalAND
+    |   expr '||' expr                                      #logicalOR    
     |   VAR '=' expr                                        #assign
     ;
 
