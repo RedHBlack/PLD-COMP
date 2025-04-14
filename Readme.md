@@ -43,16 +43,16 @@ Enfin vous trouverez, dans ce même dossier `./test`, le fichier `ifcc-test.py` 
 
 Nos tests suivent une convention de nommage claire :
 
-- Tests standards : `<n°test>_<nom du test>.c`
-- Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
-- Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
-- Tests donc le comportement est aléatoire pour gcc donc qui sont soit FAIL soient OK : `<n°test>_<nom du test>_UNKNOWN.c`
+- Tests standards : `<n°test>_<nom_du_repo>_<nom du test>.c`
+- Tests d'erreurs : `<n°test>_<nom_du_repo>_<nom du test>_FAILTEST.c`
+- Tests de fonctionnalités non implémentées : `<n°test>_<nom_du_repo>_<nom du test>_NOT_IMPLEMENTED.c`
+- Tests donc le comportement est aléatoire pour gcc donc qui sont soit FAIL soient OK : `<n°test>_<nom_du_repo>_<nom du test>_UNKNOWN.c`
 
 ### Logique d'évaluation
 
 Notre système de test s'appuie sur la logique suivante :
 
-- **Tests standards** : Doivent compiler et s'exécuter correctement
+- **Tests standards** : Doivent compiler et s'exécuter correctement, les UNKNOWN fonctionnent comme ça aussi.
 - **Tests FAILTEST** : Conçus pour échouer intentionnellement
   - Un échec de ces tests est considéré comme un succès (comportement attendu)
   - Un succès inattendu est considéré comme un échec (car notre compilateur accepte du code non valide)
