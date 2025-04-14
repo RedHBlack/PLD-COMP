@@ -16,7 +16,7 @@ statement:  if_stmt
         |   return_stmt
         ;
 
-decl_stmt: TYPE VAR ('[' CONST ']')? ('=' expr)? (',' VAR ('[' CONST ']')? ('=' expr)?)* ';' ;
+decl_stmt: TYPE VAR ('[' INTEGER ']')? ('=' expr)? (',' VAR ('[' INTEGER ']')? ('=' expr)?)* ';' ;
 assign_stmt: VAR ('[' expr ']')? '=' expr ';' ;
 incrdecr_stmt:  VAR OP=('++' | '--') ';' #post_stmt
             |   OP=('++' | '--') VAR ';' #pre_stmt
@@ -34,7 +34,7 @@ call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
 return_stmt: RETURN expr ';' ;
 block: '{' (statement)* '}' ;
 
-expr:   CONST                                               #const
+expr:   cst                                               #const
     |   VAR                                                 #var
     |   call_func_stmt                                      #call
     |   VAR '[' expr ']'                                    #array_access
@@ -48,17 +48,20 @@ expr:   CONST                                               #const
     |   expr OP=('<<' | '>>') expr                          #shift 
     |   expr OP=('|' | '&' | '^') expr                      #bitwise
     |   expr OP=('==' | '!=' | '<' | '>' | '<=' | '>=') expr #comp
+    |   expr '&&' expr                                      #logicalAND
+    |   expr '||' expr                                      #logicalOR    
     |   VAR '=' expr                                        #assign
     ;
 
 OPU:    ('++' | '--');
 
 RETURN : 'return' ;
-TYPE : 'void' | 'int';
+TYPE : 'void' | 'int' | 'char';
 
 VAR :   [a-zA-Z][a-zA-Z0-9_]*;
-CONST : '-'? [0-9]+ | '\'' . '\'' ;
-
+cst : INTEGER | CHAR ;
+INTEGER :  '-'? [0-9]+ ;
+CHAR : '\'' . '\'';
 
 COMMENT : '/*' .*? '*/' -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;

@@ -11,6 +11,7 @@
 #include "../IR/instr/IRInstrJmpRet.h"
 #include "../IR/instr/IRInstrJmpCond.h"
 #include "../IR/instr/IRInstrSet.h"
+#include "../IR/instr/IRInstrLogical.h"
 #include "IRVisitor.h"
 #include <iostream>
 #include <map>
@@ -94,15 +95,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(tabCtx->expr()))
         {
             string value = constCtx->getText();
-            if (value.front() == '\'' && value.back() == '\'')
-            {
-                int asciiValue = static_cast<int>(value[1]);
-                currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", asciiValue));
-            }
-            else
-            {
-                currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", stoi(value)));
-            }
+            currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", stoi(value)));
         }
         else
         {
@@ -136,7 +129,7 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
             int arraySize = 1;
             if (isArray)
             {
-                arraySize = stoi(ctx->CONST(exprIndex)->getText());
+                arraySize = stoi(ctx->INTEGER(exprIndex)->getText());
             }
             // Vérifier si le token suivant est "="
             if (i + 1 < ctx->children.size())
@@ -204,7 +197,7 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
     // Cas de l'index constant
     if (auto constIndex = dynamic_cast<ifccParser::ConstContext *>(indexExpr))
     {
-        int idx = stoi(constIndex->CONST()->getText());
+        int idx = stoi(constIndex->cst()->getText());
         // Calculer l'offset complet pour ce tableau
         int computedOffset = this->currentCFG->get_var_index(arrayName) + idx * 4;
         // Utiliser IRInstrStoreToArray avec un indexRegister vide pour signaler que l'index est constant
@@ -234,7 +227,7 @@ void IRVisitor::loadValueFromArray(string arrayName, ifccParser::ExprContext *in
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     if (auto constIndex = dynamic_cast<ifccParser::ConstContext *>(indexExpr))
     {
-        int idx = stoi(constIndex->CONST()->getText());
+        int idx = stoi(constIndex->cst()->getText());
         currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, arrayName, targetRegister, idx));
     }
     else
@@ -629,7 +622,7 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(i)))
         {
 
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(constCtx->CONST()->getText()), regParams[i]));
+            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(constCtx->cst()->getText()), regParams[i]));
         }
         else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i)))
         {
@@ -662,12 +655,8 @@ std::optional<int> IRVisitor::evaluateConstantExpression(ifccParser::ExprContext
     // Case of a constant
     if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx))
     {
-        string value = constCtx->CONST()->getText();
-        if (value.front() == '\'' && value.back() == '\'')
-        {
-            return static_cast<int>(value[1]);
-        }
-        return stoi(constCtx->CONST()->getText());
+        int value = constCtx->cst()->CHAR() ? static_cast<int>(constCtx->cst()->CHAR()->getText()[1]) : stoi(constCtx->cst()->getText());
+        return value;
     }
 
     // Case of an addition or subtraction
@@ -792,10 +781,10 @@ void IRVisitor::loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
     {
         visitExpr(rightExpr, false);
 
-        string value = constCtx->CONST()->getText();
-        if (value.front() == '\'' && value.back() == '\'')
+        string value = constCtx->cst()->getText();
+        if (constCtx->cst()->CHAR())
         {
-            int asciiValue = static_cast<int>(value[1]);
+            int asciiValue = static_cast<int>(constCtx->cst()->CHAR()->getText()[1]);
             currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, asciiValue, "%eax"));
         }
         else
@@ -856,4 +845,26 @@ void IRVisitor::setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable)
 {
     this->currentSymbolsTable = currentSymbolsTable;
     this->currentCFG->setSymbolsTable(currentSymbolsTable);
+}
+
+antlrcpp::Any IRVisitor::visitLogicalAND(ifccParser::LogicalANDContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "and"));
+
+    return 0;
+}
+
+antlrcpp::Any IRVisitor::visitLogicalOR(ifccParser::LogicalORContext *ctx)
+{
+    BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
+
+    loadRegisters(ctx->expr(0), ctx->expr(1));
+
+    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "or"));
+
+    return 0;
 }
