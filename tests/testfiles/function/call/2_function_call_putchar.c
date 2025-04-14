@@ -2,6 +2,6 @@ int putchar(int c);
 
 int main()
 {
-    putchar(0);
+    putchar('A');
     return 0;
 }
