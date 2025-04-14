@@ -578,6 +578,77 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     return 0;
 }
 
+antlrcpp::Any IRVisitor::visitLogicalAND(ifccParser::LogicalANDContext *ctx)
+{
+    string prevLabel = this->currentCFG->getBBName();
+    BasicBlock *prevBB = this->currentCFG->getCurrentBasicBlock();
+    prevBB->setIsTestVar(true);
+    this->currentCFG->setCurrentBasicBlock(prevBB);
+
+    string result = "%eax";
+
+    // Pas 1: Évaluer l'expression gauche
+    visitExpr(ctx->expr(0), true);
+
+    // Créer des blocs pour le résultat de l'expression gauche
+    string rightLabel = this->currentCFG->getBBName();
+    BasicBlock *rightBB = new BasicBlock(this->currentCFG, rightLabel);
+    prevBB->setExitTrue(rightBB); // Si gauche est true, on va à droite
+    rightBB->setIsTestVar(true);
+    this->currentCFG->add_bb(rightBB);
+
+    this->currentCFG->getCurrentBasicBlock()->setExitTrue(rightBB); // Si gauche est true, on va à droite
+
+    string falseLabel = this->currentCFG->getBBName();
+    BasicBlock *falseBB = new BasicBlock(this->currentCFG, falseLabel);
+    this->currentCFG->add_bb(falseBB);
+
+    string mergeLabel = this->currentCFG->getBBName();
+    BasicBlock *mergeBB = new BasicBlock(this->currentCFG, mergeLabel);
+    this->currentCFG->add_bb(mergeBB);
+
+    // Assigner les sorties
+    BasicBlock *leftBB = this->currentCFG->getCurrentBasicBlock();
+    leftBB->setExitTrue(rightBB);
+    leftBB->setExitFalse(falseBB);
+
+    // Pas 2: falseBB -> resultado = 0 → merge
+    this->currentCFG->setCurrentBasicBlock(falseBB);
+    falseBB->add_IRInstr(new IRInstrLoadConst(falseBB, 0, result));
+    falseBB->setExitTrue(mergeBB);
+
+    // Pas 3: Evaluer l'expression droite
+    this->currentCFG->setCurrentBasicBlock(rightBB);
+    visitExpr(ctx->expr(1), true); // evaluar como condición también
+
+    // Creer des blocs pour le résultat de l'expression droite
+    string trueLabel = this->currentCFG->getBBName();
+    BasicBlock *trueBB = new BasicBlock(this->currentCFG, trueLabel);
+    this->currentCFG->add_bb(trueBB);
+
+    string false2Label = this->currentCFG->getBBName();
+    BasicBlock *false2BB = new BasicBlock(this->currentCFG, false2Label);
+    this->currentCFG->add_bb(false2BB);
+
+    rightBB->setExitTrue(trueBB);
+    rightBB->setExitFalse(false2BB);
+
+    // trueBB -> resultat = 1 → merge
+    this->currentCFG->setCurrentBasicBlock(trueBB); 
+    trueBB->add_IRInstr(new IRInstrLoadConst(trueBB, 1, result));
+    trueBB->setExitTrue(mergeBB);
+
+    // false2BB -> resultat = 0 → merge
+    this->currentCFG->setCurrentBasicBlock(false2BB);
+    false2BB->add_IRInstr(new IRInstrLoadConst(false2BB, 0, result));
+    false2BB->setExitTrue(mergeBB);
+
+    // Finalement, on met le bloc de fusion comme bloc courant
+    this->currentCFG->setCurrentBasicBlock(mergeBB);
+
+    return result;
+}
+
 antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx)
 {
 

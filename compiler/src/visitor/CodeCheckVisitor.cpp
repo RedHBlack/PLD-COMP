@@ -471,6 +471,14 @@ antlrcpp::Any CodeCheckVisitor::visitWhile_expr_block(ifccParser::While_expr_blo
     return 0;
 }
 
+antlrcpp::Any CodeCheckVisitor::visitLogicalAND(ifccParser::LogicalANDContext *ctx)
+{
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+
+    return 0;
+}
+
 int CodeCheckVisitor::getFunctionNumberOfParameters(string functionName)
 {
     if (functionsNumberOfParameters.find(functionName) != functionsNumberOfParameters.end())

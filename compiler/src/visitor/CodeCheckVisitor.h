@@ -209,6 +209,17 @@ public:
         virtual antlrcpp::Any visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx) override;
 
         /**
+         * @brief Visits a logical AND operation in the parsed code.
+         *
+         * This method processes logical AND operations and checks for correctness
+         * in terms of variable usage and declarations.
+         *
+         * @param ctx The context for the logical AND operation.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitLogicalAND(ifccParser::LogicalANDContext *ctx) override;
+
+        /**
          * @brief Visits a function declaration statement.
          *
          * This method records information about the function being declared,
