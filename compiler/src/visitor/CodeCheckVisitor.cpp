@@ -21,6 +21,12 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
         }
     }
 
+    if (functionsNumberOfParameters.find("main") == functionsNumberOfParameters.end())
+    {
+        cerr << "#ERROR: Function main does not exist" << endl;
+        exit(1);
+    }
+
     return 0;
 }
 
@@ -43,9 +49,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
         string varLeft = ctx->VAR(i)->getText();
         int arraySize = 1; // Par défaut, une variable simple
         // Vérifie si c'est un tableau
-        if (ctx->CONST(i) != nullptr)
+        if (ctx->INTEGER(i) != nullptr)
         {
-            arraySize = stoi(ctx->CONST(i)->getText()); // Taille du tableau
+            arraySize = stoi(ctx->INTEGER(i)->getText()); // Taille du tableau
             if (arraySize <= 0)
             {
                 cerr << "#ERROR: " << varLeft << " : array size must be greater than 0" << endl;
