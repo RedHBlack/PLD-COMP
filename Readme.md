@@ -30,6 +30,7 @@ Nous avons, pour l'instant, organisé nos tests en plusieurs sous-répertoires :
 - `declaration` : les tests concernant les déclarations de variables.
 - `block` : les tests concernant les blocs de code, comme les blocs conditionnels (`if`, `else`) ou les boucles (`while`, `for`).
 - `function` : les tests concernant les définitions et appels de fonctions.
+  - pour certains cas, on utilise getChar donc il faut taper Ctrl+D pour indiquer end of file.
 - `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation.
 - `propagation_constant` : les tests concernant l'optimisation du compilateur. Ces tests peuvent être similaires à d'autres tests placés ailleurs, mais ce répertoire permettent de les regrouper afin de vérifier manuellement le code assembleur généré pour valider les optimisations.
 
@@ -142,8 +143,6 @@ Cette organisation nous permet de travailler en parallèle sur des fonctionnalit
 
 Billy, notre chef de projet, nous informe des fonctionnalités à developper en tenant le backlog à jour.
 Nous nous retrouvons au debut et à la fin de chaque séance afin de discuter des fonctionnalités à développer et des potentielles difficultés rencontrées.
-
-Nous comptons continuer sur cette organisation pour la suite du projet.
 
 ### Groupe 432
 
