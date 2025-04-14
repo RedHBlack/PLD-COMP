@@ -5,6 +5,6 @@ int add(int a, int b)
 
 int main()
 {
-    add(5, "string");
+    add(5, 4, 3);
     return 0;
 }

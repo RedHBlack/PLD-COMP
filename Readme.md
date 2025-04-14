@@ -30,6 +30,7 @@ Nous avons, pour l'instant, organisé nos tests en plusieurs sous-répertoires :
 - `declaration` : les tests concernant les déclarations de variables.
 - `block` : les tests concernant les blocs de code, comme les blocs conditionnels (`if`, `else`) ou les boucles (`while`, `for`).
 - `function` : les tests concernant les définitions et appels de fonctions.
+  - pour certains cas, on utilise getChar donc il faut taper Ctrl+D pour indiquer end of file.
 - `incrementation` : les tests concernant les opérations d'incrémentation et de décrémentation.
 - `propagation_constant` : les tests concernant l'optimisation du compilateur. Ces tests peuvent être similaires à d'autres tests placés ailleurs, mais ce répertoire permettent de les regrouper afin de vérifier manuellement le code assembleur généré pour valider les optimisations.
 
@@ -42,16 +43,16 @@ Enfin vous trouverez, dans ce même dossier `./test`, le fichier `ifcc-test.py` 
 
 Nos tests suivent une convention de nommage claire :
 
-- Tests standards : `<n°test>_<nom du test>.c`
-- Tests d'erreurs : `<n°test>_<nom du test>_FAILTEST.c`
-- Tests de fonctionnalités non implémentées : `<n°test>_<nom du test>_NOT_IMPLEMENTED.c`
-- Tests donc le comportement est aléatoire pour gcc donc qui sont soit FAIL soient OK : `<n°test>_<nom du test>_UNKNOWN.c`
+- Tests standards : `<n°test>_<nom_du_repo>_<nom du test>.c`
+- Tests d'erreurs : `<n°test>_<nom_du_repo>_<nom du test>_FAILTEST.c`
+- Tests de fonctionnalités non implémentées : `<n°test>_<nom_du_repo>_<nom du test>_NOT_IMPLEMENTED.c`
+- Tests donc le comportement est aléatoire pour gcc donc qui sont soit FAIL soient OK : `<n°test>_<nom_du_repo>_<nom du test>_UNKNOWN.c`
 
 ### Logique d'évaluation
 
 Notre système de test s'appuie sur la logique suivante :
 
-- **Tests standards** : Doivent compiler et s'exécuter correctement
+- **Tests standards** : Doivent compiler et s'exécuter correctement, les UNKNOWN fonctionnent comme ça aussi.
 - **Tests FAILTEST** : Conçus pour échouer intentionnellement
   - Un échec de ces tests est considéré comme un succès (comportement attendu)
   - Un succès inattendu est considéré comme un échec (car notre compilateur accepte du code non valide)
@@ -142,8 +143,6 @@ Cette organisation nous permet de travailler en parallèle sur des fonctionnalit
 
 Billy, notre chef de projet, nous informe des fonctionnalités à developper en tenant le backlog à jour.
 Nous nous retrouvons au debut et à la fin de chaque séance afin de discuter des fonctionnalités à développer et des potentielles difficultés rencontrées.
-
-Nous comptons continuer sur cette organisation pour la suite du projet.
 
 ### Groupe 432
 
