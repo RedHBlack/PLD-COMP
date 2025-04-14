@@ -21,6 +21,12 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
         }
     }
 
+    if (functionsNumberOfParameters.find("main") == functionsNumberOfParameters.end())
+    {
+        cerr << "#ERROR: Function main does not exist" << endl;
+        exit(1);
+    }
+
     return 0;
 }
 
