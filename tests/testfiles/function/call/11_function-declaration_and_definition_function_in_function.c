@@ -5,12 +5,14 @@ int mult(int a, int b)
 
 int squared(int n)
 {
-    mult(n, n);
 
-    return n;
+    return mult(n, n);
 }
 
 int main()
 {
-    return squared(5);
+    int a = 3 * 2;
+    int b = 5 / 3;
+
+    return squared(a + b) - squared(3);
 }

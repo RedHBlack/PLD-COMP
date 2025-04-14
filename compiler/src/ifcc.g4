@@ -31,7 +31,7 @@ while_expr_block: expr ;
 while_stmt_block: block ;
 
 call_func_stmt: VAR '(' (expr)? (',' expr)* ')' (';')?;
-return_stmt: RETURN expr ';' ;
+return_stmt: RETURN (expr)? ';' ;
 block: '{' (statement)* '}' ;
 
 expr:   cst                                               #const

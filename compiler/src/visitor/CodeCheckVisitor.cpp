@@ -13,17 +13,17 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
     // Collecte l'utilisation des symboles depuis la racine et tous ses enfants
     map<string, bool> symbolsUsage = collectSymbolsUsage(root);
 
-    for (auto it = symbolsUsage.begin(); it != symbolsUsage.end(); it++)
+    for (auto it = symbolsUsage.begin(); it != symbolsUsage.end(); ++it)
     {
         if (!it->second)
         {
-            cerr << "# WARNING: " << it->first << " : declared but not used" << endl;
+            printWarning(ctx, "variable '" + it->first + "' declared but not used");
         }
     }
 
     if (functionsNumberOfParameters.find("main") == functionsNumberOfParameters.end())
     {
-        cerr << "#ERROR: Function main does not exist" << endl;
+        printError(ctx, "function 'main' is missing");
         exit(1);
     }
 
@@ -42,34 +42,42 @@ antlrcpp::Any CodeCheckVisitor::visitReturn(ifccParser::Return_stmtContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
+    if (ctx->TYPE()->getText() == "void")
+    {
+        printError(ctx, "cannot declare a variable of type 'void'");
+        exit(1);
+    }
+
     int exprIndex = 0;
 
-    for (int i = 0; i < ctx->VAR().size(); i++)
+    for (int i = 0; i < ctx->VAR().size(); ++i)
     {
-        string varLeft = ctx->VAR(i)->getText();
-        int arraySize = 1; // Par défaut, une variable simple
+        std::string varLeft = ctx->VAR(i)->getText();
+        int arraySize = 1;
+
         // Vérifie si c'est un tableau
         if (ctx->INTEGER(i) != nullptr)
         {
-            arraySize = stoi(ctx->INTEGER(i)->getText()); // Taille du tableau
+            arraySize = std::stoi(ctx->INTEGER(i)->getText());
             if (arraySize <= 0)
             {
-                cerr << "#ERROR: " << varLeft << " : array size must be greater than 0" << endl;
+                printError(ctx, "array '" + varLeft + "' size must be greater than 0");
                 exit(1);
             }
         }
 
         if (currentSymbolsTable->containsSymbol(varLeft))
         {
-            cerr << "#ERROR: " << varLeft << " is already declared" << endl;
+            printError(ctx, "variable '" + varLeft + "' is already declared");
             exit(1);
         }
+
         int symbolSize = size_of(stringToType(ctx->TYPE()->getText())) * arraySize;
         this->currentOffset -= symbolSize;
         currentSymbolsTable->addSymbol(varLeft, stringToType(ctx->TYPE()->getText()), symbolSize);
         currentSymbolsTable->setSymbolUsage(varLeft, false);
 
-        // Seulement si l'expression existe pour cette variable/tableau
+        // Si une expression est associée
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
             currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
@@ -78,32 +86,34 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
 
             if (arraySize > 1)
             {
-                if (auto tabInitCtx = dynamic_cast<ifccParser::Array_initContext *>(exprCtx))
+                auto tabInitCtx = dynamic_cast<ifccParser::Array_initContext *>(exprCtx);
+                if (tabInitCtx)
                 {
                     if (tabInitCtx->expr().size() > arraySize)
                     {
-                        cerr << "#ERROR: Too many elements in array initialization for " << varLeft << endl;
+                        printError(ctx, "too many elements in array initialization for '" + varLeft + "'");
                         exit(1);
                     }
                 }
                 else
                 {
-                    cerr << "#ERROR: Invalid initialization for array " << varLeft << endl;
+                    printError(ctx, "invalid initialization for array '" + varLeft + "'");
                     exit(1);
                 }
             }
             else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
             {
-                string varRight = varCtx->getText();
+                std::string varRight = varCtx->getText();
                 if (!currentSymbolsTable->containsSymbol(varRight))
                 {
-                    cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
+                    printError(ctx, "variable '" + varRight + "' is not declared");
                     exit(1);
                 }
                 else if (!currentSymbolsTable->symbolHasAValue(varRight))
                 {
-                    cerr << "#WARNING : The variable " << varRight << " is undefined." << endl;
+                    printWarning(ctx, "variable '" + varRight + "' is undefined");
                 }
+
                 currentSymbolsTable->setSymbolUsage(varRight, true);
                 currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
             }
@@ -111,52 +121,44 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
             {
                 visitExpr(exprCtx);
             }
-            exprIndex++;
+
+            ++exprIndex;
         }
     }
+
     return 0;
 }
 
 antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
-    string varLeft = ctx->VAR()->getText();
+    std::string varLeft = ctx->VAR()->getText();
 
     if (currentSymbolsTable->getSymbolIndex(varLeft) == 0)
     {
-        cerr << "#ERROR: " << varLeft << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varLeft + "' used before declaration");
         exit(1);
     }
 
-    int nbExpr;
-    if (ctx->expr(1) != nullptr)
-    {
-        nbExpr = 2;
-    }
-    else
-    {
-        nbExpr = 1;
-    }
+    int nbExpr = (ctx->expr(1) != nullptr) ? 2 : 1;
 
     currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
 
-    for (int i = 0; i < nbExpr; i++)
+    for (int i = 0; i < nbExpr; ++i)
     {
-        auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i));
-        if (varCtx != nullptr)
+        if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i)))
         {
-            string varRight = varCtx->getText();
+            std::string varRight = varCtx->getText();
             if (currentSymbolsTable->getSymbolIndex(varRight) == 0)
             {
-                cerr << "#ERROR : The variable " << varRight << " is not declared." << endl;
+                printError(ctx, "variable '" + varRight + "' is not declared");
                 exit(1);
             }
             else if (!currentSymbolsTable->symbolHasAValue(varRight))
             {
-                cerr << "#WARNING : The variable " << varRight << " is undefined." << endl;
+                printWarning(ctx, "variable '" + varRight + "' is undefined");
             }
 
             currentSymbolsTable->setSymbolUsage(varRight, true);
-            currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
         }
         else
         {
@@ -169,15 +171,16 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
 
 antlrcpp::Any CodeCheckVisitor::visitVar(ifccParser::VarContext *ctx)
 {
-    string varName = ctx->VAR()->getText();
+    std::string varName = ctx->VAR()->getText();
+
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {
-        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varName + "' used before declaration");
         exit(1);
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        printWarning(ctx, "variable '" + varName + "' is undefined");
     }
 
     currentSymbolsTable->setSymbolUsage(varName, true);
@@ -189,36 +192,38 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
 {
     if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
     {
-        string varName = varCtx->VAR()->getText();
+        std::string varName = varCtx->VAR()->getText();
+
         if (currentSymbolsTable->getSymbolIndex(varName) == 0)
         {
-            cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+            printError(expr, "variable '" + varName + "' used before declaration");
             exit(1);
         }
         else if (!currentSymbolsTable->symbolHasAValue(varName))
         {
-            cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
-        }
-        currentSymbolsTable->setSymbolUsage(varName, true);
-    }
-    if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
-    {
-        string varName = assignCtx->VAR()->getText();
-        currentSymbolsTable->setSymbolDefinitionStatus(varName, true);
-        if (currentSymbolsTable->getSymbolIndex(varName) == 0)
-        {
-            cerr << "#ERROR: " << varName << " : use before declaration" << endl;
-            exit(1);
-        }
-        else if (!currentSymbolsTable->symbolHasAValue(varName))
-        {
-            cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+            printWarning(expr, "variable '" + varName + "' is undefined");
         }
 
-        if (auto innerAssign = dynamic_cast<ifccParser::AssignContext *>(assignCtx->expr()))
+        currentSymbolsTable->setSymbolUsage(varName, true);
+    }
+    else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
+    {
+        std::string varName = assignCtx->VAR()->getText();
+
+        if (currentSymbolsTable->getSymbolIndex(varName) == 0)
         {
-            visitExpr(innerAssign);
+            printError(expr, "variable '" + varName + "' used before declaration");
+            exit(1);
         }
+        else if (!currentSymbolsTable->symbolHasAValue(varName))
+        {
+            printWarning(expr, "variable '" + varName + "' is undefined");
+        }
+
+        currentSymbolsTable->setSymbolDefinitionStatus(varName, true);
+
+        // Gère une assignation imbriquée (comme a = b = 3)
+        visitExpr(assignCtx->expr());
     }
     else
     {
@@ -272,15 +277,15 @@ antlrcpp::Any CodeCheckVisitor::visitUnary(ifccParser::UnaryContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx)
 {
-    string varName = ctx->VAR()->getText();
+    std::string varName = ctx->VAR()->getText();
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {
-        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varName + "' used before declaration");
         exit(1);
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        printWarning(ctx, "variable '" + varName + "' is undefined");
     }
 
     return 0;
@@ -288,15 +293,15 @@ antlrcpp::Any CodeCheckVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx
 
 antlrcpp::Any CodeCheckVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
 {
-    string varName = ctx->VAR()->getText();
+    std::string varName = ctx->VAR()->getText();
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {
-        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varName + "' used before declaration");
         exit(1);
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        printWarning(ctx, "variable '" + varName + "' is undefined");
     }
 
     return 0;
@@ -304,15 +309,15 @@ antlrcpp::Any CodeCheckVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitPre(ifccParser::PreContext *ctx)
 {
-    string varName = ctx->VAR()->getText();
+    std::string varName = ctx->VAR()->getText();
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {
-        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varName + "' used before declaration");
         exit(1);
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        printWarning(ctx, "variable '" + varName + "' is undefined");
     }
 
     return 0;
@@ -320,16 +325,17 @@ antlrcpp::Any CodeCheckVisitor::visitPre(ifccParser::PreContext *ctx)
 
 antlrcpp::Any CodeCheckVisitor::visitPost(ifccParser::PostContext *ctx)
 {
-    string varName = ctx->VAR()->getText();
+    std::string varName = ctx->VAR()->getText();
     if (currentSymbolsTable->getSymbolIndex(varName) == 0)
     {
-        cerr << "#ERROR: " << varName << " : use before declaration" << endl;
+        printError(ctx, "variable '" + varName + "' used before declaration");
         exit(1);
     }
     else if (!currentSymbolsTable->symbolHasAValue(varName))
     {
-        cerr << "#WARNING : The variable " << varName << " is undefined." << endl;
+        printWarning(ctx, "variable '" + varName + "' is undefined");
     }
+
     return 0;
 }
 
@@ -337,33 +343,59 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
 {
     string funcName = ctx->VAR(0)->getText();
 
-    // Check if the function is already declared
     if (functionsNumberOfParameters.find(funcName) != functionsNumberOfParameters.end())
     {
-        cout << "#ERROR: " << funcName << " : redeclaration" << endl;
+        printError(ctx, "function '" + funcName + "' is already declared");
         exit(1);
     }
 
-    // Check if the function has too many parameters
     if (ctx->VAR().size() > 6)
     {
-        cout << "#ERROR: Too many parameters for function (max: 6)" << funcName << endl;
+        printError(ctx, "too many parameters for function '" + funcName + "' (max: 6)");
         exit(1);
     }
 
-    // Add the function to the map with the number of parameters
     functionsNumberOfParameters[funcName] = ctx->VAR().size() - 1;
 
-    // Check if the function has a block
     if (ctx->block())
     {
-        // Create a new CFG for the function
+        bool hasReturnStmt = false;
+        bool hasReturnValue = false;
+        bool isVoidFunction = stringToType(ctx->TYPE(0)->getText()) == Type::VOID;
+
+        for (auto stmt : ctx->block()->statement())
+        {
+            if (stmt->return_stmt())
+            {
+                hasReturnStmt = true;
+
+                if (isVoidFunction && stmt->return_stmt()->expr())
+                {
+                    printError(ctx, "function '" + funcName + "' of type void cannot return a value");
+                    exit(1);
+                }
+
+                if (!isVoidFunction && !stmt->return_stmt()->expr())
+                {
+                    printError(ctx, "function '" + funcName + "' of type " + ctx->TYPE(0)->getText() + " must return a value");
+                    exit(1);
+                }
+
+                if (stmt->return_stmt()->expr())
+                {
+                    hasReturnValue = true;
+                }
+            }
+        }
+
+        if (!isVoidFunction && !hasReturnStmt)
+        {
+            printError(ctx, "function '" + funcName + "' must contain a return statement");
+            exit(1);
+        }
+
         SymbolsTable *newTable = new SymbolsTable(currentOffset - 4);
-
-        // Set the parent of the new table to the root
         newTable->setParent(root);
-
-        // *** Ajout de newTable au root ***
         root->addChild(newTable);
 
         for (int i = 1; i < ctx->VAR().size(); i++)
@@ -375,12 +407,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
         }
 
         this->currentSymbolsTable = newTable;
-
         visit(ctx->block());
-
         this->currentSymbolsTable = this->currentSymbolsTable->getParent();
 
-        // Create a new CFG for the function
         cfgs[funcName] = new CFG(funcName, newTable, currentOffset - 4);
     }
 
@@ -391,23 +420,21 @@ antlrcpp::Any CodeCheckVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtCo
 {
     string functionName = ctx->VAR()->getText();
 
-    // Check if the function is declared
     if (getFunctionNumberOfParameters(functionName) == -1)
     {
-        cout << "#ERROR: " << functionName << " : use before declaration" << endl;
+        printError(ctx, "function '" + functionName + "' used before declaration");
         exit(1);
     }
 
-    // Check if the number of arguments matches the function definition
     if (functionsNumberOfParameters[functionName] != ctx->expr().size())
     {
-        cout << "#ERROR: " << functionName << " : wrong number of parameters" << endl;
+        printError(ctx, "function '" + functionName + "' called with wrong number of parameters");
         exit(1);
     }
 
     if (ctx->expr().size() > 6)
     {
-        cout << "#ERROR: Too many parameters for function (max: 6) " << functionName << endl;
+        printError(ctx, "too many parameters in function call to '" + functionName + "' (max: 6)");
         exit(1);
     }
 
@@ -495,4 +522,18 @@ map<string, bool> CodeCheckVisitor::collectSymbolsUsage(SymbolsTable *table)
     }
 
     return symbolsUsage;
+}
+
+void CodeCheckVisitor::printError(antlr4::ParserRuleContext *ctx, const string &message)
+{
+    cerr << "input.c:" << ctx->getStart()->getLine()
+         << ":" << ctx->getStart()->getCharPositionInLine()
+         << ": error: " << message << endl;
+}
+
+void CodeCheckVisitor::printWarning(antlr4::ParserRuleContext *ctx, const string &message)
+{
+    cerr << "input.c:" << ctx->getStart()->getLine()
+         << ":" << ctx->getStart()->getCharPositionInLine()
+         << ": warning: " << message << endl;
 }

@@ -270,6 +270,10 @@ private:
          */
         int getFunctionNumberOfParameters(string functionName);
 
+        void printError(antlr4::ParserRuleContext *ctx, const string &message);
+
+        void printWarning(antlr4::ParserRuleContext *ctx, const string &message);
+
         map<string, CFG *> cfgs;
 
         /// The root symbol table for the program.
