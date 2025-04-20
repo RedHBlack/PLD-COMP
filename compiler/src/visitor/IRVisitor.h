@@ -41,6 +41,14 @@ public:
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
+        /**
+         * @brief Visits a block of code and generates the IR.
+         *
+         * This method processes blocks of code and generates the corresponding IR for each statement within the block.
+         *
+         * @param ctx The context of the block.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
@@ -85,6 +93,14 @@ public:
          */
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits an array access expression and generates the IR.
+         *
+         * This method processes array access expressions and generates the corresponding IR for accessing elements in arrays.
+         *
+         * @param ctx The context of the array access expression.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitArray_access(ifccParser::Array_accessContext *ctx) override;
 
         /**
@@ -93,7 +109,7 @@ public:
          * This method processes expressions and generates the corresponding IR for the expression.
          *
          * @param expr The expression context to generate IR for.
-         * @param isFirst A flag indicating whether this is the first expression in a sequence.
+         * @param targetRegister The register to store the result of the expression evaluation.
          * @return A result of the visit, typically unused.
          */
         antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, string targetRegister);
@@ -197,6 +213,14 @@ public:
          */
         virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
 
+        /**
+         * @brief Visits a pre-statement (e.g., prefix increment/decrement) and generates the IR.
+         *
+         * This method processes pre-statements and generates the corresponding IR.
+         *
+         * @param ctx The context of the pre-statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
 
         /**
@@ -209,10 +233,34 @@ public:
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
 
+        /**
+         * @brief Visits a post-statement (e.g., postfix increment/decrement) and generates the IR.
+         *
+         * This method processes post-statements and generates the corresponding IR.
+         *
+         * @param ctx The context of the post-statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits a call function statement and generates the IR.
+         *
+         * This method processes calls to functions and generates the corresponding IR for calling those functions.
+         *
+         * @param ctx The context of the call function statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits a call function statement and generates the IR.
+         *
+         * This method processes calls to functions and generates the corresponding IR for calling those functions.
+         *
+         * @param ctx The context of the call function statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
 
         /**
@@ -274,8 +322,6 @@ protected:
         SymbolsTable *currentSymbolsTable;
 
 private:
-        bool _returned = false;
-        bool _inLoop = false;
         /**
          * @brief Assigns a value to a variable.
          *
@@ -296,7 +342,26 @@ private:
          */
         void fillRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr);
 
+        /**
+         * @brief Assigns a value to an array element.
+         *
+         * This method assigns a value to an array element at a specific index.
+         *
+         * @param arrayName The name of the array.
+         * @param indexExpr The expression specifying the index of the array element to assign the value to.
+         * @param valueExpr The expression providing the value to assign.
+         */
         void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
+
+        /**
+         * @brief Loads a value from an array element.
+         *
+         * This method loads a value from an array element specified by its index into a target register.
+         *
+         * @param arrayName The name of the array.
+         * @param indexExpr The expression specifying the index of the array element to load.
+         * @param targetRegister The register where the loaded value should be stored.
+         */
         void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
 
         /**
@@ -309,4 +374,10 @@ private:
          * @param op The operation to perform (e.g., "+" or "-").
          */
         void handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op);
+
+        /// A boolean flag indicating whether a return statement has occurred.
+        bool _returned = false;
+
+        /// A boolean flag indicating whether we are currently inside a loop.
+        bool _inLoop = false;
 };

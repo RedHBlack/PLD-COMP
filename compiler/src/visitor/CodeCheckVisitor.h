@@ -36,8 +36,24 @@ public:
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
+        /**
+         * @brief Visit a return statement in the parsed code.
+         *
+         * This method verify the correctness of a return statement.
+         *
+         * @param ctx The context for the return statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits a variable context in the parsed code.
+         *
+         * This method verifies that the variable is declared and used correctly.
+         *
+         * @param ctx The context for the variable.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitVar(ifccParser::VarContext *ctx) override;
 
         /**
@@ -129,8 +145,24 @@ public:
          */
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
 
+        /**
+         * @brief Visits a post statement (e.g., postfix increment/decrement).
+         *
+         * This method processes post statements and checks for correctness in usage.
+         *
+         * @param ctx The context for the post statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
 
+        /**
+         * @brief Visits a pre statement (e.g., prefix increment/decrement).
+         *
+         * This method processes pre-statements and checks for correctness in usage.
+         *
+         * @param ctx The context for the pre-statement.
+         * @return A result of the visit, typically unused.
+         */
         virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
 
         /**
@@ -198,10 +230,29 @@ public:
          */
         SymbolsTable *getRootSymbolsTable() { return root; }
 
+        /**
+         * @brief Gets the current offset for variables.
+         *
+         * @return The current offset for variables.
+         */
         int getCurrentOffset() { return currentOffset; }
 
+        /**
+         * @brief Gets the control flow graphs for each function.
+         *
+         * @return A map containing the control flow graphs indexed by function names.
+         */
         map<string, CFG *> getCFGS() { return cfgs; };
 
+        /**
+         * @brief Collects the usage status of symbols within a given symbols table.
+         *
+         * This method recursively traverses the symbols table and collects the usage status
+         * of each symbol, storing them in a map.
+         *
+         * @param table The symbols table to traverse.
+         * @return A map containing the usage status of symbols.
+         */
         map<string, bool> collectSymbolsUsage(SymbolsTable *table);
 
 private:
@@ -215,10 +266,23 @@ private:
          */
         int getFunctionNumberOfParameters(string functionName);
 
+        /**
+         * @brief Prints an error message along with the line number and column position.
+         *
+         * @param ctx The parser rule context where the error occurred.
+         * @param message The error message to display.
+         */
         void printError(antlr4::ParserRuleContext *ctx, const string &message);
 
+        /**
+         * @brief Print a warning message along with the line number and column position.
+         *
+         * @param ctx The parser rule context where the warning occurred.
+         * @param message The warning message to display.
+         */
         void printWarning(antlr4::ParserRuleContext *ctx, const string &message);
 
+        /// A map to store the control flow graphs for each function.
         map<string, CFG *> cfgs;
 
         /// The root symbol table for the program.

@@ -118,6 +118,13 @@ public:
      */
     void resetNextFreeSymbolIndex();
 
+    /**
+     * @brief Get the next basick block name.
+     *
+     * This function generates a unique name for the next basic block in the control flow graph.
+     *
+     * @return A string representing the name of the next basic block.
+     */
     string getBBName();
 
     /**

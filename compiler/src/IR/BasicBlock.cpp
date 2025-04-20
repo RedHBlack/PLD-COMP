@@ -22,7 +22,7 @@ void BasicBlock::gen_asm(ostream &o)
     }
 }
 
-void BasicBlock::add_IRInstr(BaseIRInstr *instr)
+void BasicBlock::addIRInstr(BaseIRInstr *instr)
 {
     instrs.push_back(instr);
 }

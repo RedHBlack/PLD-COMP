@@ -79,12 +79,12 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 
     if (evaluatedValue)
     {
-        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, "%eax"));
+        currentBB->addIRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, "%eax"));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(exprCtx))
     {
         // if the expression is a variable, we need to load its value
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), "%eax"));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), "%eax"));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(exprCtx))
     {
@@ -92,12 +92,12 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(tabCtx->expr()))
         {
             string value = constCtx->getText();
-            currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", stoi(value)));
+            currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", stoi(value)));
         }
         else
         {
             visitExpr(tabCtx->expr(), "%eax");
-            currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
+            currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
         }
     }
     else if (exprCtx)
@@ -106,7 +106,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
         visit(exprCtx);
     }
 
-    currentBB->add_IRInstr(new IRInstrJmpRet(currentBB, "output_" + this->currentCFG->getLabel()));
+    currentBB->addIRInstr(new IRInstrJmpRet(currentBB, "output_" + this->currentCFG->getLabel()));
 
     return 0;
 }
@@ -152,7 +152,7 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 
                         string result = to_string(computedOffset) + "(%rbp)";
 
-                        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, value, result));
+                        currentBB->addIRInstr(new IRInstrLoadConst(currentBB, value, result));
                     }
                     exprIndex++;
                 }
@@ -192,7 +192,7 @@ antlrcpp::Any IRVisitor::visitAssign(ifccParser::AssignContext *ctx)
     }
 
     string varName = ctx->VAR()->getText();
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
 
     return 0;
 }
@@ -211,7 +211,7 @@ antlrcpp::Any IRVisitor::visitArray_access(ifccParser::Array_accessContext *ctx)
     }
 
     string varName = ctx->VAR()->getText();
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
 
     return 0;
 }
@@ -226,12 +226,12 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, string targetR
     if (evaluatedValue)
     {
         // If it's a constant expression, load the computed value directly
-        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, targetRegister));
+        currentBB->addIRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, targetRegister));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(expr))
     {
         // If it's a variable, move its value into the target register
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), targetRegister));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), targetRegister));
     }
     else if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(expr))
     {
@@ -241,18 +241,18 @@ antlrcpp::Any IRVisitor::visitExpr(ifccParser::ExprContext *expr, string targetR
         visitExpr(assignCtx->expr(), "%eax");
 
         // Move the value into the target register
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(expr))
     {
         visitExpr(tabCtx->expr(), "%eax");
-        currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
+        currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
     }
     else
     {
         // General case: visit the expression and move the result if necessary
         visit(expr);
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", targetRegister));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", targetRegister));
     }
 
     return 0;
@@ -287,7 +287,7 @@ antlrcpp::Any IRVisitor::visitComp(ifccParser::CompContext *ctx)
     const string op = ctx->OP->getText();
     fillRegisters(ctx->expr(0), ctx->expr(1));
 
-    currentBB->add_IRInstr(new IRInstrComp(currentBB, "%ebx", "%eax", op));
+    currentBB->addIRInstr(new IRInstrComp(currentBB, "%ebx", "%eax", op));
 
     return 0;
 }
@@ -299,7 +299,7 @@ antlrcpp::Any IRVisitor::visitUnary(ifccParser::UnaryContext *ctx)
 
     visitExpr(ctx->expr(), "%eax");
 
-    currentBB->add_IRInstr(new IRInstrUnaryOp(currentBB, "%eax", op));
+    currentBB->addIRInstr(new IRInstrUnaryOp(currentBB, "%eax", op));
 
     return 0;
 }
@@ -315,10 +315,10 @@ antlrcpp::Any IRVisitor::visitPre_stmt(ifccParser::Pre_stmtContext *ctx)
     string opSymbol = (op == "++") ? "+" : "-";
 
     // Step 1 : load the variable into a register
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+    currentBB->addIRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
     // Step 2 : load the value of the variable into another register
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     return 0;
 }
@@ -334,10 +334,10 @@ antlrcpp::Any IRVisitor::visitPre(ifccParser::PreContext *ctx)
     string opSymbol = (op == "++") ? "+" : "-";
 
     // Step 1 : load the variable into a register
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+    currentBB->addIRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
     // Step 2 : load the value of the variable into another register
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     return 0;
 }
@@ -350,11 +350,11 @@ antlrcpp::Any IRVisitor::visitPost_stmt(ifccParser::Post_stmtContext *ctx)
     const string regVar = this->currentCFG->toRegister(varName); // register for the variable
 
     // Step 1 : load the variable into a register
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     // Step 2 : load the value of the variable into another register
     string opSymbol = (op == "++") ? "+" : "-";
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+    currentBB->addIRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
     return 0;
 }
@@ -367,11 +367,11 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
     const string regVar = this->currentCFG->toRegister(varName); // register for the variable
 
     // Step 1 : load the variable into a register
-    currentBB->add_IRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
+    currentBB->addIRInstr(new IRInstrMove(currentBB, regVar, "%eax"));
 
     // Step 2 : load the value of the variable into another register
     string opSymbol = (op == "++") ? "+" : "-";
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
+    currentBB->addIRInstr(new IRInstrArithmeticOp(currentBB, "$1", regVar, opSymbol));
 
     return 0;
 }
@@ -518,7 +518,7 @@ antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *
         BasicBlock *input = new BasicBlock(currentCFG, "input_" + currentCFGLabel);
         BasicBlock *body = new BasicBlock(currentCFG, "body_" + currentCFGLabel);
 
-        input->add_IRInstr(new IRInstrSet(input));
+        input->addIRInstr(new IRInstrSet(input));
 
         currentCFG->add_bb(input);
 
@@ -535,7 +535,7 @@ antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *
         string outputLabel = "output_" + currentCFGLabel;
 
         BasicBlock *output = new BasicBlock(currentCFG, outputLabel);
-        output->add_IRInstr(new IRInstrClean(output));
+        output->addIRInstr(new IRInstrClean(output));
 
         currentCFG->getCurrentBasicBlock()->setExitTrue(output);
 
@@ -558,28 +558,28 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(ctx->expr(i)))
         {
             int value = constCtx->cst()->CHAR() ? static_cast<int>(constCtx->cst()->CHAR()->getText()[1]) : stoi(constCtx->cst()->getText());
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, value, regParams[i]));
+            currentBB->addIRInstr(new IRInstrLoadConst(currentBB, value, regParams[i]));
         }
         else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx->expr(i)))
         {
-            currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), regParams[i]));
+            currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), regParams[i]));
         }
         else
         {
             visitExpr(ctx->expr(i), "%eax");
-            currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", regParams[i]));
+            currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", regParams[i]));
         }
         string tmp = this->currentCFG->create_new_tempvar(Type::INT);
         savedTemps.push_back(tmp);
-        this->currentCFG->getCurrentBasicBlock()->add_IRInstr(
+        this->currentCFG->getCurrentBasicBlock()->addIRInstr(
             new IRInstrMove(this->currentCFG->getCurrentBasicBlock(), regParams[i], this->currentCFG->toRegister(tmp)));
     }
 
-    currentBB->add_IRInstr(new IRInstrCall(currentBB, ctx->VAR()->getText()));
+    currentBB->addIRInstr(new IRInstrCall(currentBB, ctx->VAR()->getText()));
 
     for (int r = 0; r < numberOfArgs; r++)
     {
-        this->currentCFG->getCurrentBasicBlock()->add_IRInstr(
+        this->currentCFG->getCurrentBasicBlock()->addIRInstr(
             new IRInstrMove(this->currentCFG->getCurrentBasicBlock(), this->currentCFG->toRegister(savedTemps[r]), regParams[r]));
     }
 
@@ -591,7 +591,7 @@ antlrcpp::Any IRVisitor::visitLogicalAND(ifccParser::LogicalANDContext *ctx)
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     fillRegisters(ctx->expr(0), ctx->expr(1));
 
-    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "and"));
+    currentBB->addIRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "and"));
 
     return 0;
 }
@@ -601,7 +601,7 @@ antlrcpp::Any IRVisitor::visitLogicalOR(ifccParser::LogicalORContext *ctx)
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     fillRegisters(ctx->expr(0), ctx->expr(1));
 
-    currentBB->add_IRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "or"));
+    currentBB->addIRInstr(new IRInstrLogical(currentBB, "%ebx", "%eax", "or"));
 
     return 0;
 }
@@ -614,24 +614,24 @@ void IRVisitor::assignValueToVar(ifccParser::ExprContext *ctx, string varName)
 
     if (evaluatedValue)
     {
-        currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, this->currentCFG->toRegister(varName)));
+        currentBB->addIRInstr(new IRInstrLoadConst(currentBB, *evaluatedValue, this->currentCFG->toRegister(varName)));
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(ctx))
     {
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), this->currentCFG->toRegister(varName)));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), this->currentCFG->toRegister(varName)));
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(ctx))
     {
         visitExpr(tabCtx->expr(), "%eax");
-        currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
+        currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, tabCtx->VAR()->getText(), "%eax", -1));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
     }
     else
     {
         // If the evaluated value is not a constant, we need to generate the code for the expression
         // and then assign the result to the variable
         visit(ctx);
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(varName)));
     }
 }
 
@@ -645,7 +645,7 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
     // If we have an array in rvalue, we first move eax to ebx
     if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(valueExpr))
     {
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", "%ebx"));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", "%ebx"));
     }
 
     // Constant index case
@@ -656,7 +656,7 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         int computedOffset = this->currentCFG->get_var_index(arrayName) + idx * 4;
         // Use IRInstrStoreToArray with an empty indexRegister to indicate that the index is constant
 
-        currentBB->add_IRInstr(new IRInstrStoreToArray(currentBB, computedOffset, "", "%ebx"));
+        currentBB->addIRInstr(new IRInstrStoreToArray(currentBB, computedOffset, "", "%ebx"));
     }
     else
     {
@@ -667,12 +667,12 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(indexExpr))
         {
             // We have to move the assigned variable to %eax
-            currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
+            currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
         }
 
-        currentBB->add_IRInstr(new IRInstrUnaryOp(currentBB, "%eax", "cltq"));
+        currentBB->addIRInstr(new IRInstrUnaryOp(currentBB, "%eax", "cltq"));
         int baseOffset = this->currentCFG->get_var_index(arrayName);
-        currentBB->add_IRInstr(new IRInstrStoreToArray(currentBB, baseOffset, "%rax", "%ebx"));
+        currentBB->addIRInstr(new IRInstrStoreToArray(currentBB, baseOffset, "%rax", "%ebx"));
     }
 }
 
@@ -688,26 +688,26 @@ void IRVisitor::fillRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
         if (constCtx->cst()->CHAR())
         {
             int asciiValue = static_cast<int>(constCtx->cst()->CHAR()->getText()[1]);
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, asciiValue, "%eax"));
+            currentBB->addIRInstr(new IRInstrLoadConst(currentBB, asciiValue, "%eax"));
         }
         else
         {
-            currentBB->add_IRInstr(new IRInstrLoadConst(currentBB, stoi(value), "%eax"));
+            currentBB->addIRInstr(new IRInstrLoadConst(currentBB, stoi(value), "%eax"));
         }
     }
     else if (auto varCtx = dynamic_cast<ifccParser::VarContext *>(leftExpr))
     {
         visitExpr(rightExpr, "%ebx");
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), "%eax"));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(varCtx->VAR()->getText()), "%eax"));
     }
     else
     {
         const string newTmpVar = this->currentCFG->create_new_tempvar(Type::INT);
 
         visitExpr(leftExpr, "%eax");
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(newTmpVar)));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(newTmpVar)));
         visitExpr(rightExpr, "%ebx");
-        currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(newTmpVar), "%eax"));
+        currentBB->addIRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(newTmpVar), "%eax"));
     }
 }
 
@@ -717,12 +717,12 @@ void IRVisitor::loadValueFromArray(string arrayName, ifccParser::ExprContext *in
     if (auto constIndex = dynamic_cast<ifccParser::ConstContext *>(indexExpr))
     {
         int idx = stoi(constIndex->cst()->getText());
-        currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, arrayName, targetRegister, idx));
+        currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, arrayName, targetRegister, idx));
     }
     else
     {
         visitExpr(indexExpr, "%eax");
-        currentBB->add_IRInstr(new IRInstrLoadFromArray(currentBB, arrayName, targetRegister, -1));
+        currentBB->addIRInstr(new IRInstrLoadFromArray(currentBB, arrayName, targetRegister, -1));
     }
 }
 
@@ -740,7 +740,7 @@ void IRVisitor::handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
     fillRegisters(leftExpr, rightExpr);
 
-    currentBB->add_IRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", op));
+    currentBB->addIRInstr(new IRInstrArithmeticOp(currentBB, "%ebx", "%eax", op));
 }
 
 map<string, CFG *> IRVisitor::getCFGS()
