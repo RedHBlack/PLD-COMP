@@ -33,7 +33,7 @@ public:
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    virtual void gen_asm(ostream &o) = 0;
+    virtual void genASM(ostream &o) = 0;
 
 protected:
     /// The first operand for the binary operation.

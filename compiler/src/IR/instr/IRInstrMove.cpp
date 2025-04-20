@@ -13,7 +13,7 @@ IRInstrMove::IRInstrMove(BasicBlock *bb_, string src, string dest)
 /**
  * @brief Generates assembly code for moving a value between registers and memory.
  */
-void IRInstrMove::gen_asm(ostream &o)
+void IRInstrMove::genASM(ostream &o)
 {
 
     if (src[0] != '%' && dest[0] != '%')

@@ -28,7 +28,7 @@ public:
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    void gen_asm(ostream &o) override;
+    void genASM(ostream &o) override;
 
 private:
     //// The name of the function being called.

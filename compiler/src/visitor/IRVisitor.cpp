@@ -147,7 +147,7 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
                     {
                         // We will use storeValueToArray to store the value in the array
                         // We calculate the offset of the array
-                        int computedOffset = this->currentCFG->get_var_index(varName) + j * 4;
+                        int computedOffset = this->currentCFG->getVarIndex(varName) + j * 4;
                         int value = stoi(arrayInit->expr(j)->getText());
 
                         string result = to_string(computedOffset) + "(%rbp)";
@@ -387,7 +387,7 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     string thenLabel = this->currentCFG->getBBName();
     BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
     thenBB->setIsTestVar(true);
-    this->currentCFG->add_bb(thenBB);
+    this->currentCFG->addBB(thenBB);
 
     // Creation of the else block if it exists
     BasicBlock *elseBB = nullptr;
@@ -396,13 +396,13 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         string elseLabel = this->currentCFG->getBBName();
         elseBB = new BasicBlock(this->currentCFG, elseLabel);
         elseBB->setIsTestVar(true);
-        this->currentCFG->add_bb(elseBB);
+        this->currentCFG->addBB(elseBB);
     }
 
     // Create a merge block
     string mergeLabel = this->currentCFG->getBBName();
     BasicBlock *mergeBB = new BasicBlock(this->currentCFG, mergeLabel);
-    this->currentCFG->add_bb(mergeBB);
+    this->currentCFG->addBB(mergeBB);
 
     // Branches of the test
     testBB->setExitTrue(thenBB);
@@ -456,7 +456,7 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     string condLabel = this->currentCFG->getBBName();
     BasicBlock *condBB = new BasicBlock(this->currentCFG, condLabel);
     condBB->setIsTestVar(true);
-    this->currentCFG->add_bb(condBB);
+    this->currentCFG->addBB(condBB);
     preLoop->setExitTrue(condBB);
 
     // Generate the condition
@@ -466,11 +466,11 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     // Create the body and exit blocks
     string bodyLabel = this->currentCFG->getBBName();
     BasicBlock *bodyBB = new BasicBlock(this->currentCFG, bodyLabel);
-    this->currentCFG->add_bb(bodyBB);
+    this->currentCFG->addBB(bodyBB);
 
     string exitLabel = this->currentCFG->getBBName();
     BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
-    this->currentCFG->add_bb(exitBB);
+    this->currentCFG->addBB(exitBB);
 
     // Branches of the condition
     condBB->setExitTrue(bodyBB);
@@ -520,11 +520,11 @@ antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *
 
         input->addIRInstr(new IRInstrSet(input));
 
-        currentCFG->add_bb(input);
+        currentCFG->addBB(input);
 
         input->setExitTrue(body);
 
-        currentCFG->add_bb(body);
+        currentCFG->addBB(body);
 
         setCurrentSymbolsTable(currentCFG->getSymbolsTable());
 
@@ -539,7 +539,7 @@ antlrcpp::Any IRVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *
 
         currentCFG->getCurrentBasicBlock()->setExitTrue(output);
 
-        currentCFG->add_bb(output);
+        currentCFG->addBB(output);
     }
     return 0;
 }
@@ -569,7 +569,7 @@ antlrcpp::Any IRVisitor::visitCall_func_stmt(ifccParser::Call_func_stmtContext *
             visitExpr(ctx->expr(i), "%eax");
             currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", regParams[i]));
         }
-        string tmp = this->currentCFG->create_new_tempvar(Type::INT);
+        string tmp = this->currentCFG->createNewTempvar(Type::INT);
         savedTemps.push_back(tmp);
         this->currentCFG->getCurrentBasicBlock()->addIRInstr(
             new IRInstrMove(this->currentCFG->getCurrentBasicBlock(), regParams[i], this->currentCFG->toRegister(tmp)));
@@ -653,7 +653,7 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
     {
         int idx = stoi(constIndex->cst()->getText());
         // Calculate the offset of the array
-        int computedOffset = this->currentCFG->get_var_index(arrayName) + idx * 4;
+        int computedOffset = this->currentCFG->getVarIndex(arrayName) + idx * 4;
         // Use IRInstrStoreToArray with an empty indexRegister to indicate that the index is constant
 
         currentBB->addIRInstr(new IRInstrStoreToArray(currentBB, computedOffset, "", "%ebx"));
@@ -671,7 +671,7 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
         }
 
         currentBB->addIRInstr(new IRInstrUnaryOp(currentBB, "%eax", "cltq"));
-        int baseOffset = this->currentCFG->get_var_index(arrayName);
+        int baseOffset = this->currentCFG->getVarIndex(arrayName);
         currentBB->addIRInstr(new IRInstrStoreToArray(currentBB, baseOffset, "%rax", "%ebx"));
     }
 }
@@ -702,7 +702,7 @@ void IRVisitor::fillRegisters(ifccParser::ExprContext *leftExpr, ifccParser::Exp
     }
     else
     {
-        const string newTmpVar = this->currentCFG->create_new_tempvar(Type::INT);
+        const string newTmpVar = this->currentCFG->createNewTempvar(Type::INT);
 
         visitExpr(leftExpr, "%eax");
         currentBB->addIRInstr(new IRInstrMove(currentBB, "%eax", this->currentCFG->toRegister(newTmpVar)));
@@ -726,12 +726,12 @@ void IRVisitor::loadValueFromArray(string arrayName, ifccParser::ExprContext *in
     }
 }
 
-void IRVisitor::gen_asm(ostream &o)
+void IRVisitor::genASM(ostream &o)
 {
     for (auto it = cfgs.begin(); it != cfgs.end(); ++it)
     {
         CFG *cfg = it->second;
-        cfg->gen_asm(o);
+        cfg->genASM(o);
     }
 }
 

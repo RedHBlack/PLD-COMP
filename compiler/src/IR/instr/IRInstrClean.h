@@ -36,5 +36,5 @@ public:
      *
      * @param o The output stream to which the generated assembly code will be written.
      */
-    virtual void gen_asm(std::ostream &o) override;
+    virtual void genASM(std::ostream &o) override;
 };

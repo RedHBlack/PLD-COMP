@@ -34,7 +34,7 @@ public:
 	 *
 	 * @param o Output stream to write the assembly code.
 	 */
-	virtual void gen_asm(ostream &o) override;
+	virtual void genASM(ostream &o) override;
 
 private:
 	/// Condition register used in the comparison.

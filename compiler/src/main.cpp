@@ -74,7 +74,7 @@ int main(int argn, const char **argv)
     v.visit(tree); // Perform the IR transformation
 
     // Generate assembly code
-    v.gen_asm(cout);
+    v.genASM(cout);
 
     if (generate_cfg)
     {
@@ -105,7 +105,7 @@ int main(int argn, const char **argv)
 
             // Generate Graphviz .dot file
             ofstream dotFile(folder_name + "_cfgs/cfg_" + label + ".dot");
-            cfg->gen_cfg_graphviz(dotFile);
+            cfg->genCFGGraphviz(dotFile);
             dotFile.close(); // Close the .dot file after writing
 
             // Generate PNG image from the .dot file using Graphviz

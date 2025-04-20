@@ -19,7 +19,7 @@ public:
 	 *
 	 * @param o The output stream where the generated assembly code will be written.
 	 */
-	virtual void gen_asm(ostream &o) override;
+	virtual void genASM(ostream &o) override;
 
 private:
 	/// The label of the basic block to jump to after returning.

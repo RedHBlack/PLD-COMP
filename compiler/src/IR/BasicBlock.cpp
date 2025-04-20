@@ -4,11 +4,11 @@ BasicBlock::BasicBlock(CFG *cfg, string entry_label) : cfg(cfg), label(entry_lab
 {
 }
 
-void BasicBlock::gen_asm(ostream &o)
+void BasicBlock::genASM(ostream &o)
 {
     for (int i = 0; i < instrs.size(); i++)
     {
-        instrs[i]->gen_asm(o);
+        instrs[i]->genASM(o);
     }
     if (is_test_var && exit_true != nullptr && exit_false != nullptr)
     {

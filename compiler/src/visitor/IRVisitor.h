@@ -201,7 +201,7 @@ public:
          *
          * @param o The output stream where the assembly code will be written.
          */
-        void gen_asm(ostream &o);
+        void genASM(ostream &o);
 
         /**
          * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.

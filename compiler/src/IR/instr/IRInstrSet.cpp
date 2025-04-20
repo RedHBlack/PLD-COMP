@@ -1,6 +1,6 @@
 #include "IRInstrSet.h"
 
-void IRInstrSet::gen_asm(ostream &o)
+void IRInstrSet::genASM(ostream &o)
 {
 #ifdef __APPLE__
     o << ".globl _" << this->bb->getCFG()->getLabel() << "\n";

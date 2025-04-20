@@ -31,7 +31,7 @@ public:
      *
      * @param o The output stream where the generated assembly code will be written.
      */
-    virtual void gen_asm(ostream &o);
+    virtual void genASM(ostream &o);
 
 protected:
     /// A unique identifier for the unary operation.

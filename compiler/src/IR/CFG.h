@@ -41,7 +41,7 @@ public:
      *
      * @param bb A pointer to the basic block to add.
      */
-    void add_bb(BasicBlock *bb);
+    void addBB(BasicBlock *bb);
 
     /**
      * @brief Generates the assembly code for the entire control flow graph.
@@ -50,7 +50,7 @@ public:
      *
      * @param o The output stream where the assembly code will be written.
      */
-    void gen_asm(ostream &o);
+    void genASM(ostream &o);
 
     /**
      * @brief Creates a new temporary variable with a unique name.
@@ -60,7 +60,7 @@ public:
      * @param t The type of the new temporary variable.
      * @return The name of the newly created temporary variable.
      */
-    string create_new_tempvar(Type t);
+    string createNewTempvar(Type t);
 
     /**
      * @brief Retrieves the index of a variable by its name.
@@ -68,9 +68,9 @@ public:
      * This method retrieves the index of the variable in the symbol table.
      *
      * @param name The name of the variable.
-     * @return The index of the variable, or -1 if the variable does not exist.
+     * @return The index of the variable, or 0 if the variable does not exist.
      */
-    int get_var_index(string name);
+    int getVarIndex(string name);
 
     /**
      * @brief Retrieves the type of a variable based on its name.
@@ -80,7 +80,7 @@ public:
      * @param name The name of the variable whose type is to be retrieved.
      * @return The type of the specified variable.
      */
-    Type get_var_type(string name);
+    Type getVarType(string name);
 
     /**
      * @brief Converts a variable name into a register name.
@@ -136,7 +136,7 @@ public:
      *
      * @param o The output stream to which the Graphviz `.dot` representation of the CFG is written. This is typically a file stream (e.g., `ofstream`) that writes to a `.dot` file.
      */
-    void gen_cfg_graphviz(ostream &o);
+    void genCFGGraphviz(ostream &o);
 
     /**
      * @brief Retrieves the label associated with the control flow graph (CFG).
@@ -169,7 +169,7 @@ public:
      *
      *
      */
-    void add_while(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb);
+    void addWhile(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb);
 
     /**
      * @brief Adds an if-then-else structure to the control flow graph.
@@ -183,7 +183,7 @@ public:
      *
      *
      */
-    void add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb);
+    void addIfThenElse(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb);
 
     /**
      *

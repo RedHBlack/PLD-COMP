@@ -26,7 +26,7 @@ public:
      *
      * @param o The output stream to write the generated assembly code.
      */
-    virtual void gen_asm(ostream &o);
+    virtual void genASM(ostream &o);
 
 private:
     /// Source array name

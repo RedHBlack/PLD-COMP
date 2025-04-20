@@ -35,7 +35,7 @@ public:
    *
    * @param o The output stream where the assembly code will be written.
    */
-  void gen_asm(ostream &o);
+  void genASM(ostream &o);
 
   /**
    * @brief Adds an instruction to the basic block.
