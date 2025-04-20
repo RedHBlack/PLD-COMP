@@ -1,5 +1,5 @@
 #include "CFG.h"
-#include "../utils/Type.h"
+#include "../utils/TypeManager.h"
 #include "instr/IRInstrSet.h"
 #include <sstream>
 #include "instr/IRInstrJmpCond.h"
@@ -29,8 +29,8 @@ string CFG::create_new_tempvar(Type t)
 {
     const string newTmpVar = "tmp" + to_string(-nextFreeSymbolIndex);
 
-    this->symbolsTable->addSymbol(newTmpVar, t, size_of(t));
-    this->nextFreeSymbolIndex -= size_of(t);
+    this->symbolsTable->addSymbol(newTmpVar, t, TypeManager::size_of(t));
+    this->nextFreeSymbolIndex -= TypeManager::size_of(t);
 
     return newTmpVar;
 }

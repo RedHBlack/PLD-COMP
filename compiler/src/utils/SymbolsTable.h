@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "Type.h"
+#include "TypeManager.h"
 
 using namespace std;
 

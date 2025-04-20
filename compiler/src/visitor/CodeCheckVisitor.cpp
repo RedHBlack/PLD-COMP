@@ -72,9 +72,9 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
             exit(1);
         }
 
-        int symbolSize = size_of(stringToType(ctx->TYPE()->getText())) * arraySize;
+        int symbolSize = TypeManager::size_of(TypeManager::stringToType(ctx->TYPE()->getText())) * arraySize;
         this->currentOffset -= symbolSize;
-        currentSymbolsTable->addSymbol(varLeft, stringToType(ctx->TYPE()->getText()), symbolSize);
+        currentSymbolsTable->addSymbol(varLeft, TypeManager::stringToType(ctx->TYPE()->getText()), symbolSize);
         currentSymbolsTable->setSymbolUsage(varLeft, false);
 
         // If an expression is associated
@@ -361,7 +361,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
     {
         bool hasReturnStmt = false;
         bool hasReturnValue = false;
-        bool isVoidFunction = stringToType(ctx->TYPE(0)->getText()) == Type::VOID;
+        bool isVoidFunction = TypeManager::stringToType(ctx->TYPE(0)->getText()) == Type::VOID;
 
         for (auto stmt : ctx->block()->statement())
         {
@@ -401,8 +401,8 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_func_stmt(ifccParser::Decl_func_stmtCo
         for (int i = 1; i < ctx->VAR().size(); i++)
         {
             string paramName = ctx->VAR(i)->getText();
-            int paramSize = size_of(stringToType(ctx->TYPE(i)->getText()));
-            newTable->addSymbol(paramName, stringToType(ctx->TYPE(i)->getText()), paramSize, i);
+            int paramSize = TypeManager::size_of(TypeManager::stringToType(ctx->TYPE(i)->getText()));
+            newTable->addSymbol(paramName, TypeManager::stringToType(ctx->TYPE(i)->getText()), paramSize, i);
             newTable->setSymbolUsage(paramName, false);
         }
 
