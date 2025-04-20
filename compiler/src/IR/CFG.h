@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "../utils/Type.h"
+#include "../utils/TypeManager.h"
 #include "../utils/SymbolsTable.h"
 
 using namespace std;

@@ -2,7 +2,7 @@
 
 #include "antlr4-runtime.h"
 #include "../generated/ifccBaseVisitor.h"
-#include "../utils/Type.h"
+#include "../utils/TypeManager.h"
 #include "../utils/SymbolsTable.h"
 #include "../IR/CFG.h"
 
