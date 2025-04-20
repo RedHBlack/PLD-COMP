@@ -5,7 +5,7 @@ IRInstrLoadFromArray::IRInstrLoadFromArray(BasicBlock *bb, string src, string de
 {
 }
 
-void IRInstrLoadFromArray::gen_asm(ostream &o)
+void IRInstrLoadFromArray::genASM(ostream &o)
 {
     if (index < 0)
     {

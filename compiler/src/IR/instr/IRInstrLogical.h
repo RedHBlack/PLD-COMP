@@ -2,31 +2,33 @@
 
 #include "IRInstrBinaryOp.h"
 
+/**
+ * @brief A class representing a logical operation instruction.
+ *
+ * This class represents an instruction for the lazy evaluation version of the logical AND (`&&`) and OR (`||`)
+ */
 class IRInstrLogical : public IRInstrBinaryOp
 {
 public:
     /**
-     * @brief Constructor for the IRInstrLoadConst instruction.
+     * @brief Constructs a logical operation instruction.
      *
-     * Initializes the instruction with the basic block, the constant value to load, and the destination
-     * register or memory variable where the value should be stored.
+     * Initializes the instruction with a basic block, two operands, and the logical operation.
      *
-     * @param bb_ Pointer to the basic block containing this instruction.
+     * @param bb_ The basic block to which the instruction belongs.
      * @param firstOp The first operand of the logical operation.
      * @param secondOp The second operand of the logical operation.
-     * @param op The logical operation to perform.
+     * @param op The logical operation (e.g., '&&', '||').
      */
     IRInstrLogical(BasicBlock *bb_, string firstOp, string secondOp, string op)
         : IRInstrBinaryOp(bb_, firstOp, secondOp, op) {}
 
     /**
-     * @brief Generates assembly code to load a constant.
+     * @brief Generates the assembly code for this logical operation instruction.
      *
-     * Generates assembly code for loading a constant value into a register or memory.
-     *
-     * @param o Output stream where the assembly code will be written.
+     * @param o The output stream where the generated assembly code will be written.
      */
-    virtual void gen_asm(ostream &o) override;
+    virtual void genASM(ostream &o) override;
 
 private:
     /**

@@ -1,6 +1,6 @@
 #include "IRInstrCall.h"
 
-void IRInstrCall::gen_asm(ostream &o)
+void IRInstrCall::genASM(ostream &o)
 {
 
     o << "   call " << funcName << "\n";

@@ -1,6 +1,6 @@
 #include "IRInstrArithmeticOp.h"
 
-void IRInstrArithmeticOp::gen_asm(ostream &o)
+void IRInstrArithmeticOp::genASM(ostream &o)
 {
     switch (op[0])
     {

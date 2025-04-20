@@ -1,6 +1,6 @@
 #include "IRInstrUnaryOp.h"
 
-void IRInstrUnaryOp::gen_asm(ostream &o)
+void IRInstrUnaryOp::genASM(ostream &o)
 {
     if (op == "!")
         handleNot(o);
@@ -10,7 +10,7 @@ void IRInstrUnaryOp::gen_asm(ostream &o)
         handleCompl(o);
     else if (op == "cltq")
         o << "   cltq\n";
-        
+
     // else if (op == "&")
     //     handleReference(o);
     // else if (op == "*")

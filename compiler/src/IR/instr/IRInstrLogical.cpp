@@ -2,7 +2,7 @@
 
 int IRInstrLogical::label = 0;
 
-void IRInstrLogical::gen_asm(ostream &o)
+void IRInstrLogical::genASM(ostream &o)
 {
     if (op == "and")
     {

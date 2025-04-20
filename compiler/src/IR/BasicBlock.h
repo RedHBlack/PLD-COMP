@@ -35,7 +35,7 @@ public:
    *
    * @param o The output stream where the assembly code will be written.
    */
-  void gen_asm(ostream &o);
+  void genASM(ostream &o);
 
   /**
    * @brief Adds an instruction to the basic block.
@@ -44,7 +44,7 @@ public:
    *
    * @param instr A pointer to the instruction to add.
    */
-  void add_IRInstr(BaseIRInstr *instr);
+  void addIRInstr(BaseIRInstr *instr);
 
   /**
    * @brief Gets the CFG associated with this basic block.
@@ -140,7 +140,24 @@ public:
     is_test_var = isTest;
   }
 
+  /**
+   * @brief Get the label of the true exit point of the current block.
+   *
+   * This function returns the label of the "true" exit point in the control flow.
+   * It is used to identify where the program flow should continue if a condition evaluates to true.
+   *
+   * @return A string representing the label of the "true" exit.
+   */
   string getTrueLabel();
+
+  /**
+   * @brief Get the label of the false exit point of the current block.
+   *
+   * This function returns the label of the "false" exit point in the control flow.
+   * It is used to identify where the program flow should continue if a condition evaluates to false.
+   *
+   * @return A string representing the label of the "false" exit.
+   */
   string getFalseLabel();
 
 protected:

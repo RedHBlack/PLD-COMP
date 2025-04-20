@@ -35,7 +35,7 @@ public:
      *
      * @param o Output stream where the assembly code will be written.
      */
-    virtual void gen_asm(ostream &o) override;
+    virtual void genASM(ostream &o) override;
 
 private:
     // The source variable (register or memory location).

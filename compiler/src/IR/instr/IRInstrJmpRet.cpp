@@ -1,6 +1,6 @@
 #include "IRInstrJmpRet.h"
 
-void IRInstrJmpRet::gen_asm(ostream &o)
+void IRInstrJmpRet::genASM(ostream &o)
 {
 	o << "   jmp " << label << endl;
 }

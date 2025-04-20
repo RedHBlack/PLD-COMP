@@ -1,6 +1,6 @@
 #include "IRInstrComp.h"
 
-void IRInstrComp::gen_asm(ostream &o)
+void IRInstrComp::genASM(ostream &o)
 {
     o << "   cmpl " << firstOp << ", " << secondOp << "\n";
 

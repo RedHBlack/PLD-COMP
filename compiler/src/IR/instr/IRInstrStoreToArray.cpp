@@ -5,7 +5,7 @@ IRInstrStoreToArray::IRInstrStoreToArray(BasicBlock *bb, int baseOffset, string 
 {
 }
 
-void IRInstrStoreToArray::gen_asm(ostream &o)
+void IRInstrStoreToArray::genASM(ostream &o)
 {
     if (indexRegister == "")
     {

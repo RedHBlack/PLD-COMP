@@ -11,7 +11,7 @@ IRInstrLoadConst::IRInstrLoadConst(BasicBlock *bb_, int value, std::string dest)
 /**
  * @brief Generates assembly code to load a constant into memory or a register.
  */
-void IRInstrLoadConst::gen_asm(std::ostream &o)
+void IRInstrLoadConst::genASM(std::ostream &o)
 {
 
     o << "   movl $" << value << " ," << dest << "\n";
