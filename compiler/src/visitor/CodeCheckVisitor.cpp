@@ -34,9 +34,16 @@ antlrcpp::Any CodeCheckVisitor::visitReturn_stmt(ifccParser::Return_stmtContext 
 {
     if (ctx->expr() != nullptr)
     {
+        if (auto callCtx = dynamic_cast<ifccParser::Call_func_stmtContext *>(ctx->expr()))
+        {
+            if (currentSymbolsTable->getSymbolType(callCtx->VAR()->getText()) == Type::VOID)
+            {
+                printError(ctx, callCtx->VAR()->getText() + " is type void");
+                exit(1);
+            }
+        }
         visitExpr(ctx->expr());
     }
-
     return 0;
 }
 
@@ -117,6 +124,14 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
                 currentSymbolsTable->setSymbolUsage(varRight, true);
                 currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
             }
+            else if (auto callCtx = dynamic_cast<ifccParser::Call_func_stmtContext *>(ctx->expr(i)))
+            {
+                if (currentSymbolsTable->getSymbolType(callCtx->VAR()->getText()) == Type::VOID)
+                {
+                    printError(ctx, callCtx->VAR()->getText() + " is type void");
+                    exit(1);
+                }
+            }
             else
             {
                 visitExpr(exprCtx);
@@ -159,6 +174,14 @@ antlrcpp::Any CodeCheckVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext 
             }
 
             currentSymbolsTable->setSymbolUsage(varRight, true);
+        }
+        else if (auto callCtx = dynamic_cast<ifccParser::Call_func_stmtContext *>(ctx->expr(i)))
+        {
+            if (currentSymbolsTable->getSymbolType(callCtx->VAR()->getText()) == Type::VOID)
+            {
+                printError(ctx, callCtx->VAR()->getText() + " is type void");
+                exit(1);
+            }
         }
         else
         {
@@ -482,14 +505,14 @@ map<string, bool> CodeCheckVisitor::collectSymbolsUsage(SymbolsTable *table)
 
 void CodeCheckVisitor::printError(antlr4::ParserRuleContext *ctx, const string &message)
 {
-    cerr << "input.c:" << ctx->getStart()->getLine()
+    cerr << ctx->getStart()->getLine()
          << ":" << ctx->getStart()->getCharPositionInLine()
          << ": error: " << message << endl;
 }
 
 void CodeCheckVisitor::printWarning(antlr4::ParserRuleContext *ctx, const string &message)
 {
-    cerr << "input.c:" << ctx->getStart()->getLine()
+    cerr << ctx->getStart()->getLine()
          << ":" << ctx->getStart()->getCharPositionInLine()
          << ": warning: " << message << endl;
 }
