@@ -36,7 +36,7 @@ public:
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
-        virtual antlrcpp::Any visitReturn(ifccParser::Return_stmtContext *ctx);
+        virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
 
         virtual antlrcpp::Any visitVar(ifccParser::VarContext *ctx) override;
 
@@ -152,61 +152,6 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
-
-        /**
-         * @brief Visits an if statement in the parsed code.
-         *
-         * This method processes if statements and checks for correctness
-         * in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the if statement.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
-
-        /**
-         * @brief Visits an if block in the parsed code.
-         *
-         * This method processes the block of statements within an if statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the if block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_block(ifccParser::If_blockContext *ctx) override;
-
-        /**
-         * @brief Visits an if expression block in the parsed code.
-         *
-         * This method processes the block of expressions within an if statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the if expression block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_expr_block(ifccParser::If_expr_blockContext *ctx) override;
-
-        /**
-         * @brief Visits a while statement in the parsed code.
-         *
-         * This method processes while statements and checks for correctness
-         * in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the while statement.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
-
-        /**
-         * @brief Visits a while expression block in the parsed code.
-         *
-         * This method processes the block of expressions within a while statement
-         * and checks for correctness in terms of variable usage and declarations.
-         *
-         * @param ctx The context for the while expression block.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx) override;
 
         /**
          * @brief Visits a function declaration statement.

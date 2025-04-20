@@ -30,7 +30,7 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
     return 0;
 }
 
-antlrcpp::Any CodeCheckVisitor::visitReturn(ifccParser::Return_stmtContext *ctx)
+antlrcpp::Any CodeCheckVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
     if (ctx->expr() != nullptr)
     {
@@ -456,50 +456,6 @@ antlrcpp::Any CodeCheckVisitor::visitBlock(ifccParser::BlockContext *ctx)
     visitChildren(ctx);
 
     currentSymbolsTable = currentSymbolsTable->getParent();
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
-{
-    visit(ctx->if_block());
-
-    if (ctx->else_block())
-    {
-        visit(ctx->else_block());
-    }
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitIf_block(ifccParser::If_blockContext *ctx)
-{
-    visit(ctx->if_expr_block());
-
-    visit(ctx->if_stmt_block());
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitIf_expr_block(ifccParser::If_expr_blockContext *ctx)
-{
-    visit(ctx->expr());
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
-{
-    visit(ctx->while_expr_block());
-
-    visit(ctx->while_stmt_block());
-
-    return 0;
-}
-
-antlrcpp::Any CodeCheckVisitor::visitWhile_expr_block(ifccParser::While_expr_blockContext *ctx)
-{
-    visit(ctx->expr());
 
     return 0;
 }
