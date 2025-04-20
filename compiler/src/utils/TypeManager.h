@@ -18,6 +18,9 @@ enum Type
     DOUBLE     ///< Represents the double type.
 };
 
+/**
+ * @brief A class responsible for managing data types.
+ */
 class TypeManager
 {
 public:
@@ -29,5 +32,11 @@ public:
      */
     static Type stringToType(const string &str);
 
+    /**
+     * @brief Returns the size of a given type.
+     *
+     * @param t The type value.
+     * @return The size of the type in bytes.
+     */
     static int size_of(Type t);
 };
