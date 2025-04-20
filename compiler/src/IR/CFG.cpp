@@ -141,7 +141,7 @@ void CFG::add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *el
     // Add conditional jumps from the test block
     test->add_IRInstr(new IRInstrJmpCond(test, "je", else_bb->getLabel(), "edx"));
 
-    // At the end of the then bloc, jump to end_bb
+    // At the end of the then block, jump to end_bb
     then_bb->add_IRInstr(new IRInstrJmpRet(then_bb, end_bb->getLabel()));
 
     // No need to jump at the end of the else block because the control flow continues naturally
