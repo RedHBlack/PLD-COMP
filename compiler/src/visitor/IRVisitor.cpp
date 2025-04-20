@@ -91,7 +91,7 @@ antlrcpp::Any IRVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     }
     else if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(exprCtx))
     {
-        // Si on a une constante comme index
+        // If we have a constant as index
         if (auto constCtx = dynamic_cast<ifccParser::ConstContext *>(tabCtx->expr()))
         {
             string value = constCtx->getText();
@@ -131,25 +131,25 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
             {
                 arraySize = stoi(ctx->INTEGER(exprIndex)->getText());
             }
-            // Vérifier si le token suivant est "="
+            // Verify if the next token is "="
             if (i + 1 < ctx->children.size())
             {
                 antlr4::tree::TerminalNode *nextNode = nullptr;
                 antlr4::tree::TerminalNode *nextNodeForArray = nullptr;
                 if ((i + 1 < ctx->children.size()) && (nextNode = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 1])) && nextNode->getText() == "=" && !isArray)
                 {
-                    // La variable a bien un initialiseur
+                    // The variable has an initializer
                     assignValueToVar(ctx->expr(exprIndex), varName);
                     exprIndex++;
                 }
                 else if ((i + 4 < ctx->children.size()) && (nextNodeForArray = dynamic_cast<antlr4::tree::TerminalNode *>(ctx->children[i + 4])) && nextNodeForArray->getText() == "=" && isArray)
                 {
-                    // On a une initialisation de tableau
+                    // We have an array initialization
                     auto arrayInit = dynamic_cast<ifccParser::Array_initContext *>(ctx->expr(exprIndex));
                     for (int j = 0; j < arraySize; j++)
                     {
-                        // On va utiliser storeValueToArray pour stocker la valeur dans le tableau
-                        // On calcule l'offset du tableau
+                        // We will use storeValueToArray to store the value in the array
+                        // We calculate the offset of the array
                         int computedOffset = this->currentCFG->get_var_index(varName) + j * 4;
                         int value = stoi(arrayInit->expr(j)->getText());
 
@@ -167,10 +167,10 @@ antlrcpp::Any IRVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 
 antlrcpp::Any IRVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
-    // On vérifie si on assigne à un tableau ou à une variable simple
+    // We check if we are assigning to an array or a simple variable
     if (ctx->expr(1) != nullptr)
     {
-        // On a un tableau
+        // We have an array
         string arrayName = ctx->VAR()->getText();
         assignValueToArray(arrayName, ctx->expr(0), ctx->expr(1));
     }
@@ -185,34 +185,34 @@ void IRVisitor::assignValueToArray(string arrayName, ifccParser::ExprContext *in
 {
     BasicBlock *currentBB = this->currentCFG->getCurrentBasicBlock();
 
-    // Évaluer l'expression de la valeur à affecter, résultat dans %ebx (ou eax si tableau).
+    // We evaluate the value expression, result in %ebx (or eax if it's an array).
     visitExpr(valueExpr, false);
 
-    // Si en rvalue j'ai un tableau, je déplace d'abord eax dans ebx
+    // If we have an array in rvalue, we first move eax to ebx
     if (auto tabCtx = dynamic_cast<ifccParser::Array_accessContext *>(valueExpr))
     {
         currentBB->add_IRInstr(new IRInstrMove(currentBB, "%eax", "%ebx"));
     }
 
-    // Cas de l'index constant
+    // Constant index case
     if (auto constIndex = dynamic_cast<ifccParser::ConstContext *>(indexExpr))
     {
         int idx = stoi(constIndex->cst()->getText());
-        // Calculer l'offset complet pour ce tableau
+        // Calculate the offset of the array
         int computedOffset = this->currentCFG->get_var_index(arrayName) + idx * 4;
-        // Utiliser IRInstrStoreToArray avec un indexRegister vide pour signaler que l'index est constant
+        // Use IRInstrStoreToArray with an empty indexRegister to indicate that the index is constant
 
         currentBB->add_IRInstr(new IRInstrStoreToArray(currentBB, computedOffset, "", "%ebx"));
     }
     else
     {
-        // Cas dynamique : on évalue l'index dans %eax, on sauvegarde le résultat, on effectue cltq, etc.
+        // Dynamic index case: we evaluate the index in %eax, save the result, perform cltq, etc.
         visitExpr(indexExpr, true);
 
         // If it's an assignment in the index
         if (auto assignCtx = dynamic_cast<ifccParser::AssignContext *>(indexExpr))
         {
-            // On doit mettre la variable assignée dans %eax
+            // We have to move the assigned variable to %eax
             currentBB->add_IRInstr(new IRInstrMove(currentBB, this->currentCFG->toRegister(assignCtx->VAR()->getText()), "%eax"));
         }
 
@@ -442,18 +442,18 @@ antlrcpp::Any IRVisitor::visitPost(ifccParser::PostContext *ctx)
 
 antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    // Évaluation de la condition
+    // Evaluation of the test expression
     BasicBlock *testBB = this->currentCFG->getCurrentBasicBlock();
     testBB->setIsTestVar(true);
     visit(ctx->if_block()->if_expr_block()->expr());
 
-    // Création du bloc then
+    // Creation of the then block
     string thenLabel = this->currentCFG->getBBName();
     BasicBlock *thenBB = new BasicBlock(this->currentCFG, thenLabel);
     thenBB->setIsTestVar(true);
     this->currentCFG->add_bb(thenBB);
 
-    // Création du bloc else s'il existe
+    // Creation of the else block if it exists
     BasicBlock *elseBB = nullptr;
     if (ctx->else_block())
     {
@@ -463,30 +463,30 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         this->currentCFG->add_bb(elseBB);
     }
 
-    // Créer un bloc de fusion
+    // Create a merge block
     string mergeLabel = this->currentCFG->getBBName();
     BasicBlock *mergeBB = new BasicBlock(this->currentCFG, mergeLabel);
     this->currentCFG->add_bb(mergeBB);
 
-    // Branches du test
+    // Branches of the test
     testBB->setExitTrue(thenBB);
     testBB->setExitFalse(elseBB ? elseBB : mergeBB);
 
     bool prevReturned = _returned;
 
-    // Traitement de la branche then
+    // then branch processing
     _returned = false;
     this->currentCFG->setCurrentBasicBlock(thenBB);
     visit(ctx->if_block()->if_stmt_block());
     bool thenReturned = _returned;
 
-    // Si then ne retourne pas, le relier au bloc de fusion
+    // If then does not return, link it to the merge block
     if (!thenReturned)
     {
         this->currentCFG->getCurrentBasicBlock()->setExitTrue(mergeBB);
     }
 
-    // Traitement de la branche else si présente
+    // else branch processing, if it exists
     bool elseReturned = false;
     if (elseBB)
     {
@@ -495,17 +495,17 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         visit(ctx->else_block());
         elseReturned = _returned;
 
-        // Si else ne retourne pas, le relier au bloc de fusion
+        // If else does not return, link it to the merge block
         if (!elseReturned)
         {
             this->currentCFG->getCurrentBasicBlock()->setExitTrue(mergeBB);
         }
     }
 
-    // Mettre à jour le flag _returned
+    // Update the _returned flag
     _returned = prevReturned || thenReturned || elseReturned;
 
-    // Placer le bloc courant sur le bloc de fusion
+    // Place the current block on the merge block
     this->currentCFG->setCurrentBasicBlock(mergeBB);
 
     return 0;
@@ -513,21 +513,21 @@ antlrcpp::Any IRVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 
 antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
-    // Récupérer le bloc avant la boucle
+    // Recover the block before the loop
     BasicBlock *preLoop = this->currentCFG->getCurrentBasicBlock();
 
-    // Créer le bloc de condition
+    // Create the condition block
     string condLabel = this->currentCFG->getBBName();
     BasicBlock *condBB = new BasicBlock(this->currentCFG, condLabel);
     condBB->setIsTestVar(true);
     this->currentCFG->add_bb(condBB);
     preLoop->setExitTrue(condBB);
 
-    // Générer la condition
+    // Generate the condition
     this->currentCFG->setCurrentBasicBlock(condBB);
     visit(ctx->while_expr_block()->expr());
 
-    // Créer le bloc du corps et le bloc de sortie
+    // Create the body and exit blocks
     string bodyLabel = this->currentCFG->getBBName();
     BasicBlock *bodyBB = new BasicBlock(this->currentCFG, bodyLabel);
     this->currentCFG->add_bb(bodyBB);
@@ -536,24 +536,24 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     BasicBlock *exitBB = new BasicBlock(this->currentCFG, exitLabel);
     this->currentCFG->add_bb(exitBB);
 
-    // Branches de la condition
+    // Branches of the condition
     condBB->setExitTrue(bodyBB);
     condBB->setExitFalse(exitBB);
 
-    // Sauvegarder le contexte avant d'entrer dans la boucle
+    // Save the context before entering the loop
     bool prevReturned = _returned;
     bool prevInLoop = _inLoop;
     _inLoop = true;
     _returned = false;
 
-    // Sauvegarder le bloc de condition pour les répétitions
+    // Save the condition block for repetitions
     BasicBlock *savedCondBB = condBB;
 
-    // Traiter le corps de la boucle
+    // Process the body of the loop
     this->currentCFG->setCurrentBasicBlock(bodyBB);
     visit(ctx->while_stmt_block());
 
-    // Si le corps n'a pas retourné, ajouter un branchement vers la condition
+    // If the body has not returned, add a branch to the condition
     if (!_returned)
     {
         BasicBlock *lastBodyBB = this->currentCFG->getCurrentBasicBlock();
@@ -563,7 +563,7 @@ antlrcpp::Any IRVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
         }
     }
 
-    // Restaurer le contexte et placer le bloc de sortie comme bloc courant
+    // Restore the context and set the exit block as the current block
     _inLoop = prevInLoop;
     this->currentCFG->setCurrentBasicBlock(exitBB);
     _returned = _returned || prevReturned;

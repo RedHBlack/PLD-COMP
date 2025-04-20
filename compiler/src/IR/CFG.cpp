@@ -138,21 +138,21 @@ void CFG::setLabel(string label)
 
 void CFG::add_if_then_else(BasicBlock *test, BasicBlock *then_bb, BasicBlock *else_bb, BasicBlock *end_bb)
 {
-    // Ajouter les sauts conditionnels depuis le bloc de test
+    // Add conditional jumps from the test block
     test->add_IRInstr(new IRInstrJmpCond(test, "je", else_bb->getLabel(), "edx"));
 
-    // À la fin du bloc then, sauter à end_bb
+    // At the end of the then bloc, jump to end_bb
     then_bb->add_IRInstr(new IRInstrJmpRet(then_bb, end_bb->getLabel()));
 
-    // Pas besoin de jump à la fin du else car le flot de contrôle continue naturellement
+    // No need to jump at the end of the else block because the control flow continues naturally
 }
 
 void CFG::add_while(BasicBlock *test, BasicBlock *body, BasicBlock *end_bb)
 {
-    // Le test saute à end_bb si la condition est fausse
+    // The test jumps to end_bb if the condition is false
     test->add_IRInstr(new IRInstrJmpCond(test, "je", end_bb->getLabel(), "edx"));
 
-    // À la fin du corps, retourner au test
+    // At the end of the body, jump to test
     body->add_IRInstr(new IRInstrJmpRet(body, test->getLabel()));
 }
 void CFG::setSymbolsTable(SymbolsTable *symbolsTable)

@@ -10,7 +10,7 @@ antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     visitChildren(ctx);
 
-    // Collecte l'utilisation des symboles depuis la racine et tous ses enfants
+    // Collect the usage of symbols from the root and all its children
     map<string, bool> symbolsUsage = collectSymbolsUsage(root);
 
     for (auto it = symbolsUsage.begin(); it != symbolsUsage.end(); ++it)
@@ -55,7 +55,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
         std::string varLeft = ctx->VAR(i)->getText();
         int arraySize = 1;
 
-        // Vérifie si c'est un tableau
+        // Verify if it's an array
         if (ctx->INTEGER(i) != nullptr)
         {
             arraySize = std::stoi(ctx->INTEGER(i)->getText());
@@ -77,7 +77,7 @@ antlrcpp::Any CodeCheckVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx
         currentSymbolsTable->addSymbol(varLeft, stringToType(ctx->TYPE()->getText()), symbolSize);
         currentSymbolsTable->setSymbolUsage(varLeft, false);
 
-        // Si une expression est associée
+        // If an expression is associated
         if (exprIndex < ctx->expr().size() && ctx->expr(exprIndex) != nullptr)
         {
             currentSymbolsTable->setSymbolDefinitionStatus(varLeft, true);
@@ -222,7 +222,7 @@ antlrcpp::Any CodeCheckVisitor::visitExpr(ifccParser::ExprContext *expr)
 
         currentSymbolsTable->setSymbolDefinitionStatus(varName, true);
 
-        // Gère une assignation imbriquée (comme a = b = 3)
+        // Handle nested assignment (like a = b = 3)
         visitExpr(assignCtx->expr());
     }
     else

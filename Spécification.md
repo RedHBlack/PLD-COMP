@@ -139,6 +139,7 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Affectation simple d'une constante à une variable (`a = 2`)
 - Affectation d'une variable à une autre variable (`a = b`)
 - Affectation d'expressions complexes à une variable (`a = b * c + 5`)
+- Affectation en cascade pour des variables déjà déclarées (`a = b = c = b * c + 5`)
 - Réaffectation d'une valeur à une variable déjà initialisée (`a = 5; a = 10`)
 
 #### Fonctionnalités problématiques
@@ -151,7 +152,7 @@ Notre compilateur diffère de GCC sur les points suivants :
 
 - Déclaration simple de variables (`int a;`)
 - Déclarations multiples sur une même ligne (`int a, b, c;`)
-- Initialisation lors de la déclaration (`int a = 5;`)
+- Initialisation lors de la déclaration (`int a, b = 5;`)
 - Initialisation avec des expressions complexes (`int a = 2+9;`)
 - Mélange de variables initialisées et non initialisées sur une même ligne (`int a=1, b, c=1;`)
 - Déclaration de variables avec noms valides incluant lettres, chiffres (sauf au début) et underscores
@@ -199,9 +200,10 @@ Notre compilateur diffère de GCC sur les points suivants :
 ### Fonctionnalités implémentées
 
 - Déclaration de tableaux avec une taille fixe (`int arr[10];`)
-- Initialisation de tableaux avec des valeurs constantes (`int arr[3] = {1, 2, 3};`)
-- Accès aux éléments d'un tableau via leur index (`arr[0] = 5;`)
+- Initialisation à la déclaration de tableaux avec des valeurs constantes (`int arr[3] = {1, 2, 3};`)
+- Accès aux éléments d'un tableau via leur index (`arr[0] = 5;` | `arr[b] = 3;` | `arr[5*9] = 1;` | `arr[5>b] = 9;` | `arr[a++] = 5;` | `arr[a = 1] = 9;` | `tab[a++] = 5` |...)
 - Utilisation d'éléments de tableaux dans des expressions (`a = arr[1] + 2;`)
+- Tableaux "imbriquées" (`tab[tab[tab[a]]] = tab[6]`)
 - Assignation d'une valeur à un élément de tableau (`arr[2] = a + b;`)
 
 ### Limitations et différences avec GCC
@@ -210,6 +212,7 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Les tableaux multidimensionnels ne sont pas supportés
 - Les tableaux ne peuvent pas être passés comme arguments de fonctions
 - Les tableaux ne peuvent pas être initialisés sans spécifier explicitement leur taille (`int arr[] = {1, 2, 3};` n'est pas supporté)
+- Les tableaux n'acceptent pas d'indice mélangeant variable et constante dans une expression arithmétique (`tab[a+9] = 5`) 
 
 ### À implémenter pour une version future
 
@@ -217,6 +220,7 @@ Notre compilateur diffère de GCC sur les points suivants :
 - Vérification des dépassements d'index à la compilation et à l'exécution
 - Support pour passer des tableaux en tant qu'arguments de fonctions
 - Initialisation implicite de la taille des tableaux basée sur les valeurs fournies
+- Gestion de tous les indices possibles
 
 ## 6. Fonctions
 
