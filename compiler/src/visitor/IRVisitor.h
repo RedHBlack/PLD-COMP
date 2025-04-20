@@ -41,8 +41,6 @@ public:
          */
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
-        virtual antlrcpp::Any visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx) override;
-
         virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
         /**
@@ -64,9 +62,6 @@ public:
          * @return A result of the visit, typically unused.
          */
         virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
-
-        void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
-        void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
 
         /**
          * @brief Visits an assignment expression in the parse tree.
@@ -101,7 +96,7 @@ public:
          * @param isFirst A flag indicating whether this is the first expression in a sequence.
          * @return A result of the visit, typically unused.
          */
-        antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, bool isFirst);
+        antlrcpp::Any visitExpr(ifccParser::ExprContext *expr, string targetRegister);
 
         /**
          * @brief Visits an addition or subtraction expression and generates the IR.
@@ -154,52 +149,6 @@ public:
         virtual antlrcpp::Any visitUnary(ifccParser::UnaryContext *ctx) override;
 
         /**
-         * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.
-         *
-         * This method processes pre-unary operations and generates the corresponding IR.
-         *
-         * @param ctx The context of the pre-unary expression.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
-
-        /**
-         * @brief Visits a post-unary operation (e.g., postfix increment/decrement) and generates the IR.
-         *
-         * This method processes post-unary operations and generates the corresponding IR.
-         *
-         * @param ctx The context of the post-unary expression.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
-
-        virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
-
-        /**
-         * @brief Visits an if statement and generates the IR.
-         *
-         * This method processes if statements and generates the corresponding IR for the conditional branching.
-         *
-         * @param ctx The context of the if statement.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
-
-        /**
-         * @brief Visits a while statement and generates the IR.
-         *
-         * This method processes while statements and generates the corresponding IR for the loop.
-         *
-         * @param ctx The context of the while statement.
-         * @return A result of the visit, typically unused.
-         */
-        virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
-
-        virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
-
-        virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
-
-        /**
          * @brief Visits a shift operation (e.g., left or right shift) and generates the IR.
          *
          * This method processes shift operations and generates the corresponding IR.
@@ -239,22 +188,52 @@ public:
         void gen_asm(ostream &o);
 
         /**
-         * @brief Sets the current control flow graph (CFG).
+         * @brief Visits a pre-unary operation (e.g., prefix increment/decrement) and generates the IR.
          *
-         * This method sets the current CFG that is being used for the IR generation.
+         * This method processes pre-unary operations and generates the corresponding IR.
          *
-         * @param currentCFG A pointer to the current CFG.
+         * @param ctx The context of the pre-unary expression.
+         * @return A result of the visit, typically unused.
          */
-        void setCurrentCFG(CFG *currentCFG);
+        virtual antlrcpp::Any visitPre(ifccParser::PreContext *ctx) override;
+
+        virtual antlrcpp::Any visitPre_stmt(ifccParser::Pre_stmtContext *ctx) override;
 
         /**
-         * @brief Retrieves the current control flow graph (CFG).
+         * @brief Visits a post-unary operation (e.g., postfix increment/decrement) and generates the IR.
          *
-         * This method retrieves the current CFG that is being used for the IR generation.
+         * This method processes post-unary operations and generates the corresponding IR.
          *
-         * @return A pointer to the current CFG.
+         * @param ctx The context of the post-unary expression.
+         * @return A result of the visit, typically unused.
          */
-        CFG *getCurrentCFG();
+        virtual antlrcpp::Any visitPost(ifccParser::PostContext *ctx) override;
+
+        virtual antlrcpp::Any visitPost_stmt(ifccParser::Post_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitDecl_func_stmt(ifccParser::Decl_func_stmtContext *ctx) override;
+
+        virtual antlrcpp::Any visitCall_func_stmt(ifccParser::Call_func_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits an if statement and generates the IR.
+         *
+         * This method processes if statements and generates the corresponding IR for the conditional branching.
+         *
+         * @param ctx The context of the if statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+
+        /**
+         * @brief Visits a while statement and generates the IR.
+         *
+         * This method processes while statements and generates the corresponding IR for the loop.
+         *
+         * @param ctx The context of the while statement.
+         * @return A result of the visit, typically unused.
+         */
+        virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
         /**
          * @brief Retrieves the map of Control Flow Graphs (CFGs).
@@ -315,7 +294,10 @@ private:
          * @param leftExpr The left expression in the assignment or operation.
          * @param rightExpr The right expression in the assignment or operation.
          */
-        void loadRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr);
+        void fillRegisters(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr);
+
+        void assignValueToArray(string arrayName, ifccParser::ExprContext *indexExpr, ifccParser::ExprContext *valueExpr);
+        void loadValueFromArray(string arrayName, ifccParser::ExprContext *indexExpr, string targetRegister);
 
         /**
          * @brief Handles arithmetic operations (addition, subtraction, etc.).
@@ -327,15 +309,4 @@ private:
          * @param op The operation to perform (e.g., "+" or "-").
          */
         void handleArithmeticOp(ifccParser::ExprContext *leftExpr, ifccParser::ExprContext *rightExpr, string op);
-
-        /**
-         * @brief Evaluates a constant expression.
-         *
-         * This method evaluates a constant expression and returns its integer value if possible, if not
-         * it returns an empty optional (case of a variable).
-         *
-         * @param ctx The context of the expression to evaluate.
-         * @return An optional integer value of the evaluated expression, or an empty optional if not possible (e.g., variable).
-         */
-        std::optional<int> evaluateConstantExpression(ifccParser::ExprContext *ctx);
 };
