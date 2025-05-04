@@ -309,7 +309,7 @@ public:
         void setCurrentSymbolsTable(SymbolsTable *currentSymbolsTable);
 
 protected:
-        /// A map of variable names to their corresponding Control Flow Graphs (CFGs).
+        /// A map of function names to their corresponding Control Flow Graphs (CFGs).
         map<string, CFG *> cfgs;
 
         /// A map of symbols tables to their corresponding indices in theirs scope.

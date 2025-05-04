@@ -84,3 +84,11 @@ BasicBlock *BasicBlock::getExitFalse()
 {
     return exit_false;
 }
+
+BasicBlock::~BasicBlock()
+{
+    for (BaseIRInstr *instr : instrs)
+    {
+        delete instr;
+    }
+}

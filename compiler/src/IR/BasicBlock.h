@@ -29,6 +29,13 @@ public:
   BasicBlock(CFG *cfg, string entry_label);
 
   /**
+   * @brief Destructor for the BasicBlock class.
+   *
+   * Cleans up the resources used by the basic block, including its instructions.
+   */
+  ~BasicBlock();
+
+  /**
    * @brief Generates the assembly code for this basic block.
    *
    * This method generates the x86 assembly code for all the instructions in the basic block.

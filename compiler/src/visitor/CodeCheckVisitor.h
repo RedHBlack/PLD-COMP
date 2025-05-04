@@ -26,6 +26,13 @@ public:
         CodeCheckVisitor();
 
         /**
+         * @brief Destructor for the CodeCheckVisitor class.
+         *
+         * Cleans up the resources used by the visitor, including control flow graphs.
+         */
+        ~CodeCheckVisitor();
+
+        /**
          * @brief Visits the program context in the parsed code.
          *
          * This method performs a global check of the program, ensuring all variables

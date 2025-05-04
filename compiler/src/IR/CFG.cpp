@@ -10,6 +10,13 @@ CFG::CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolInde
     idBB = 0;
 }
 
+CFG::~CFG()
+{
+    for (BasicBlock *bb : bbs)
+    {
+        delete bb;
+    }
+}
 void CFG::addBB(BasicBlock *bb)
 {
     bbs.push_back(bb);
