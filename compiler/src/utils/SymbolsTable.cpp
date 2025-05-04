@@ -3,6 +3,14 @@
 
 using namespace std;
 
+SymbolsTable::~SymbolsTable()
+{
+    for (SymbolsTable *child : this->children)
+    {
+        delete child;
+    }
+}
+
 void SymbolsTable::addSymbol(string name, Type type, int symbolSize, int index)
 {
 

@@ -35,6 +35,13 @@ public:
     CFG(string label, SymbolsTable *symbolsTable, int initialNextFreeSymbolIndex);
 
     /**
+     * @brief Destructor for the CFG class.
+     *
+     * Cleans up the resources used by the CFG, including the basic blocks.
+     */
+    ~CFG();
+
+    /**
      * @brief Adds a basic block to the control flow graph.
      *
      * This method adds a new basic block to the vector of basic blocks that make up the CFG.

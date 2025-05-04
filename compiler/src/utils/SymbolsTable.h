@@ -23,6 +23,13 @@ public:
     SymbolsTable(int currentOffset = -4) { this->currentOffset = currentOffset; }
 
     /**
+     * @brief Destructor for the SymbolsTable class.
+     *
+     * Cleans up the resources used by the symbol table, including child symbol tables.
+     */
+    ~SymbolsTable();
+
+    /**
      * @brief Add the symbol to the current symbol table and update the offset.
      *
      * @param name The name of the symbol.

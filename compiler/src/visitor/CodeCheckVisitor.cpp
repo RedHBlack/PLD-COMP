@@ -6,6 +6,16 @@ CodeCheckVisitor::CodeCheckVisitor()
     this->currentSymbolsTable = this->root;
 }
 
+CodeCheckVisitor::~CodeCheckVisitor()
+{
+    delete this->root;
+
+    for (auto it = cfgs.begin(); it != cfgs.end(); ++it)
+    {
+        delete it->second;
+    }
+}
+
 antlrcpp::Any CodeCheckVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     visitChildren(ctx);
